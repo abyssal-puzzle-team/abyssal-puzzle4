@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Abyss | 深渊回响 (稳定版)</title>
+    <title>Abyss | 深渊回响 (最终版)</title>
     <style>
         :root {
             --text-color: #EAEFF5;
@@ -38,23 +38,23 @@
             to   { transform: rotate(360deg) scale(1.2); }
         }
 
-        /* --- 加载动画 --- */
+        /* --- 全新加载动画 (符文描绘) --- */
         #loader {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             display: flex; justify-content: center; align-items: center;
             background-color: #010409; z-index: 100;
         }
-        .loader-pulse {
-            width: 10px; height: 10px; background-color: var(--text-color);
-            border-radius: 50%; box-shadow: 0 0 20px 5px var(--text-color), 0 0 30px 10px var(--glow-color-1);
-            animation: pulse 2s ease-in-out infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(2); opacity: 0.5; }
+        .loader-glyph {
+            width: 80px;
+            height: 80px;
+            stroke-width: 2;
+            fill: none;
+            stroke: var(--text-color);
+            stroke-linecap: round; /* 线条末端为圆形，更柔和 */
+            stroke-linejoin: round;
         }
 
-        /* --- 剧情布局 (Flexbox核心) --- */
+        /* --- 剧情布局 --- */
         #story-wrapper {
             position: relative; width: 100%; height: 100%;
             display: flex; flex-direction: column;
@@ -64,8 +64,8 @@
         .story-line {
             font-size: 2rem;
             text-shadow: 0 0 6px var(--glow-color-1), 0 0 10px var(--glow-color-2);
-            margin: 0.5rem 0; /* 行间距 */
-            opacity: 0; /* 动画初始状态 */
+            margin: 0.5rem 0;
+            opacity: 0;
         }
         
         /* 特殊词语效果 */
@@ -97,7 +97,13 @@
         <div class="aurora-layer" style="--x: 80%; --y: 70%; --c: var(--glow-color-2); animation-direction: reverse;"></div>
     </div>
 
-    <div id="loader"><div class="loader-pulse"></div></div>
+    <!-- 全新加载动画SVG -->
+    <div id="loader">
+        <svg class="loader-glyph" viewBox="0 0 100 100">
+            <path d="M50 10 V 90 M10 50 H 90 M20 20 L 80 80 M20 80 L 80 20"/>
+        </svg>
+    </div>
+
     <div id="story-wrapper"></div>
     <div id="next-arrow">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 15.586l-4.293-4.293-1.414 1.414L12 18.414l5.707-5.707-1.414-1.414z"/><path d="M12 8.586l-4.293-4.293-1.414 1.414L12 11.414l5.707-5.707-1.414-1.414z"/></svg>
@@ -118,33 +124,61 @@
             { id: 'line-6', text: '她决定，用解谜让其回归秩序。' },
         ];
 
-        // --- 1. Canvas 浮动粒子背景 ---
+        // --- 1. 全新符文描绘加载动画 ---
+        const loaderPath = document.querySelector('.loader-glyph path');
+        const pathLength = loaderPath.getTotalLength();
+
+        loaderPath.style.strokeDasharray = pathLength;
+        loaderPath.style.strokeDashoffset = pathLength;
+        
+        const loaderTimeline = anime.timeline({
+            easing: 'easeInOutSine',
+            duration: 2000 // 描绘动画时长
+        });
+
+        loaderTimeline
+        .add({
+            targets: loaderPath,
+            strokeDashoffset: [pathLength, 0], // 描绘路径
+        })
+        .add({
+            targets: '.loader-glyph', // 符文辉光脉冲
+            scale: [1, 1.1, 1],
+            filter: ['drop-shadow(0 0 3px var(--glow-color-2))', 'drop-shadow(0 0 10px var(--glow-color-2))', 'drop-shadow(0 0 3px var(--glow-color-2))'],
+            duration: 1000,
+            easing: 'easeInOutQuad'
+        }, '-=500') // 与上一个动画结束时重叠
+        .add({
+            targets: '#loader', // 淡出整个加载器
+            opacity: 0,
+            duration: 800,
+            easing: 'easeOutQuad',
+            complete: () => {
+                document.getElementById('loader').style.display = 'none';
+                setupStory();
+            }
+        });
+
+        // --- Canvas 浮动粒子背景 ---
         const canvas = document.getElementById('background-canvas');
         const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
         let particles = [];
-        
         const particleCount = 100;
         for (let i = 0; i < particleCount; i++) {
             particles.push({
-                x: Math.random() * canvas.width,
-                y: Math.random() * canvas.height,
+                x: Math.random() * canvas.width, y: Math.random() * canvas.height,
                 radius: Math.random() * 1.5 + 0.5,
-                vx: (Math.random() - 0.5) * 0.3,
-                vy: (Math.random() - 0.5) * 0.3,
+                vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3,
                 opacity: Math.random() * 0.5 + 0.2
             });
         }
-
         function drawParticles() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             particles.forEach(p => {
-                p.x += p.vx;
-                p.y += p.vy;
+                p.x += p.vx; p.y += p.vy;
                 if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
                 if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
-                
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
                 ctx.fillStyle = `rgba(234, 239, 245, ${p.opacity})`;
@@ -154,27 +188,14 @@
         }
         drawParticles();
         window.addEventListener('resize', () => {
-             canvas.width = window.innerWidth;
-             canvas.height = window.innerHeight;
+             canvas.width = window.innerWidth; canvas.height = window.innerHeight;
         });
 
-        // --- 2. 加载与初始化 ---
-        setTimeout(() => {
-            anime({
-                targets: '#loader', opacity: 0, duration: 800,
-                complete: () => {
-                    document.getElementById('loader').style.display = 'none';
-                    setupStory();
-                }
-            });
-        }, 1500);
-
+        // --- 剧情设置与核心逻辑 ---
         function setupStory() {
             storyWrapper.addEventListener('click', handleClick);
             anime({ targets: '#story-wrapper', opacity: 1, duration: 500, complete: showNextLine });
         }
-        
-        // --- 3. 核心交互与动画 ---
         function handleClick() {
             if (isAnimating) return;
             if (currentLineIndex >= storyScript.length - 1) {
@@ -190,26 +211,19 @@
                 showNextLine();
             }
         }
-        
         function showNextLine() {
             isAnimating = true;
             currentLineIndex++;
             const lineData = storyScript[currentLineIndex];
-
             const lineEl = document.createElement('div');
             lineEl.id = lineData.id;
             lineEl.className = 'story-line';
             lineEl.innerHTML = lineData.text;
             storyWrapper.appendChild(lineEl);
-
-            // **柔和聚焦浮现动画**
             anime({
                 targets: lineEl,
-                opacity: [0, 1],
-                translateY: [20, 0],
-                filter: ['blur(5px)', 'blur(0px)'],
-                duration: 1200,
-                easing: 'easeOutQuint',
+                opacity: [0, 1], translateY: [20, 0], filter: ['blur(5px)', 'blur(0px)'],
+                duration: 1200, easing: 'easeOutQuint',
                 complete: () => {
                     isAnimating = false;
                     if (currentLineIndex === 0) {
@@ -218,7 +232,6 @@
                             loop: true, direction: 'alternate', duration: 1200, easing: 'easeInOutSine'
                         });
                     }
-                    // 处理特殊效果
                     if (lineData.special === 'disappear') {
                         anime({ targets: lineEl, opacity: 0, duration: 1000, delay: 1500, easing: 'easeInQuad' });
                     }
