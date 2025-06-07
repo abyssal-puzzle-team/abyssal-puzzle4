@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据风暴 - 解谜</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap');
+        :root {
+            --bg-color: #02040a; --primary-color: #00bfff; --rain-color: rgba(0, 191, 255, 0.8);
+            --text-color: #c9d1d9; --border-color: #212d40; --container-bg: rgba(12, 22, 39, 0.85);
+            --error-color: #ff4d6d; --success-color: #00f5d4; --glow-color: rgba(0, 191, 255, 0.7);
+            --success-glow-color: rgba(0, 245, 212, 0.7);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Roboto Mono', monospace; background-color: var(--bg-color); color: var(--text-color); display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; }
+        body.modal-open { overflow: hidden; }
+        #rain-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
+        #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); display: flex; justify-content: center; align-items: center; z-index: 9999; transition: opacity 0.8s ease-in-out; }
+        .loader-gate { position: relative; width: 150px; height: 150px; }
+        .loader-gate div { position: absolute; width: 100%; height: 100%; border: 2px solid var(--primary-color); clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); animation: gate-animation 2s ease-in-out infinite; }
+        .loader-gate div:nth-child(2) { animation-delay: -0.2s; }
+        .loader-gate div:nth-child(3) { animation-delay: -0.4s; }
+        @keyframes gate-animation { 0%, 100% { transform: scale(0) rotate(0deg); opacity: 0; } 50% { opacity: 1; } 80% { transform: scale(1) rotate(60deg); opacity: 0; } }
+        .container { position: relative; width: 100%; max-width: 900px; height: 600px; display: flex; justify-content: center; align-items: center; opacity: 0; transition: opacity 1s ease-out; }
+        .container.loaded { opacity: 1; }
+        .node { position: absolute; width: 120px; height: 138px; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 1.2rem; font-weight: 700; transition: all 0.3s ease; filter: drop-shadow(0 0 5px black); }
+        .node-shape { width: 100%; height: 100%; background-color: var(--container-bg); border: 2px solid var(--border-color); clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); position: absolute; transition: all 0.3s ease; overflow: hidden; }
+        .node-shape::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 200%; background: linear-gradient( to bottom, transparent 0%, transparent 45%, var(--primary-color) 50%, transparent 55%, transparent 100% ); animation: node-drip 3s linear infinite; }
+        .node-text { z-index: 1; transition: opacity 0.3s ease, color 0.3s ease; }
+        @keyframes node-drip { from { transform: translateY(-50%); } to { transform: translateY(0%); } }
+        .node:hover:not(.unlocked) .node-shape, .node.selected .node-shape { border-color: var(--primary-color); background-color: rgba(0, 191, 255, 0.2); filter: drop-shadow(0 0 15px var(--glow-color)); }
+        .node:hover:not(.unlocked) .node-text, .node.selected .node-text { color: white; text-shadow: 0 0 5px var(--glow-color); }
+        .node:hover:not(.unlocked) .node-shape::before, .node.selected .node-shape::before { animation-duration: 1s; }
+        
+        .node.solved .node-shape { border-color: var(--success-color); background-color: rgba(0, 245, 212, 0.2); filter: drop-shadow(0 0 15px var(--success-glow-color)); }
+        .node.solved .node-shape::before, .node.unlocked .node-shape::before { animation: none; background: none; }
+        .node.solved .node-text { opacity: 0; }
+        .node.unlocked { cursor: not-allowed; }
+        .node.unlocked .node-shape { border-color: var(--success-color); box-shadow: 0 0 10px var(--success-glow-color); background-color: var(--container-bg); }
+        .node.unlocked .node-text { opacity: 1; color: var(--success-color); }
+        
+        .solved-icon { position: absolute; width: 50px; height: 25px; transform: scale(0) rotate(-45deg); opacity: 0; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 2; }
+        .solved-icon::before, .solved-icon::after { content: ''; position: absolute; background-color: var(--success-color); border-radius: 2px; box-shadow: 0 0 10px var(--success-glow-color); }
+        .solved-icon::before { width: 100%; height: 5px; left: 0; bottom: 0; }
+        .solved-icon::after { width: 5px; height: 100%; left: 0; bottom: 0; }
+        .node.solved .solved-icon { transform: scale(1.2) rotate(-45deg); opacity: 1; }
+        #node1 { top: 10%; left: 15%; }
+        #node2 { top: 60%; right: 15%; }
+        #hub-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; background: rgba(0, 0, 0, 0.5); z-index: 8; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; }
+        #hub-overlay.visible { opacity: 1; visibility: visible; }
+        #central-hub { position: relative; padding: 30px; background: var(--container-bg); border: 1px solid var(--border-color); border-radius: 8px; backdrop-filter: blur(5px); text-align: center; transform: scale(0.95); transition: transform 0.3s ease-out; }
+        #hub-overlay.visible #central-hub { transform: scale(1); }
+        #central-hub h1 { font-size: 2.2rem; color: var(--primary-color); margin-bottom: 20px; letter-spacing: 2px; }
+        .input-group { display: flex; flex-direction: column; align-items: center; gap: 15px; }
+        #key-input { font-family: 'Roboto Mono', monospace; font-size: 1rem; width: 280px; padding: 12px; background-color: #0d1117; border: 2px solid var(--border-color); color: var(--text-color); border-radius: 5px; transition: all 0.3s; text-align: center;}
+        #key-input:focus { outline: none; border-color: var(--primary-color); background: #161b22; }
+        #key-input:disabled { cursor: not-allowed; background-color: #21262d; }
+        #submit-key { font-family: 'Roboto Mono', monospace; font-size: 1rem; padding: 12px 20px; width: 150px; background-color: var(--primary-color); color: #0d1117; border: none; border-radius: 5px; cursor: pointer; font-weight: 700; transition: all 0.3s; }
+        #submit-key:hover:not(:disabled) { background-color: #90caff; letter-spacing: 1px;}
+        #submit-key:disabled { background-color: #30363d; color: #8b949e; cursor: not-allowed; }
+        #status-message { margin-top: 20px; font-size: 1rem; font-weight: 600; min-height: 1.5em; }
+        .status-success { color: var(--success-color); } .status-error { color: var(--error-color); } .status-info { color: var(--primary-color); }
+        #connection-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
+        #connection-line, #final-connection-line { stroke-width: 2; stroke-linecap: round; fill: none; }
+        #connection-line { stroke: var(--primary-color); filter: drop-shadow(0 0 5px var(--glow-color)); transition: stroke-dashoffset 0.8s ease-out; }
+        #final-connection-line { stroke: var(--success-color); filter: drop-shadow(0 0 8px var(--success-glow-color)); transition: stroke-dashoffset 1.5s cubic-bezier(0.455, 0.03, 0.515, 0.955); }
+        .modal-overlay { z-index: 1000; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(2, 4, 10, 0.8); backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; }
+        .modal-overlay.visible { opacity: 1; visibility: visible; }
+        .modal-content { background: var(--container-bg); padding: 30px; border-radius: 8px; width: 90%; max-width: 600px; max-height: 80vh; overflow-y: auto; position: relative; border: 1px solid var(--border-color); box-shadow: 0 0 30px rgba(0,0,0,0.5); transform: translateY(-30px) scale(0.95); transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); }
+        .modal-overlay.visible .modal-content { transform: translateY(0) scale(1); }
+        #modal-title { color: var(--primary-color); margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; min-height: 1.5em; }
+        #modal-text { font-size: 1rem; line-height: 1.8; white-space: pre-wrap; min-height: 5em;}
+        #modal-close-btn { position: absolute; top: 15px; right: 15px; background: none; border: none; color: #8b949e; font-size: 1.8rem; cursor: pointer; line-height: 1; }
+        #modal-close-btn:hover { color: var(--text-color); }
+        .typing-cursor { display: inline-block; background-color: var(--text-color); width: 10px; height: 1.2em; animation: blink 1s infinite; margin-left: 2px; vertical-align: middle; }
+        @keyframes blink { 50% { opacity: 0; } }
+    </style>
+</head>
+<body>
+    <canvas id="rain-canvas"></canvas>
+    <div id="loader"><div class="loader-gate"><div></div><div></div><div></div></div></div>
+    <div class="container" id="main-container">
+        <svg id="connection-svg"><line id="connection-line" x1="0" y1="0" x2="0" y2="0" /><path id="final-connection-line" d="" /></svg>
+        <div class="node" id="node1" data-node-id="node1"><div class="node-shape"></div><span class="node-text">Node 1</span><span class="solved-icon"></span></div>
+        <div class="node" id="node2" data-node-id="node2"><div class="node-shape"></div><span class="node-text">Node 2</span><span class="solved-icon"></span></div>
+    </div>
+    <div id="hub-overlay"><div id="central-hub"><h1 id="hub-title"></h1><div class="input-group"><input type="text" id="key-input" placeholder="密钥输入" autocomplete="off"><button id="submit-key">验证</button></div><div id="status-message"></div></div></div>
+    <div id="modal-overlay" class="modal-overlay"><div id="modal-content" class="modal-content"><button id="modal-close-btn">×</button><h2 id="modal-title"></h2><p id="modal-text"></p></div></div>
+
+    <script>
+        // --- 数字雨滴脚本 (保持不变) ---
+        const rainCanvas = document.getElementById('rain-canvas'); const ctx = rainCanvas.getContext('2d'); let width = rainCanvas.width = window.innerWidth; let height = rainCanvas.height = window.innerHeight; let droplets = []; let splashes = []; class Droplet { constructor() { this.reset(); } reset() { this.x = Math.random() * width; this.y = Math.random() * -height; this.length = Math.random() * 20 + 10; this.speed = Math.random() * 5 + 2; } update() { this.y += this.speed; if (this.y - this.length > height) { splashes.push(new Splash(this.x)); this.reset(); } } draw() { ctx.beginPath(); ctx.moveTo(this.x, this.y); ctx.lineTo(this.x, this.y - this.length); ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--rain-color').trim(); ctx.lineWidth = 1.5; ctx.stroke(); } } class Splash { constructor(x) { this.x = x; this.y = height; this.radius = 0; this.maxRadius = Math.random() * 15 + 10; this.opacity = 1; this.speed = Math.random() * 0.5 + 0.2; } update() { this.radius += this.speed; this.opacity -= 0.02; } draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false); ctx.strokeStyle = `rgba(0, 191, 255, ${this.opacity})`; ctx.stroke(); } } function initRain() { for (let i = 0; i < Math.floor(width / 20); i++) { droplets.push(new Droplet()); } } function animateRain() { ctx.fillStyle = 'rgba(2, 4, 10, 0.2)'; ctx.fillRect(0, 0, width, height); droplets.forEach(d => { d.update(); d.draw(); }); splashes = splashes.filter(s => s.opacity > 0); splashes.forEach(s => { s.update(); s.draw(); }); requestAnimationFrame(animateRain); } window.addEventListener('resize', () => { width = rainCanvas.width = window.innerWidth; height = rainCanvas.height = window.innerHeight; droplets = []; initRain(); }); initRain(); animateRain();
+
+        // --- 主应用脚本 ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const API_BASE_URL = 'http://111.170.11.168:15114/proxy/3000';
+            const hubOverlay = document.getElementById('hub-overlay');
+            const hubTitle = document.getElementById('hub-title');
+            const keyInput = document.getElementById('key-input');
+            const submitButton = document.getElementById('submit-key');
+            const modalOverlay = document.getElementById('modal-overlay');
+            const modalTitle = document.getElementById('modal-title');
+            const modalText = document.getElementById('modal-text');
+            
+            let selectedNodeId = null;
+            let cooldownInterval = null;
+            let isSubmitting = false;
+            let typingTimeout = null;
+            let solvedStatus = { node1: false, node2: false };
+            const nodeTexts = {
+                'node1': {hubTitle: '解谜 1', modalTitle: '节点 1 数据流截取', content: '解密协议：Alpha\n状态：稳定\n\n接收到一份加密的数据片段，源头未知。初步分析显示其结构异常复杂，包含多层嵌套的加密算法。这看起来不像是常规的通信数据，更像是一个“盒子”，里面装着某种关键信息。我们怀疑这与最近网络中流传的“奇点”项目有关。奇点项目旨在创建一个能够自我进化的AI，但项目在官方记录中早已被终止。这份数据可能是项目残余部分的一次意外泄露，也可能是有意为之的陷阱。你需要找到正确的“密钥”来打开这个盒子，但请务必小心，错误的尝试可能会触发未知的防御机制。'},
+                'node2': {hubTitle: '解谜 2', modalTitle: '节点 2 访问日志', content: '日志来源：防火墙 #734\n状态：异常\n\n防火墙日志显示，在过去24小时内，有多次异常访问尝试被记录。这些尝试并非普通的暴力破解，而是使用了高度复杂的、我们前所未见的协议。所有尝试都指向一个休眠已久的系统核心——代号“泰坦”。根据档案，泰坦是早期网络的基础架构之一，理论上早已被更先进的系统取代。为什么会有人对这个“古董”感兴趣？我们推测，泰坦内部可能存有访问整个网络更高权限的“后门”或根密钥。你的任务是分析这些访问模式，并构造一个有效的密钥，抢在他们之前进入泰坦系统。'}
+            };
+            
+            async function performKeyCheck(key) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/check-key`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nodeId: selectedNodeId, key: key }) });
+                    const data = await response.json();
+                    if (response.ok) {
+                        const justSolvedNodeId = selectedNodeId; // **【关键修复】在重置前保存ID
+                        hideHub(); 
+                        showTemporaryMessage(data.message, 'success');
+                        keyInput.value = '';
+                        const solvedNode = document.getElementById(justSolvedNodeId);
+                        
+                        if (solvedNode && !solvedStatus[justSolvedNodeId]) {
+                            // 1. **【关键修复】** 立即更新状态
+                            solvedStatus[justSolvedNodeId] = true;
+                            
+                            // 2. 播放临时庆祝动画
+                            solvedNode.classList.add('solved');
+                            setTimeout(() => {
+                                solvedNode.classList.remove('solved');
+                                solvedNode.classList.add('unlocked');
+                            }, 2000);
+
+                            // 3. 检查是否胜利
+                            checkWinCondition();
+                        }
+                    } else {
+                        showTemporaryMessage(data.message, 'error');
+                        if (data.cooldown) startCooldownTimer(data.cooldown);
+                    }
+                } catch (error) { console.error('密钥验证失败:', error); showTemporaryMessage('错误: 密钥验证请求失败', 'error'); }
+            }
+
+            function checkWinCondition() {
+                const allSolved = Object.values(solvedStatus).every(status => status === true);
+                if (allSolved) {
+                    document.querySelectorAll('.node').forEach(n => n.style.pointerEvents = 'none');
+                    animateFinalConnection().then(() => {
+                        showTemporaryMessage('所有节点已解密！正在跳转至下一阶段...', 'success', null);
+                        setTimeout(() => { window.location.href = '../storyline/node3_sl.html'; }, 1000);
+                    });
+                }
+            }
+            
+            function animateFinalConnection() {
+                return new Promise(resolve => {
+                    const node1El = document.getElementById('node1');
+                    const node2El = document.getElementById('node2');
+                    const path = document.getElementById('final-connection-line');
+                    const startX = node1El.offsetLeft + node1El.offsetWidth / 2;
+                    const startY = node1El.offsetTop + node1El.offsetHeight / 2;
+                    const endX = node2El.offsetLeft + node2El.offsetWidth / 2;
+                    const endY = node2El.offsetTop + node2El.offsetHeight / 2;
+                    path.setAttribute('d', `M ${startX} ${startY} L ${endX} ${endY}`);
+                    const length = path.getTotalLength();
+                    path.style.strokeDasharray = length;
+                    path.style.strokeDashoffset = length;
+                    requestAnimationFrame(() => { path.style.strokeDashoffset = 0; });
+                    setTimeout(resolve, 1500);
+                });
+            }
+
+            function handleNodeClick(nodeId, event) {
+                const nodeElement = event.currentTarget;
+                if (nodeElement.classList.contains('unlocked') || isSubmitting) return; // 已解锁的节点不可点击
+                if (selectedNodeId && selectedNodeId !== nodeId) {
+                    document.getElementById(selectedNodeId)?.classList.remove('selected');
+                }
+                selectedNodeId = nodeId;
+                nodeElement.classList.add('selected');
+                drawConnectionLine(nodeId);
+                const nodeInfo = nodeTexts[nodeId];
+                if (nodeInfo) {
+                    openTextModal(nodeInfo.modalTitle, nodeInfo.content);
+                }
+            }
+            function showHub() { if (!selectedNodeId) return; hubTitle.textContent = nodeTexts[selectedNodeId].hubTitle; hubOverlay.classList.add('visible'); setInputsDisabled(false); keyInput.focus(); }
+            function hideHub() { hubOverlay.classList.remove('visible'); hideConnectionLine(); setInputsDisabled(true); if (selectedNodeId) { document.getElementById(selectedNodeId)?.classList.remove('selected'); selectedNodeId = null; } }
+            function openTextModal(title, content) { modalOverlay.classList.add('visible'); document.body.classList.add('modal-open'); modalTitle.innerHTML = ''; modalText.innerHTML = ''; typewriterEffect(modalTitle, title, 30, () => { typewriterEffect(modalText, content, 5); }); }
+            function closeTextModal() { modalOverlay.classList.remove('visible'); document.body.classList.remove('modal-open'); if (typingTimeout) clearTimeout(typingTimeout); showHub(); }
+            function typewriterEffect(element, text, speed, callback) { if (typingTimeout) clearTimeout(typingTimeout); let i = 0; element.innerHTML = ''; const cursor = document.createElement('span'); cursor.className = 'typing-cursor'; element.appendChild(cursor); function type() { if (i < text.length) { cursor.insertAdjacentText('beforebegin', text.charAt(i)); i++; typingTimeout = setTimeout(type, speed); } else { cursor.remove(); if (callback) callback(); } } type(); }
+            async function handleSubmit() { if (isSubmitting || !selectedNodeId) return; const key = keyInput.value.trim(); if (!key) { showTemporaryMessage('错误: 密钥不能为空', 'error'); return; } isSubmitting = true; setInputsDisabled(true); showTemporaryMessage('正在验证...', 'info', null); try { const cooldownStatus = await checkCooldownStatus(); if (cooldownStatus > 0) startCooldownTimer(cooldownStatus); else await performKeyCheck(key); } catch (error) { console.error('发生意外错误:', error); showTemporaryMessage('发生未知错误，请检查控制台', 'error'); } finally { isSubmitting = false; if (!cooldownInterval && hubOverlay.classList.contains('visible')) setInputsDisabled(false); } }
+            async function checkCooldownStatus() { try { const response = await fetch(`${API_BASE_URL}/cooldown-status`); if (!response.ok) throw new Error(`HTTP 错误! 状态: ${response.status}`); const data = await response.json(); return data.cooldownRemaining || 0; } catch (error) { console.error('无法检查冷却状态:', error); showTemporaryMessage('警告: 无法连接状态服务器', 'error'); return 0; } }
+            function startCooldownTimer(duration) { if (cooldownInterval) clearInterval(cooldownInterval); let remaining = duration; setInputsDisabled(true); document.getElementById('status-message').className = 'status-error'; document.getElementById('status-message').textContent = `系统冷却中... 剩余 ${remaining} 秒`; cooldownInterval = setInterval(() => { remaining--; if (remaining > 0) { document.getElementById('status-message').textContent = `系统冷却中... 剩余 ${remaining} 秒`; } else { clearInterval(cooldownInterval); cooldownInterval = null; document.getElementById('status-message').textContent = '冷却结束，可以再次尝试。'; document.getElementById('status-message').className = 'status-success'; setInputsDisabled(false); setTimeout(() => { if(document.getElementById('status-message').textContent === '冷却结束，可以再次尝试。') { document.getElementById('status-message').textContent = ''; } }, 3000); } }, 1000); }
+            function setInputsDisabled(disabled) { keyInput.disabled = disabled; submitButton.disabled = disabled; }
+            function showTemporaryMessage(message, type, duration = 4000) { const statusMessage = document.getElementById('status-message'); statusMessage.textContent = message; statusMessage.className = `status-${type}`; if (duration !== null) { setTimeout(() => { if (statusMessage.textContent === message) { statusMessage.textContent = ''; statusMessage.className = ''; } }, duration); } }
+            function drawConnectionLine(nodeId) { const nodeEl = document.getElementById(nodeId); const mainContainer = document.getElementById('main-container'); const hubRect = document.getElementById('central-hub').getBoundingClientRect(); const containerRect = mainContainer.getBoundingClientRect(); const startX = nodeEl.offsetLeft + nodeEl.offsetWidth / 2; const startY = nodeEl.offsetTop + nodeEl.offsetHeight / 2; const endX = containerRect.width / 2; const endY = containerRect.height / 2; const connectionLine = document.getElementById('connection-line'); connectionLine.setAttribute('x1', startX); connectionLine.setAttribute('y1', startY); connectionLine.setAttribute('x2', startX); connectionLine.setAttribute('y2', startY); setTimeout(() => { connectionLine.setAttribute('x2', endX); connectionLine.setAttribute('y2', endY); const length = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2)); connectionLine.style.strokeDasharray = length; connectionLine.style.strokeDashoffset = length; requestAnimationFrame(() => { connectionLine.style.strokeDashoffset = 0; }); }, 10); };
+            function hideConnectionLine() { const connectionLine = document.getElementById('connection-line'); const length = connectionLine.style.strokeDasharray; connectionLine.style.strokeDashoffset = length; };
+            document.querySelectorAll('.node').forEach(node => node.addEventListener('click', (event) => handleNodeClick(node.dataset.nodeId, event)));
+            submitButton.addEventListener('click', handleSubmit);
+            keyInput.addEventListener('keyup', (event) => { if (event.key === 'Enter') handleSubmit(); });
+            document.getElementById('modal-close-btn').addEventListener('click', closeTextModal);
+            modalOverlay.addEventListener('click', (event) => { if (event.target === modalOverlay) closeTextModal(); });
+            hubOverlay.addEventListener('click', (event) => { if (event.target === hubOverlay) hideHub(); });
+            window.addEventListener('load', () => { const loader = document.getElementById('loader'); const mainContainer = document.getElementById('main-container'); setTimeout(() => { loader.style.opacity = '0'; loader.addEventListener('transitionend', () => loader.style.display = 'none'); mainContainer.classList.add('loaded'); checkCooldownStatus().then(cooldown => { if (cooldown > 0) startCooldownTimer(cooldown); }); }, 1800); });
+        });
+    </script>
+</body>
+</html>
