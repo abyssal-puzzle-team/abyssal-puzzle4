@@ -4,21 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Abyssal Puzzle4 - 立即开始！</title>
-
-    <!-- Anime.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
-
-    <!-- 内联 CSS 样式 -->
     <style>
         :root {
-            --bg-color-deep: #0a071b; /* 深邃靛蓝/暗夜紫 */
-            --bg-color-medium: #1c153f; /* 中度靛蓝 */
-            --text-color-primary: #d8c8ff; /* 淡紫色/灰白色，柔和 */
-            --text-color-accent: #f0e0b0; /* 淡金色/米黄色，作为强调和光晕 */
+            --bg-color-deep: #0a071b;
+            --bg-color-medium: #1c153f;
+            --text-color-primary: #d8c8ff;
+            --text-color-accent: #f0e0b0;
             --accent-glow: #f0e0b0;
-            --rune-glow: rgba(240, 224, 176, 0.3); /* 符文光晕 */
-            --loader-color-primary: #a070ff; /* 淡紫色 */
-            --loader-color-secondary: #f0e0b0; /* 淡金色 */
+            --star-color-dust: rgba(200, 180, 230, 0.15); /* 极暗淡的星尘 */
+            --star-color-dim: rgba(216, 200, 255, 0.3); 
+            --star-color-medium: rgba(230, 210, 255, 0.5);
+            --star-color-bright: rgba(240, 224, 176, 0.7); 
+            --loader-color-primary: #a070ff;
+            --loader-color-secondary: #f0e0b0;
         }
 
         body {
@@ -26,87 +25,104 @@
             font-family: 'Times New Roman', 'Georgia', 'KaiTi', 'SimSun', serif; 
             background-color: var(--bg-color-deep);
             color: var(--text-color-primary);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            overflow: hidden;
-            position: relative;
-            isolation: isolate;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; overflow: hidden; position: relative; isolation: isolate;
         }
 
-        /* 背景动画 和 加载动画样式 (与上一版相同，此处省略以减少篇幅，实际使用时请复制过来) */
-        /* ... (复制上一版 body::after, body::before, #loading-overlay, .loader, .rune-segment, .loading-text 的 CSS) ... */
-        /* 动画背景层 (body::after) - 模拟深渊迷雾/古老能量流动 */
+        /* 动画背景层 (body::after) - 深渊迷雾/古老能量流动 (保持不变) */
         body::after {
-            content: '';
-            position: absolute;
-            top: -50%; left: -50%;
-            width: 200%; height: 200%;
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
             background: 
-                radial-gradient(ellipse at center, rgba(28, 21, 63, 0.6) 0%, transparent 50%), /* 中心暗影 */
-                repeating-linear-gradient(
-                    -45deg,
-                    transparent,
-                    transparent 20px,
-                    rgba(240, 224, 176, 0.01) 20px, /* 微弱的金色条纹，像能量流 */
-                    rgba(240, 224, 176, 0.01) 40px
-                );
-            background-blend-mode: multiply; /* 混合模式增加层次感 */
-            animation: abyss-flow 80s infinite linear;
-            z-index: -2;
-            filter: blur(2px) brightness(0.8); /* 模糊并略微调暗 */
-            transform-origin: center center;
+                radial-gradient(ellipse at center, rgba(28, 21, 63, 0.6) 0%, transparent 50%),
+                repeating-linear-gradient(-45deg, transparent, transparent 20px, rgba(240, 224, 176, 0.01) 20px, rgba(240, 224, 176, 0.01) 40px);
+            background-blend-mode: multiply; animation: abyss-flow 80s infinite linear;
+            z-index: -2; filter: blur(2px) brightness(0.8); transform-origin: center center;
         }
-
-        @keyframes abyss-flow {
+        @keyframes abyss-flow { /* ... (保持不变) ... */
             0%   { transform: scale(1.0) rotate(0deg) translate(0%, 0%); opacity: 0.7; }
             50%  { transform: scale(1.1) rotate(10deg) translate(-5%, 5%); opacity: 0.9; }
             100% { transform: scale(1.0) rotate(0deg) translate(0%, 0%); opacity: 0.7; }
         }
 
-        /* 模拟背景微光/神秘粒子 (body::before) - 持续闪烁 */
+        /* --- 极度丰富的星空背景 (body::before) --- */
         body::before {
             content: '';
             position: absolute;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            background-image: 
-                radial-gradient(var(--accent-glow) 0.3px, transparent 0.3px), /* 更细小的光点 */
-                radial-gradient(var(--accent-glow) 0.2px, transparent 0.2px);
-            background-size: 80px 80px, 200px 200px; 
-            background-position: 0 0, 40px 40px;
-            animation: ancient-particles 15s infinite alternate ease-in-out;
+            background-image:
+                /* 层1: 极小极密的星尘 (最远层) */
+                radial-gradient(var(--star-color-dust) 0.1px, transparent 0.1px),
+                radial-gradient(var(--star-color-dust) 0.15px, transparent 0.15px),
+                /* 层2: 小而密集的远星星 */
+                radial-gradient(var(--star-color-dim) 0.2px, transparent 0.2px),
+                radial-gradient(var(--star-color-dim) 0.25px, transparent 0.25px),
+                /* 层3: 稍大一些的中距离星星 */
+                radial-gradient(var(--star-color-medium) 0.3px, transparent 0.3px),
+                radial-gradient(var(--star-color-medium) 0.4px, transparent 0.4px),
+                /* 层4: 更亮、较大的近星星 */
+                radial-gradient(var(--star-color-bright) 0.5px, transparent 0.5px),
+                /* 层5: 稀疏的闪烁亮星 (最大最亮) */
+                radial-gradient(var(--star-color-bright) 0.8px, transparent 0.8px);
+            background-size: 
+                10px 10px,  /* 极高密度星尘 */
+                15px 15px,  /* 极高密度星尘 (不同尺寸) */
+                30px 30px,  /* 高密度 */
+                50px 50px,  /* 中高密度 */
+                80px 80px,  /* 中密度 */
+                120px 120px, /* 中低密度 */
+                180px 180px, /* 低密度 */
+                350px 350px; /* 非常稀疏 (大亮星) */
+            background-position: /* 确保每层位置错开以避免摩尔纹 */
+                0 0, 
+                5px 5px,
+                10px 10px, 
+                25px 20px, 
+                40px 50px,
+                70px 30px,
+                100px 120px,
+                150px 80px;
+            animation: 
+                twinkle-dust-1 20s infinite alternate ease-in-out,
+                twinkle-dust-2 22s infinite alternate ease-in-out 0.2s,
+                twinkle-far-1 18s infinite alternate ease-in-out 0.4s,
+                twinkle-far-2 16s infinite alternate ease-in-out 0.6s,
+                twinkle-mid-1 14s infinite alternate ease-in-out 0.8s,
+                twinkle-mid-2 12s infinite alternate ease-in-out 1.0s,
+                twinkle-near 10s infinite alternate ease-in-out 1.2s,
+                twinkle-brightest 7s infinite alternate ease-in-out 1.5s;
             z-index: -1; 
             pointer-events: none;
-            opacity: 0; /* 由动画控制 */
+            opacity: 0; /* 初始由动画控制 */
         }
 
-        @keyframes ancient-particles {
-            0% { opacity: 0.02; transform: translateY(0px); }
-            50% { opacity: 0.08; transform: translateY(-5px); } /* 微小的上下浮动 */
-            100% { opacity: 0.02; transform: translateY(0px); }
+        @keyframes twinkle-dust-1 { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.3; } }
+        @keyframes twinkle-dust-2 { 0%, 100% { opacity: 0.25; } 50% { opacity: 0.35; } }
+        @keyframes twinkle-far-1 { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.5; } }
+        @keyframes twinkle-far-2 { 0%, 100% { opacity: 0.35; } 50% { opacity: 0.55; } }
+        @keyframes twinkle-mid-1 { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.7; } }
+        @keyframes twinkle-mid-2 { 0%, 100% { opacity: 0.45; } 50% { opacity: 0.75; } }
+        @keyframes twinkle-near { 0%, 100% { opacity: 0.5; } 50% { opacity: 0.9; } }
+        @keyframes twinkle-brightest { 
+            0%, 100% { opacity: 0.6; transform: scale(1); } 
+            50% { opacity: 1; transform: scale(1.3); }
         }
 
-        /* 加载动画覆盖层 */
-        #loading-overlay {
+
+        /* 加载动画覆盖层 (保持不变) */
+        #loading-overlay { /* ... */
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: var(--bg-color-deep);
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             z-index: 999; opacity: 1; transition: opacity 1s ease-out;
         }
-
-        /* 加载动画 - 符文汇聚效果 */
-        .loader {
+        .loader { /* ... */
             width: 100px; height: 100px; position: relative; margin-bottom: 40px;
         }
-        .rune-segment {
-            position: absolute;
-            width: 15px; height: 3px;
-            background-color: var(--loader-color-secondary);
-            border-radius: 2px;
-            opacity: 0;
-            box-shadow: 0 0 5px var(--loader-color-secondary);
+        .rune-segment { /* ... */
+            position: absolute; width: 15px; height: 3px;
+            background-color: var(--loader-color-secondary); border-radius: 2px;
+            opacity: 0; box-shadow: 0 0 5px var(--loader-color-secondary);
         }
         .rune-segment:nth-child(1) { top: 0; left: 50%; transform: translateX(-50%) rotate(0deg); }
         .rune-segment:nth-child(2) { top: 20%; left: 80%; transform: translateX(-50%) rotate(45deg); }
@@ -116,114 +132,80 @@
         .rune-segment:nth-child(6) { top: 80%; left: 20%; transform: translateX(-50%) rotate(225deg); }
         .rune-segment:nth-child(7) { top: 50%; left: 0%; transform: translate(-50%, -50%) rotate(270deg); }
         .rune-segment:nth-child(8) { top: 20%; left: 20%; transform: translateX(-50%) rotate(315deg); }
-
-
-        .loading-text {
+        .loading-text { /* ... */
             font-family: 'Times New Roman', 'Georgia', 'KaiTi', serif;
-            font-size: 1.3em; letter-spacing: 0.05em; color: var(--text-color-primary);
-            opacity: 0.8;
+            font-size: 1.3em; letter-spacing: 0.05em; color: var(--text-color-primary); opacity: 0.8;
         }
         .loading-text .letter { opacity: 0; display: inline-block; }
 
-
-        /* 主要内容容器 */
-        .container {
+        /* 主要内容容器 (保持不变) */
+        .container { /* ... */
             text-align: center; opacity: 0; transform: translateY(40px);
-            padding: 40px 50px; border-radius: 10px; /* 更硬朗的边角，像石板 */
-            background: rgba(10, 7, 27, 0.7); /* 更不透明，更像实体 */
+            padding: 40px 50px; border-radius: 10px; 
+            background: rgba(10, 7, 27, 0.7); 
             backdrop-filter: blur(5px);
-            box-shadow: 0 0 50px rgba(240, 224, 176, 0.15), /* 淡金色外光晕 */
-                        inset 0 0 20px rgba(0,0,0,0.5); /* 内部阴影增加深度 */
-            border: 1px solid rgba(240, 224, 176, 0.2); /* 淡金色边框 */
-            position: relative; /* 为了文字周围的粒子效果 */
+            box-shadow: 0 0 50px rgba(240, 224, 176, 0.15), inset 0 0 20px rgba(0,0,0,0.5); 
+            border: 1px solid rgba(240, 224, 176, 0.2); 
+            position: relative; 
         }
 
-        #line1 {
-            font-size: 5.5em; font-weight: normal; /* 普通字重更适合衬线体 */
-            letter-spacing: 0.05em;
+        /* Line 1 (保持不变) */
+        #line1 { /* ... */
+            font-size: 5.5em; font-weight: normal; letter-spacing: 0.05em;
             color: var(--text-color-primary);
-            text-shadow: 
-                0 0 10px rgba(240, 224, 176, 0.5), /* 淡金色文字阴影 */
-                0 0 20px rgba(240, 224, 176, 0.3);
+            text-shadow: 0 0 10px rgba(240, 224, 176, 0.5), 0 0 20px rgba(240, 224, 176, 0.3);
             position: relative;
         }
         #line1 .letter { display: inline-block; transform-origin: center center; opacity: 0; }
-
-        /* 文字周围的神秘粒子/符号 */
-        .title-particles {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            pointer-events: none; /* 不阻挡交互 */
-            overflow: visible; /* 允许粒子超出边界 */
+        .title-particles { /* ... */
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; overflow: visible; 
         }
-        .particle {
-            position: absolute;
-            width: 3px; height: 3px;
-            background-color: var(--accent-glow);
-            border-radius: 50%;
-            opacity: 0;
+        .particle { /* ... */
+            position: absolute; width: 3px; height: 3px;
+            background-color: var(--accent-glow); border-radius: 50%; opacity: 0;
         }
 
-
-        #line2 {
+        /* Line 2 (立即开始！) 样式 (保持不变) */
+        #line2 { /* ... */
             font-family: 'Times New Roman', 'Georgia', 'KaiTi', serif;
             font-size: 2.8em; font-weight: normal; color: var(--text-color-accent);
             cursor: pointer; 
             transition: transform 0.25s ease-out, text-shadow 0.25s ease-out, box-shadow 0.25s ease-out;
             margin-top: 2.5em; padding: 0.4em 1.2em;
-            border: 2px solid var(--text-color-accent); border-radius: 5px; /* 更硬朗的边角 */
+            border: 2px solid var(--text-color-accent); border-radius: 5px;
             display: inline-block;
-            background-color: rgba(28, 21, 63, 0.3); /* 轻微背景色 */
-            text-shadow: 
-                0 0 8px var(--accent-glow),
-                0 0 15px var(--accent-glow);
+            background-color: rgba(28, 21, 63, 0.3);
+            text-shadow: 0 0 8px var(--accent-glow), 0 0 15px var(--accent-glow);
             box-shadow: 0 0 15px rgba(240, 224, 176, 0.3), inset 0 0 5px rgba(0,0,0,0.3);
             opacity: 0; 
-            position: relative; /* For pseudo-elements and positioning children */
-            overflow: hidden; /* Important for inner glow effect */
+            position: relative; 
+            overflow: visible; 
         }
-        #line2:hover {
-            transform: scale(1.05) translateY(-2px); /* 轻微上浮 */
-            text-shadow: 
-                0 0 15px var(--accent-glow), 
-                0 0 30px var(--accent-glow);
-            box-shadow: 
-                0 0 25px var(--accent-glow), 
-                inset 0 0 8px rgba(240, 224, 176, 0.2);
+        #line2:hover { /* ... (保持不变) ... */
+            transform: scale(1.05) translateY(-2px); 
+            text-shadow: 0 0 15px var(--accent-glow), 0 0 30px var(--accent-glow);
+            box-shadow: 0 0 25px var(--accent-glow), inset 0 0 8px rgba(240, 224, 176, 0.2);
         }
         
-        /* "立即开始" 点击时的内部光效和外部光环 */
-        #line2 .inner-glow-effect {
-            position: absolute;
-            top: 50%; left: 50%;
-            width: 10px; height: 10px; /* Start small */
-            background-color: var(--accent-glow);
-            border-radius: 50%;
-            transform: translate(-50%, -50%) scale(0);
-            opacity: 0;
-            filter: blur(5px); /* Soften the glow */
+        /* "立即开始！" 点击效果的粒子容器 (保持不变) */
+        .activation-particles-container { /* ... */
+            position: absolute; top: 50%; left: 50%;
+            width: 1px; height: 1px; 
+            transform: translate(-50%, -50%); pointer-events: none;
+        }
+        .activation-particle { /* ... */
+            position: absolute; width: 4px; height: 4px;
+            background: var(--accent-glow); border-radius: 50%; opacity: 0;
         }
 
-        #line2 .outer-ring-effect {
-            position: absolute;
-            top: 50%; left: 50%;
-            width: 100%; height: 100%; /* Match button size initially */
-            border: 2px solid var(--accent-glow);
-            border-radius: 5px; /* Match button's border-radius */
-            transform: translate(-50%, -50%) scale(1);
-            opacity: 0;
-            box-sizing: border-box;
-        }
-
-
-        /* Responsive styles */
-        @media (max-width: 768px) {
+        /* Responsive styles (保持不变) */
+        @media (max-width: 768px) { /* ... */ 
             #line1 { font-size: 4em; }
             #line2 { font-size: 2em; margin-top: 2em;}
             .container { padding: 30px 40px; }
         }
-        @media (max-width: 480px) {
+        @media (max-width: 480px) { /* ... */
             #line1 { font-size: 2.8em; }
             #line2 { font-size: 1.6em; margin-top: 1.5em;}
             .container { padding: 20px 30px; }
@@ -231,7 +213,7 @@
     </style>
 </head>
 <body>
-    <div id="loading-overlay">
+    <div id="loading-overlay"> <!-- ... (内容保持不变) ... -->
         <div class="loader">
             <div class="rune-segment"></div> <div class="rune-segment"></div>
             <div class="rune-segment"></div> <div class="rune-segment"></div>
@@ -241,20 +223,20 @@
         <p class="loading-text" id="loading-text">唤醒深渊...</p>
     </div>
 
-    <div class="container">
+    <div class="container"> <!-- ... (内容保持不变) ... -->
         <div id="line1-wrapper" style="position: relative;">
             <h1 id="line1" class="text-line">Abyssal Puzzle4</h1>
             <div class="title-particles" id="title-particle-container"></div>
         </div>
         <p id="line2" class="text-line action-text">
             立即开始！
-            <span class="inner-glow-effect"></span>
-            <span class="outer-ring-effect"></span>
+            <span class="activation-particles-container"></span>
         </p>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // --- Variable declarations (保持不变) ---
             const loadingOverlay = document.getElementById('loading-overlay');
             const runeSegments = document.querySelectorAll('.loader .rune-segment');
             const loadingTextElement = document.getElementById('loading-text');
@@ -262,22 +244,21 @@
             const line1 = document.getElementById('line1');
             const titleParticleContainer = document.getElementById('title-particle-container');
             const line2 = document.getElementById('line2');
-            const innerGlow = line2.querySelector('.inner-glow-effect');
-            const outerRing = line2.querySelector('.outer-ring-effect');
-
+            const activationParticlesContainer = line2.querySelector('.activation-particles-container');
             let persistentAnims = {};
 
-            // --- Loading Animations (same as previous) ---
-            const loadingTextAnime = anime({
+            // --- Loading Animations (保持不变) ---
+            const loadingTextAnime = anime({ /* ... */ 
                 targets: '#loading-text .letter', opacity: [0, 1], translateY: [10, 0],
                 easing: 'easeOutExpo', duration: 800, delay: anime.stagger(80, { start: 200 }),
                 loop: true, direction: 'alternate',
             });
-            const runeLoaderAnim = anime.timeline({ loop: true, easing: 'easeInOutSine',})
+            const runeLoaderAnim = anime.timeline({ /* ... */ 
+                loop: true, easing: 'easeInOutSine',})
             .add({ targets: runeSegments, translateX: ['50px', '0px'], translateY: ['50px', '0px'], scale: [0.5, 1], opacity: [0, 1], duration: 1000, delay: anime.stagger(100),})
             .add({ targets: runeSegments, rotate: '+=45deg', scale: [1, 0.3], opacity: [1, 0], duration: 800, delay: anime.stagger(50, {from: 'center'}),}, '-=300');
 
-            window.addEventListener('load', () => {
+            window.addEventListener('load', () => { /* ... (保持不变) ... */
                 loadingTextAnime.pause(); runeLoaderAnim.pause();
                 anime({ targets: loadingOverlay, opacity: 0, duration: 1000, easing: 'easeOutQuad',
                     complete: () => {
@@ -287,82 +268,81 @@
                 });
             });
 
-            function animateContentAndStartPersistentLoops() {
-                // --- Initial Entrance Animations (same as previous) ---
+            function animateContentAndStartPersistentLoops() { /* ... (保持不变) ... */
                 anime({ targets: container, opacity: [0, 1], translateY: [50, 0], duration: 1800, easing: 'easeOutExpo', delay: 300 });
                 anime({ targets: '#line1 .letter', opacity: [0, 1], translateX: [() => anime.random(-20, 20), 0], translateY: [() => anime.random(20, -10), 0], scale: [0.7, 1], rotateZ: [() => anime.random(-15, 15), 0], duration: 1500, easing: 'easeOutQuint', delay: anime.stagger(100, { start: 1000 }), });
                 const line2Intro = anime({ targets: line2, opacity: [0, 1], scale: [0.5, 1], translateY: [40, 0], duration: 2200, easing: 'easeOutElastic(1, .7)', delay: 3000, });
                 line2Intro.finished.then(() => { setTimeout(startPersistentAnimations, 500); });
             }
             
-            function startPersistentAnimations() {
-                // --- Persistent Animations (same as previous) ---
+            function startPersistentAnimations() { /* ... (保持不变) ... */
                 persistentAnims.container = anime({ targets: container, borderColor: ['rgba(240, 224, 176, 0.2)', 'rgba(240, 224, 176, 0.5)', 'rgba(240, 224, 176, 0.2)'], boxShadow: ['0 0 50px rgba(240, 224, 176, 0.15), inset 0 0 20px rgba(0,0,0,0.5)', '0 0 60px rgba(240, 224, 176, 0.25), inset 0 0 25px rgba(0,0,0,0.4)', '0 0 50px rgba(240, 224, 176, 0.15), inset 0 0 20px rgba(0,0,0,0.5)'], scale: [1, 1.005, 1], duration: 8000, easing: 'easeInOutSine', loop: true, });
-                if (!document.querySelector('#title-particle-container .particle')) { // Create particles only once
+                if (!document.querySelector('#title-particle-container .particle')) { 
                     for (let i = 0; i < 15; i++) { const particle = document.createElement('div'); particle.classList.add('particle'); titleParticleContainer.appendChild(particle); }
                 }
                 persistentAnims.titleParticles = anime({ targets: '#title-particle-container .particle', translateX: () => anime.random(-line1.offsetWidth / 1.8, line1.offsetWidth / 1.8), translateY: () => anime.random(-line1.offsetHeight / 1.5, line1.offsetHeight / 1.5), scale: () => anime.random(0.5, 1.2), opacity: [{value: 0, duration: 0}, {value: () => anime.random(0.2, 0.6), duration: () => anime.random(2000, 4000)}, {value: 0, duration: () => anime.random(2000, 4000)}], delay: anime.stagger(300), duration: () => anime.random(4000, 8000), easing: 'easeInOutSine', loop: true, });
                 persistentAnims.line2 = anime({ targets: line2, translateY: [0, '-2px', 0], textShadow: ['0 0 8px var(--accent-glow), 0 0 15px var(--accent-glow)', '0 0 10px var(--accent-glow), 0 0 20px var(--accent-glow)', '0 0 8px var(--accent-glow), 0 0 15px var(--accent-glow)'], duration: 6000, easing: 'easeInOutSine', loop: true, });
             }
 
-            // ---- NEW "立即开始！" Click Animation ----
+            // ---- "立即开始！" 点击动画 和 跳转 ----
             line2.addEventListener('click', (e) => {
                 if (persistentAnims.line2) persistentAnims.line2.pause();
+                
+                activationParticlesContainer.innerHTML = ''; 
+                const numParticles = 25; // 稍微增加粒子数量
+                const particleTravelDistance = Math.min(line2.offsetWidth, line2.offsetHeight) * 1.8; // 粒子飞得更远一点
 
-                // Reset effects if they are somehow mid-animation
-                anime.remove([innerGlow, outerRing]); 
+                for (let i = 0; i < numParticles; i++) {
+                    const p = document.createElement('div');
+                    p.classList.add('activation-particle');
+                    p.style.transformOrigin = `${anime.random(-50, 50)}px ${anime.random(-50, 50)}px`;
+                    activationParticlesContainer.appendChild(p);
+                }
+                const particles = activationParticlesContainer.querySelectorAll('.activation-particle');
 
                 const clickTimeline = anime.timeline({
                     easing: 'easeOutExpo',
                     complete: () => {
-                        if (persistentAnims.line2) persistentAnims.line2.play();
+                        activationParticlesContainer.innerHTML = ''; 
+                        if (persistentAnims.line2) persistentAnims.line2.play(); // 理论上跳转后不会执行，但保留逻辑完整性
+                        
+                        // --- 执行页面跳转 ---
+                        // 为了确保动画有足够时间展示，可以在这里加一个非常短暂的延迟
+                        // 但通常timeline的complete已经足够了
+                        // 如果动画感觉被切断，可以取消下面setTimeout的注释
+                        // setTimeout(() => {
+                        //    window.location.href = './storyline/node1&2_sl.html';
+                        // }, 50); // 50ms延迟
+                        window.location.href = './storyline/node1&2_sl.html';
                     }
                 });
 
                 clickTimeline
-                .add({ // 1. Button "press down" and inner glow starts to appear from center
+                .add({ 
                     targets: line2,
-                    scale: [1, 0.97], // Slight press
-                    boxShadow: [ // Shadow deepens
+                    color: ['var(--text-color-accent)', '#fff', 'var(--text-color-accent)'], 
+                    borderColor: ['var(--text-color-accent)', '#fff', 'var(--text-color-accent)'], 
+                    boxShadow: [ 
                         '0 0 15px rgba(240, 224, 176, 0.3), inset 0 0 5px rgba(0,0,0,0.3)',
-                        '0 0 10px rgba(240, 224, 176, 0.2), inset 0 0 15px rgba(0,0,0,0.6)'
-                    ],
-                    duration: 150,
-                    easing: 'easeInSine'
-                })
-                .add({ // 2. Inner glow expands rapidly and becomes very bright
-                    targets: innerGlow,
-                    scale: [0, line2.offsetWidth / 5], // Expands to a significant size
-                    opacity: [0, 0.9, 0.6], // Bright flash then fades a bit
-                    duration: 250,
-                    easing: 'easeOutCirc'
-                }, '-=100') // Overlap with press
-                .add({ // 3. Outer ring energizes (scales up and fades in)
-                    targets: outerRing,
-                    scale: [1, 1.25], // Ring expands beyond button
-                    opacity: [0, 0.7, 0], // Ring flashes and fades out
-                    duration: 400, // Ring effect is a bit longer
-                    easing: 'easeOutQuint'
-                }, '-=200') // Overlap with inner glow peak
-                .add({ // 4. Button returns to normal, inner glow fades completely
-                    targets: line2,
-                    scale: [0.97, 1], // Release press
-                    boxShadow: [ // Shadow returns to normal
-                        '0 0 10px rgba(240, 224, 176, 0.2), inset 0 0 15px rgba(0,0,0,0.6)',
+                        '0 0 40px #fff, inset 0 0 15px #fff', 
                         '0 0 15px rgba(240, 224, 176, 0.3), inset 0 0 5px rgba(0,0,0,0.3)'
                     ],
-                    duration: 200,
-                    easing: 'easeOutSine'
-                }, '-=150') // Overlap with ring fade
-                .add({
-                    targets: innerGlow,
-                    scale: [line2.offsetWidth / 5, 0], // Inner glow shrinks and disappears
-                    opacity: [0.6, 0],
-                    duration: 150,
-                    easing: 'easeInSine'
-                }, '-=200'); // Ensure it fades out as button restores
+                    scale: [1, 1.02, 1], 
+                    duration: 250,
+                    easing: 'easeInOutQuad'
+                })
+                .add({ 
+                    targets: particles,
+                    translateX: () => anime.random(-particleTravelDistance, particleTravelDistance) * 0.7, 
+                    translateY: () => anime.random(-particleTravelDistance, particleTravelDistance) * 0.7, 
+                    scale: [0, () => anime.random(0.8, 1.5)], 
+                    opacity: [1, 0], 
+                    duration: () => anime.random(500, 800),
+                    easing: 'easeOutQuint',
+                    delay: anime.stagger(10) 
+                }, '-=200'); 
 
-                console.log('立即开始！ Clicked with new effect');
+                console.log('立即开始！ Clicked, preparing to navigate...');
             });
         });
     </script>

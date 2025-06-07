@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abyss | 深渊回响 (稳定版)</title>
+    <style>
+        :root {
+            --text-color: #EAEFF5;
+            --glow-color-1: rgba(80, 150, 255, 0.5);
+            --glow-color-2: rgba(180, 220, 255, 0.6);
+        }
+
+        /* --- 基础设定 --- */
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            overflow: hidden;
+            background-color: #010409;
+            color: var(--text-color);
+            font-family: 'Helvetica Neue', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+        }
+
+        /* --- 动态背景 --- */
+        #background-canvas {
+            position: fixed; top: 0; left: 0; z-index: -2;
+        }
+        #aurora-background {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1; mix-blend-mode: screen; opacity: 0.6;
+        }
+        .aurora-layer {
+            position: absolute; width: 150%; height: 150%;
+            background-image: radial-gradient(circle at var(--x, 50%) var(--y, 50%), var(--c, transparent), transparent 40%);
+            animation: flow 40s linear infinite alternate;
+        }
+        @keyframes flow {
+            from { transform: rotate(0deg) scale(1); }
+            to   { transform: rotate(360deg) scale(1.2); }
+        }
+
+        /* --- 加载动画 --- */
+        #loader {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; justify-content: center; align-items: center;
+            background-color: #010409; z-index: 100;
+        }
+        .loader-pulse {
+            width: 10px; height: 10px; background-color: var(--text-color);
+            border-radius: 50%; box-shadow: 0 0 20px 5px var(--text-color), 0 0 30px 10px var(--glow-color-1);
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(2); opacity: 0.5; }
+        }
+
+        /* --- 剧情布局 (Flexbox核心) --- */
+        #story-wrapper {
+            position: relative; width: 100%; height: 100%;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            cursor: pointer; opacity: 0; padding: 0 2rem; box-sizing: border-box;
+        }
+        .story-line {
+            font-size: 2rem;
+            text-shadow: 0 0 6px var(--glow-color-1), 0 0 10px var(--glow-color-2);
+            margin: 0.5rem 0; /* 行间距 */
+            opacity: 0; /* 动画初始状态 */
+        }
+        
+        /* 特殊词语效果 */
+        .rainbow-word {
+            background: linear-gradient(90deg, #00E5FF, #D500F9, #FFEA00, #00E5FF);
+            background-size: 200% 200%; color: transparent;
+            -webkit-background-clip: text; background-clip: text;
+            animation: rainbow-flow 4s linear infinite;
+        }
+        @keyframes rainbow-flow { to { background-position: 200% center; } }
+        .chaos-word span { display: inline-block; }
+        
+        /* --- 交互箭头 --- */
+        #next-arrow {
+            position: fixed; bottom: 30px; left: 50%;
+            transform: translateX(-50%); width: 30px; height: 30px;
+            opacity: 0; pointer-events: none;
+        }
+        #next-arrow svg {
+            width: 100%; height: 100%; fill: var(--text-color);
+            filter: drop-shadow(0 0 5px var(--glow-color-2));
+        }
+    </style>
+</head>
+<body>
+    <canvas id="background-canvas"></canvas>
+    <div id="aurora-background">
+        <div class="aurora-layer" style="--x: 20%; --y: 30%; --c: var(--glow-color-1);"></div>
+        <div class="aurora-layer" style="--x: 80%; --y: 70%; --c: var(--glow-color-2); animation-direction: reverse;"></div>
+    </div>
+
+    <div id="loader"><div class="loader-pulse"></div></div>
+    <div id="story-wrapper"></div>
+    <div id="next-arrow">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 15.586l-4.293-4.293-1.414 1.414L12 18.414l5.707-5.707-1.414-1.414z"/><path d="M12 8.586l-4.293-4.293-1.414 1.414L12 11.414l5.707-5.707-1.414-1.414z"/></svg>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const storyWrapper = document.getElementById('story-wrapper');
+        let isAnimating = false, currentLineIndex = -1, chaosInterval;
+
+        const storyScript = [
+            { id: 'line-1', text: 'Abyss从小屋走出来，' },
+            { id: 'line-2', text: '却发现Cryst不见了踪影。', special: 'disappear' },
+            { id: 'line-3', text: '眼前是水天一色的蔚蓝大海，' },
+            { id: 'line-4', text: '<span class="rainbow-word">彩虹</span>下，有着若隐若现的一座城市。' },
+            { id: 'line-5', text: '港口，一座小船被<span class="chaos-word"><span>混</span><span>沌</span></span>污染。', special: 'chaos' },
+            { id: 'line-6', text: '她决定，用解谜让其回归秩序。' },
+        ];
+
+        // --- 1. Canvas 浮动粒子背景 ---
+        const canvas = document.getElementById('background-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        let particles = [];
+        
+        const particleCount = 100;
+        for (let i = 0; i < particleCount; i++) {
+            particles.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                radius: Math.random() * 1.5 + 0.5,
+                vx: (Math.random() - 0.5) * 0.3,
+                vy: (Math.random() - 0.5) * 0.3,
+                opacity: Math.random() * 0.5 + 0.2
+            });
+        }
+
+        function drawParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+                
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(234, 239, 245, ${p.opacity})`;
+                ctx.fill();
+            });
+            requestAnimationFrame(drawParticles);
+        }
+        drawParticles();
+        window.addEventListener('resize', () => {
+             canvas.width = window.innerWidth;
+             canvas.height = window.innerHeight;
+        });
+
+        // --- 2. 加载与初始化 ---
+        setTimeout(() => {
+            anime({
+                targets: '#loader', opacity: 0, duration: 800,
+                complete: () => {
+                    document.getElementById('loader').style.display = 'none';
+                    setupStory();
+                }
+            });
+        }, 1500);
+
+        function setupStory() {
+            storyWrapper.addEventListener('click', handleClick);
+            anime({ targets: '#story-wrapper', opacity: 1, duration: 500, complete: showNextLine });
+        }
+        
+        // --- 3. 核心交互与动画 ---
+        function handleClick() {
+            if (isAnimating) return;
+            if (currentLineIndex >= storyScript.length - 1) {
+                isAnimating = true;
+                if(chaosInterval) clearInterval(chaosInterval);
+                anime({
+                    targets: '.story-line, #next-arrow', opacity: 0,
+                    translateY: -30, duration: 1000,
+                    easing: 'easeInOutExpo', delay: anime.stagger(80),
+                    complete: () => window.location.href = '../puzzle/node1&2.html'
+                });
+            } else {
+                showNextLine();
+            }
+        }
+        
+        function showNextLine() {
+            isAnimating = true;
+            currentLineIndex++;
+            const lineData = storyScript[currentLineIndex];
+
+            const lineEl = document.createElement('div');
+            lineEl.id = lineData.id;
+            lineEl.className = 'story-line';
+            lineEl.innerHTML = lineData.text;
+            storyWrapper.appendChild(lineEl);
+
+            // **柔和聚焦浮现动画**
+            anime({
+                targets: lineEl,
+                opacity: [0, 1],
+                translateY: [20, 0],
+                filter: ['blur(5px)', 'blur(0px)'],
+                duration: 1200,
+                easing: 'easeOutQuint',
+                complete: () => {
+                    isAnimating = false;
+                    if (currentLineIndex === 0) {
+                        anime({
+                            targets: '#next-arrow', opacity: 1, translateY: [0, -8, 0],
+                            loop: true, direction: 'alternate', duration: 1200, easing: 'easeInOutSine'
+                        });
+                    }
+                    // 处理特殊效果
+                    if (lineData.special === 'disappear') {
+                        anime({ targets: lineEl, opacity: 0, duration: 1000, delay: 1500, easing: 'easeInQuad' });
+                    }
+                    if (lineData.special === 'chaos') {
+                        const chaosSpans = document.querySelectorAll(`#${lineData.id} .chaos-word span`);
+                        chaosInterval = setInterval(() => {
+                           anime({
+                                targets: chaosSpans,
+                                translateX: () => anime.random(-3, 3), translateY: () => anime.random(-2, 2),
+                                color: ['#F0F8FF', '#ff00ff', '#00ffff'][anime.random(0,2)],
+                                duration: 100, easing: 'steps(1)'
+                           });
+                        }, 150);
+                    }
+                }
+            });
+        }
+    });
+    </script>
+</body>
+</html>
