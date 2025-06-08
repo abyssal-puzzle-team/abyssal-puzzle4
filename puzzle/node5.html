@@ -18,10 +18,20 @@
 
         body, html {
             margin: 0; padding: 0; width: 100%; height: 100%;
-            background-color: #000;
+            /* MODIFICATION: Body is now transparent to reveal the background container */
+            background-color: transparent;
             color: var(--text-color);
             font-family: var(--font-mono);
             overflow: hidden;
+        }
+
+        /* NEW: Container for the stars and the black background */
+        #background-container {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-color: #000;
+            z-index: -1; /* Places it at the very back */
         }
         
         .fullscreen-container {
@@ -32,6 +42,7 @@
         #frameless-logs-container {
             flex-direction: column; z-index: 60;
             display: none; opacity: 0;
+            filter: blur(0px); 
         }
         
         #preloader {
@@ -62,8 +73,9 @@
         .arc:nth-child(2) { border-color: transparent; border-bottom-color: var(--error-color); animation-direction: reverse; animation-duration: 1.2s; }
         .arc:nth-child(3) { width: 70%; height: 70%; top: 15%; left: 15%; animation-duration: 2s; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-        .star-layer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
+        
+        /* MODIFICATION: Star layers are now absolutely positioned inside their container */
+        .star-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
         #star-background { width: 200%; height: 200%; background-image: radial-gradient(1px, white, rgba(255, 255, 255, 0)), radial-gradient(1.5px, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0)), radial-gradient(2px, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0)); background-repeat: repeat; background-size: 600px 600px, 400px 400px, 200px 200px; background-position: 0 0, 100px 150px, 250px 370px; animation: move-stars 200s linear infinite; }
         #twinkling-stars { background: transparent; background-image: radial-gradient(white 1px, transparent 0); background-size: 100px 100px; animation: twinkle 10s ease-in-out infinite; }
         @keyframes move-stars { from { transform: translate(0, 0); } to { transform: translate(-50%, -50%); } }
@@ -73,7 +85,9 @@
             width: 95%; height: 95%; max-width: 1400px; max-height: 900px;
             border: 2px solid var(--info-color); border-radius: 10px;
             box-shadow: 0 0 20px var(--info-glow), inset 0 0 15px rgba(0, 191, 255, 0.15);
-            background: var(--terminal-bg); backdrop-filter: blur(3px);
+            /* This is the key: a semi-transparent background combined with a backdrop-filter */
+            background: var(--terminal-bg); 
+            backdrop-filter: blur(3px);
             display: none; flex-direction: column;
             padding: 20px; box-sizing: border-box; opacity: 0;
             position: relative; z-index: 10;
@@ -94,11 +108,33 @@
         #response-message { margin-top: 10px; min-height: 1.2em; font-weight: bold; }
         @keyframes shake { 0%, 100% { transform: translate(0, 0); } 10%, 30%, 50%, 70%, 90% { transform: translate(-2px, 2px); } 20%, 40%, 60%, 80% { transform: translate(2px, -2px); } }
         .shake { animation: shake 0.3s ease-in-out; }
+        
+        .bordered-log {
+            padding: 15px 25px;
+            border: 2px solid;
+            border-radius: 5px;
+            display: inline-block;
+            text-align: center;
+            opacity: 0;
+            border-color: var(--info-color);
+            box-shadow: 0 0 15px var(--info-glow);
+        }
+        .bordered-log.error {
+            border-color: var(--error-color);
+            box-shadow: 0 0 15px var(--error-glow);
+        }
+        .bordered-log.success {
+            border-color: var(--text-color);
+            box-shadow: 0 0 15px var(--glow-color);
+        }
     </style>
 </head>
 <body>
-    <div class="star-layer" id="star-background"></div>
-    <div class="star-layer" id="twinkling-stars"></div>
+    <!-- MODIFICATION: Star layers wrapped in a container that provides the black background -->
+    <div id="background-container">
+        <div class="star-layer" id="star-background"></div>
+        <div class="star-layer" id="twinkling-stars"></div>
+    </div>
     
     <div class="fullscreen-container" id="preloader"><div id="preloader-text">OBSERVER_OS BOOTING...<span class="blinking-cursor">_</span></div></div>
     <div class="fullscreen-container" id="frameless-logs-container"></div>
@@ -132,11 +168,11 @@
             const delay = ms => new Promise(res => setTimeout(res, ms));
             let isCooldown = false;
             
-            // **修复后的 addLog 函数**
             function addLog(text, classes = [], parent = outputContainer) {
                 const p = document.createElement('p');
                 p.textContent = text;
-                p.classList.add('log-line', ...classes);
+                const finalClasses = ['log-line', ...classes.filter(c => c !== 'log-line')];
+                p.classList.add(...finalClasses);
                 parent.appendChild(p);
                 if (parent.id === 'output-container') {
                     parent.scrollTop = parent.scrollHeight;
@@ -166,7 +202,7 @@
 
                 const image = document.createElement('img');
                 image.id = 'node-image';
-                image.src = './img/node5.jpeg'; // **这里仍然使用图片，因为这是叙事的一部分**
+                image.src = './img/node5.jpeg';
                 image.alt = '宇宙异常现象';
                 outputContainer.appendChild(image);
                 image.style.display = 'block';
@@ -219,7 +255,36 @@
             }
 
             // --- API 交互 ---
-            async function checkKey(key) { if (isCooldown) return; setResponseMessage('正在验证密钥...', 'info'); keyInput.disabled = true; try { const response = await fetch(`${API_BASE_URL}/check-key`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nodeId: NODE_ID, key: key }) }); const data = await response.json(); if (response.ok) { setResponseMessage(data.message, 'success'); } else { setResponseMessage(data.message, 'error'); if (data.cooldown) { startCooldown(data.cooldown); } } } catch (error) { console.error('API Error:', error); setResponseMessage('连接后端服务失败，请检查网络或联系管理员。', 'error'); } finally { if (!isCooldown) { keyInput.disabled = false; keyInput.focus(); } keyInput.value = ''; } }
+            async function checkKey(key) {
+                if (isCooldown) return;
+                setResponseMessage('正在验证密钥...', 'info');
+                keyInput.disabled = true;
+                try {
+                    const response = await fetch(`${API_BASE_URL}/check-key`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nodeId: NODE_ID, key: key }) });
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        setResponseMessage(data.message, 'success');
+                        await delay(1500); 
+                        window.location.href = '../storyline/meta_front_sl.html';
+                    } else {
+                        setResponseMessage(data.message, 'error');
+                        if (data.cooldown) {
+                            startCooldown(data.cooldown);
+                        }
+                    }
+                } catch (error) {
+                    console.error('API Error:', error);
+                    setResponseMessage('连接后端服务失败，请检查网络或联系管理员。', 'error');
+                } finally {
+                    if (!isCooldown && !document.hidden) { 
+                        keyInput.disabled = false;
+                        keyInput.focus();
+                    }
+                    keyInput.value = '';
+                }
+            }
+
             function setResponseMessage(message, type) { const responseMessage = document.getElementById('response-message'); responseMessage.textContent = message; responseMessage.className = `log-line ${type}`; anime({ targets: responseMessage, opacity: [0, 1], duration: 300 }); }
             function startCooldown(seconds) { isCooldown = true; keyInput.disabled = true; let remaining = seconds; const intervalId = setInterval(() => { remaining--; setResponseMessage(`请求被拒绝，冷却中... ${remaining}s`, 'error'); if (remaining <= 0) { clearInterval(intervalId); isCooldown = false; keyInput.disabled = false; keyInput.focus(); setResponseMessage('可以再次尝试。', 'info'); } }, 1000); }
             async function checkInitialCooldown() { try { const response = await fetch(`${API_BASE_URL}/cooldown-status`); if (response.ok) { const data = await response.json(); if (data.cooldownRemaining > 0) { startCooldown(data.cooldownRemaining); } } } catch (error) { console.warn('无法获取初始冷却状态:', error); } }
@@ -240,30 +305,35 @@
                 framelessLogsContainer.style.display = 'flex';
                 await anime({ targets: framelessLogsContainer, opacity: 1, duration: 500 }).finished;
                 
-                const statusLines = [
-                    addLog('[Updating Data...]', ['info'], framelessLogsContainer),
-                    addLog('<HEATED ERROR！>', ['error'], framelessLogsContainer),
-                    addLog('[Reconnection Service...]', ['info'], framelessLogsContainer),
-                    addLog('<SUCCEED！！>', ['success'], framelessLogsContainer)
-                ];
-                
-                await anime({ targets: statusLines[0], opacity: [0, 1], delay: 500 }).finished;
-                await anime({ targets: statusLines[1], opacity: [0, 1], duration: 200, easing: 'steps(2)' }).finished;
-                await delay(1000);
-                await anime({ targets: statusLines[2], opacity: [0, 1] }).finished;
-                await delay(2000);
-                await anime({ targets: statusLines[3], opacity: [0, 1] }).finished;
-                await delay(1500);
+                async function showTransientLog(text, classes, displayTime) {
+                    const logElement = addLog(text, ['bordered-log', ...classes], framelessLogsContainer);
+                    
+                    await anime({ targets: logElement, opacity: 1, duration: 400, easing: 'easeOutQuad' }).finished;
+                    await delay(displayTime);
+                    await anime({ targets: logElement, opacity: 0, duration: 300, easing: 'easeInQuad' }).finished;
 
-                // **抖动/模糊动画在阶段一末尾**
+                    logElement.remove();
+                }
+
+                await showTransientLog('[Updating Data...]', ['info'], 800);
+                await showTransientLog('<HEATED ERROR！>', ['error'], 1000);
+                await showTransientLog('[Reconnection Service...]', ['info'], 1200);
+
+                const successLog = addLog('<SUCCEED！！>', ['bordered-log', 'success'], framelessLogsContainer);
+                await anime({ targets: successLog, opacity: 1, duration: 500, easing: 'easeOutQuad' }).finished;
+
+                await delay(500); 
+
                 bodyEl.classList.add('shake');
-                await anime({ targets: framelessLogsContainer, filter: ['blur(5px)', 'blur(0px)'], duration: 1000 }).finished;
+                await anime({ targets: framelessLogsContainer, filter: ['blur(5px)', 'blur(0px)'], duration: 1000, easing: 'easeInOutQuad' }).finished;
                 bodyEl.classList.remove('shake');
-                await delay(500);
+                
+                await delay(300); 
 
-                // STAGE 2: 模块加载 (全屏，无边框)
+                // STAGE 2: 模块加载
                 await anime({ targets: framelessLogsContainer, opacity: 0, duration: 500 }).finished;
                 framelessLogsContainer.style.display = 'none';
+                framelessLogsContainer.innerHTML = '';
                 
                 loadingScreen.style.display = 'flex';
                 await anime({ targets: loadingScreen, opacity: 1, duration: 1000 }).finished;
