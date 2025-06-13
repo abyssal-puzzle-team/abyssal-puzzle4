@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abyssal Puzzle剧情5</title>
+</head>
+<body>
+    <style>
+        :root {
+            --bg-color-deep: #0a071b;
+            --bg-color-medium: #1c153f;
+            --text-color-primary: #d8c8ff;
+            --text-color-accent: #f0e0b0;
+            --accent-glow: #f0e0b0;
+            --star-color-dust: rgba(200, 180, 230, 0.15); /* 极暗淡的星尘 */
+            --star-color-dim: rgba(216, 200, 255, 0.3); 
+            --star-color-medium: rgba(230, 210, 255, 0.5);
+            --star-color-bright: rgba(240, 224, 176, 0.7); 
+            --loader-color-primary: #a070ff;
+            --loader-color-secondary: #f0e0b0;
+        }
+        body {
+            margin: 0;
+            font-family: 'Times New Roman', 'Georgia', 'KaiTi', 'SimSun', serif; 
+            background-color: var(--bg-color-deep);
+            color: var(--text-color-primary);
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; overflow: hidden; position: relative; isolation: isolate;
+        }
+        /* 动画背景层 (body::after) - 深渊迷雾/古老能量流动 (保持不变) */
+        body::after {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: 
+                radial-gradient(ellipse at center, rgba(28, 21, 63, 0.6) 0%, transparent 50%),
+                repeating-linear-gradient(-45deg, transparent, transparent 20px, rgba(240, 224, 176, 0.01) 20px, rgba(240, 224, 176, 0.01) 40px);
+            background-blend-mode: multiply; animation: abyss-flow 80s infinite linear;
+            z-index: -2; filter: blur(2px) brightness(0.8); transform-origin: center center;
+        }
+        @keyframes abyss-flow { /* ... (保持不变) ... */
+            0%   { transform: scale(1.0) rotate(0deg) translate(0%, 0%); opacity: 0.7; }
+            50%  { transform: scale(1.1) rotate(10deg) translate(-5%, 5%); opacity: 0.9; }
+            100% { transform: scale(1.0) rotate(0deg) translate(0%, 0%); opacity: 0.7; }
+        }
+
+        /* --- 极度丰富的星空背景 (body::before) --- */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-image:
+                /* 层1: 极小极密的星尘 (最远层) */
+                radial-gradient(var(--star-color-dust) 0.1px, transparent 0.1px),
+                radial-gradient(var(--star-color-dust) 0.15px, transparent 0.15px),
+                /* 层2: 小而密集的远星星 */
+                radial-gradient(var(--star-color-dim) 0.2px, transparent 0.2px),
+                radial-gradient(var(--star-color-dim) 0.25px, transparent 0.25px),
+                /* 层3: 稍大一些的中距离星星 */
+                radial-gradient(var(--star-color-medium) 0.3px, transparent 0.3px),
+                radial-gradient(var(--star-color-medium) 0.4px, transparent 0.4px),
+                /* 层4: 更亮、较大的近星星 */
+                radial-gradient(var(--star-color-bright) 0.5px, transparent 0.5px),
+                /* 层5: 稀疏的闪烁亮星 (最大最亮) */
+                radial-gradient(var(--star-color-bright) 0.8px, transparent 0.8px);
+            background-size: 
+                10px 10px,  /* 极高密度星尘 */
+                15px 15px,  /* 极高密度星尘 (不同尺寸) */
+                30px 30px,  /* 高密度 */
+                50px 50px,  /* 中高密度 */
+                80px 80px,  /* 中密度 */
+                120px 120px, /* 中低密度 */
+                180px 180px, /* 低密度 */
+                350px 350px; /* 非常稀疏 (大亮星) */
+            background-position: /* 确保每层位置错开以避免摩尔纹 */
+                0 0, 
+                5px 5px,
+                10px 10px, 
+                25px 20px, 
+                40px 50px,
+                70px 30px,
+                100px 120px,
+                150px 80px;
+            animation: 
+                twinkle-dust-1 20s infinite alternate ease-in-out,
+                twinkle-dust-2 22s infinite alternate ease-in-out 0.2s,
+                twinkle-far-1 18s infinite alternate ease-in-out 0.4s,
+                twinkle-far-2 16s infinite alternate ease-in-out 0.6s,
+                twinkle-mid-1 14s infinite alternate ease-in-out 0.8s,
+                twinkle-mid-2 12s infinite alternate ease-in-out 1.0s,
+                twinkle-near 10s infinite alternate ease-in-out 1.2s,
+                twinkle-brightest 7s infinite alternate ease-in-out 1.5s;
+            z-index: -1; 
+            pointer-events: none;
+            opacity: 0; /* 初始由动画控制 */
+        }
+
+        @keyframes twinkle-dust-1 { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.3; } }
+        @keyframes twinkle-dust-2 { 0%, 100% { opacity: 0.25; } 50% { opacity: 0.35; } }
+        @keyframes twinkle-far-1 { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.5; } }
+        @keyframes twinkle-far-2 { 0%, 100% { opacity: 0.35; } 50% { opacity: 0.55; } }
+        @keyframes twinkle-mid-1 { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.7; } }
+        @keyframes twinkle-mid-2 { 0%, 100% { opacity: 0.45; } 50% { opacity: 0.75; } }
+        @keyframes twinkle-near { 0%, 100% { opacity: 0.5; } 50% { opacity: 0.9; } }
+        @keyframes twinkle-brightest { 
+            0%, 100% { opacity: 0.6; transform: scale(1); } 
+            50% { opacity: 1; transform: scale(1.3); }
+        }
+    </style>
+    <script>
+        
+    </script>
+</body>
+</html>
