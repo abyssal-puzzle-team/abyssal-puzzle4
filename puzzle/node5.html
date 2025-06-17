@@ -3,352 +3,1066 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>观察者终端 - Node 5</title>
+    <title>Abyssal Puzzle - Node5</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
     <style>
-        :root {
-            --terminal-bg: rgba(0, 15, 5, 0.4);
-            --text-color: #00ff41;
-            --glow-color: rgba(0, 255, 65, 0.75);
-            --error-color: #ff4141;
-            --error-glow: rgba(255, 65, 65, 0.75);
-            --info-color: #00bfff;
-            --info-glow: rgba(0, 191, 255, 0.5);
-            --font-mono: 'Consolas', 'Menlo', 'Microsoft YaHei', 'Courier New', monospace, sans-serif;
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        body, html {
-            margin: 0; padding: 0; width: 100%; height: 100%;
-            /* MODIFICATION: Body is now transparent to reveal the background container */
-            background-color: transparent;
-            color: var(--text-color);
-            font-family: var(--font-mono);
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --tertiary-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --shadow-color: rgba(0, 0, 0, 0.3);
+        }
+
+        body {
+            font-family: 'Exo 2', sans-serif;
+            background: linear-gradient(45deg, #0f0f23, #1a1a2e, #16213e, #0f3460);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            color: #ffffff;
+            overflow-x: hidden;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* 3D 场景容器 */
+        .scene-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            perspective: 1000px;
+            z-index: -1;
+        }
+
+        /* 全息地球 */
+        .holographic-earth {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 300px;
+            height: 300px;
+            transform: translate(-50%, -50%) rotateX(20deg);
+            transform-style: preserve-3d;
+        }
+
+        .earth-core {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, #4facfe, #00f2fe, #667eea, #764ba2, #4facfe);
+            position: relative;
+            animation: earthRotate 20s linear infinite;
+            box-shadow: 
+                0 0 50px rgba(79, 172, 254, 0.5),
+                inset 0 0 50px rgba(255, 255, 255, 0.1);
+        }
+
+        .earth-core::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, transparent 30%, rgba(79, 172, 254, 0.1) 70%);
+            border-radius: 50%;
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes earthRotate {
+            0% { transform: rotateY(0deg) rotateZ(0deg); }
+            100% { transform: rotateY(360deg) rotateZ(360deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.3; }
+            50% { transform: scale(1.2); opacity: 0.7; }
+        }
+
+        /* 数据轨道环 */
+        .data-ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            border: 2px solid transparent;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(45deg, transparent, rgba(79, 172, 254, 0.3), transparent);
+            background-clip: padding-box;
+        }
+
+        .ring-1 { 
+            width: 400px; 
+            height: 400px; 
+            animation: ringRotate1 15s linear infinite;
+            border-image: linear-gradient(45deg, #4facfe, #00f2fe) 1;
+        }
+        .ring-2 { 
+            width: 500px; 
+            height: 500px; 
+            animation: ringRotate2 25s linear infinite reverse;
+            border-image: linear-gradient(45deg, #667eea, #764ba2) 1;
+        }
+        .ring-3 { 
+            width: 600px; 
+            height: 600px; 
+            animation: ringRotate3 35s linear infinite;
+            border-image: linear-gradient(45deg, #f093fb, #f5576c) 1;
+        }
+
+        @keyframes ringRotate1 {
+            0% { transform: translate(-50%, -50%) rotateZ(0deg) rotateX(60deg); }
+            100% { transform: translate(-50%, -50%) rotateZ(360deg) rotateX(60deg); }
+        }
+
+        @keyframes ringRotate2 {
+            0% { transform: translate(-50%, -50%) rotateZ(0deg) rotateY(45deg); }
+            100% { transform: translate(-50%, -50%) rotateZ(360deg) rotateY(45deg); }
+        }
+
+        @keyframes ringRotate3 {
+            0% { transform: translate(-50%, -50%) rotateZ(0deg) rotateX(-30deg); }
+            100% { transform: translate(-50%, -50%) rotateZ(360deg) rotateX(-30deg); }
+        }
+
+        /* 粒子系统 */
+        .particle-system {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: radial-gradient(circle, #4facfe, transparent);
+            border-radius: 50%;
+            animation: particleFloat 10s linear infinite;
+        }
+
+        @keyframes particleFloat {
+            0% {
+                transform: translateY(100vh) translateX(0px) scale(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) translateX(100px) scale(0);
+                opacity: 0;
+            }
+        }
+
+        /* 主容器 - 玻璃拟态设计 */
+        .main-container {
+            position: relative;
+            z-index: 10;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        /* 标题区域 */
+        .title-section {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2rem;
+            margin: 2rem 0;
+            text-align: center;
+            box-shadow: 0 8px 32px var(--shadow-color);
+            transform: translateY(0);
+            transition: all 0.3s ease;
+        }
+
+        .title-section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px var(--shadow-color);
+        }
+
+        .main-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 3rem;
+            font-weight: 900;
+            background: var(--tertiary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 30px rgba(79, 172, 254, 0.5);
+        }
+
+        /* 内容卡片网格 */
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            width: 100%;
+            margin: 2rem 0;
+        }
+
+        .content-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px var(--shadow-color);
+            transform: translateZ(0);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
             overflow: hidden;
         }
 
-        /* NEW: Container for the stars and the black background */
-        #background-container {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background-color: #000;
-            z-index: -1; /* Places it at the very back */
-        }
-        
-        .fullscreen-container {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            display: flex; justify-content: center; align-items: center;
-        }
-        
-        #frameless-logs-container {
-            flex-direction: column; z-index: 60;
-            display: none; opacity: 0;
-            filter: blur(0px); 
-        }
-        
-        #preloader {
-            background: #000; z-index: 100;
-        }
-        #preloader-text { font-size: 1.5em; text-shadow: 0 0 8px var(--glow-color); }
-        @keyframes blink { 50% { opacity: 0; } }
-        .blinking-cursor { animation: blink 1s step-end infinite; }
-
-        #loading-screen {
-            background: #000; z-index: 50;
-            display: none; opacity: 0;
-            flex-direction: column; gap: 20px;
-        }
-        
-        #css-loader {
-            position: relative; width: 120px; height: 120px;
-        }
-        .arc {
-            position: absolute; top: 0; left: 0;
-            width: 100%; height: 100%;
-            border: 3px solid transparent;
-            border-top-color: var(--info-color);
-            border-radius: 50%;
-            animation: spin 1.5s linear infinite;
-            box-sizing: border-box;
-        }
-        .arc:nth-child(2) { border-color: transparent; border-bottom-color: var(--error-color); animation-direction: reverse; animation-duration: 1.2s; }
-        .arc:nth-child(3) { width: 70%; height: 70%; top: 15%; left: 15%; animation-duration: 2s; }
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        
-        /* MODIFICATION: Star layers are now absolutely positioned inside their container */
-        .star-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-        #star-background { width: 200%; height: 200%; background-image: radial-gradient(1px, white, rgba(255, 255, 255, 0)), radial-gradient(1.5px, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0)), radial-gradient(2px, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0)); background-repeat: repeat; background-size: 600px 600px, 400px 400px, 200px 200px; background-position: 0 0, 100px 150px, 250px 370px; animation: move-stars 200s linear infinite; }
-        #twinkling-stars { background: transparent; background-image: radial-gradient(white 1px, transparent 0); background-size: 100px 100px; animation: twinkle 10s ease-in-out infinite; }
-        @keyframes move-stars { from { transform: translate(0, 0); } to { transform: translate(-50%, -50%); } }
-        @keyframes twinkle { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.8; } }
-
-        #terminal {
-            width: 95%; height: 95%; max-width: 1400px; max-height: 900px;
-            border: 2px solid var(--info-color); border-radius: 10px;
-            box-shadow: 0 0 20px var(--info-glow), inset 0 0 15px rgba(0, 191, 255, 0.15);
-            /* This is the key: a semi-transparent background combined with a backdrop-filter */
-            background: var(--terminal-bg); 
-            backdrop-filter: blur(3px);
-            display: none; flex-direction: column;
-            padding: 20px; box-sizing: border-box; opacity: 0;
-            position: relative; z-index: 10;
+        .content-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s ease;
         }
 
-        #output-container { flex-grow: 1; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--text-color) var(--terminal-bg); }
-        .log-line { opacity: 0; white-space: pre-wrap; word-break: break-all; text-shadow: 0 0 5px var(--glow-color); margin-bottom: 8px; font-size: 1em; }
-        #node-image { display: none; max-width: 80%; max-height: 40vh; border: 2px solid var(--info-color); box-shadow: 0 0 15px var(--info-glow); margin: 20px auto; opacity: 0; }
-        .log-line.error { color: var(--error-color); text-shadow: 0 0 7px var(--error-glow); }
-        .log-line.success { color: var(--text-color); text-shadow: 0 0 7px var(--glow-color); }
-        .log-line.info { color: var(--info-color); text-shadow: 0 0 7px var(--info-glow); }
-        .log-line.system { font-style: italic; color: #ccc; }
-        #input-area { display: flex; align-items: center; margin-top: 20px; visibility: hidden; }
-        #input-area span { margin-right: 10px; text-shadow: 0 0 5px var(--glow-color); }
-        #key-input { flex-grow: 1; background: transparent; border: none; border-bottom: 1px solid var(--text-color); color: var(--text-color); font-family: inherit; font-size: 1em; padding: 5px; outline: none; }
-        #key-input:focus { border-bottom-width: 2px; box-shadow: 0 5px 10px -5px var(--glow-color); }
-        #key-input:disabled { background-color: rgba(128, 128, 128, 0.2); }
-        #response-message { margin-top: 10px; min-height: 1.2em; font-weight: bold; }
-        @keyframes shake { 0%, 100% { transform: translate(0, 0); } 10%, 30%, 50%, 70%, 90% { transform: translate(-2px, 2px); } 20%, 40%, 60%, 80% { transform: translate(2px, -2px); } }
-        .shake { animation: shake 0.3s ease-in-out; }
-        
-        .bordered-log {
-            padding: 15px 25px;
-            border: 2px solid;
-            border-radius: 5px;
-            display: inline-block;
-            text-align: center;
+        .content-card:hover::before {
+            left: 100%;
+        }
+
+        .content-card:hover {
+            transform: translateY(-10px) rotateX(5deg);
+            box-shadow: 0 20px 60px var(--shadow-color);
+            border-color: rgba(79, 172, 254, 0.5);
+        }
+
+        .card-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+
+        .card-content {
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* 参赛选手列表 */
+        .contestant-grid {
+            display: grid;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .contestant-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(79, 172, 254, 0.3);
+            border-radius: 15px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .contestant-item::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--tertiary-gradient);
             opacity: 0;
-            border-color: var(--info-color);
-            box-shadow: 0 0 15px var(--info-glow);
+            transition: opacity 0.3s ease;
+            z-index: -1;
         }
-        .bordered-log.error {
-            border-color: var(--error-color);
-            box-shadow: 0 0 15px var(--error-glow);
+
+        .contestant-item:hover::after {
+            opacity: 0.1;
         }
-        .bordered-log.success {
-            border-color: var(--text-color);
-            box-shadow: 0 0 15px var(--glow-color);
+
+        .contestant-item:hover {
+            transform: scale(1.02);
+            border-color: rgba(79, 172, 254, 0.8);
+            box-shadow: 0 10px 30px rgba(79, 172, 254, 0.2);
+        }
+
+        .contestant-message {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            color: #ffffff;
+        }
+
+        .contestant-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: rgba(79, 172, 254, 0.8);
+            font-weight: 600;
+        }
+
+        /* 代码块 */
+        .code-container {
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px solid rgba(79, 172, 254, 0.5);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 1rem 0;
+            font-family: 'Orbitron', monospace;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .code-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 2px;
+            background: var(--tertiary-gradient);
+            animation: codeScan 3s linear infinite;
+        }
+
+        @keyframes codeScan {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .code-text {
+            color: #4facfe;
+            line-height: 1.8;
+            text-shadow: 0 0 10px rgba(79, 172, 254, 0.5);
+        }
+
+        /* 输入控制台 */
+        .input-console {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 2px solid var(--glass-border);
+            border-radius: 25px;
+            padding: 2rem;
+            min-width: 500px;
+            box-shadow: 0 15px 50px var(--shadow-color);
+            z-index: 100;
+        }
+
+        .console-header {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .console-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.2rem;
+            background: var(--secondary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .cooldown-indicator {
+            margin: 1rem 0;
+            text-align: center;
+            color: #f5576c;
+            font-weight: 600;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .key-input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(79, 172, 254, 0.3);
+            border-radius: 15px;
+            padding: 1rem 1.5rem;
+            color: #ffffff;
+            font-family: 'Orbitron', monospace;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .key-input:focus {
+            border-color: #4facfe;
+            box-shadow: 0 0 20px rgba(79, 172, 254, 0.4);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .submit-button {
+            background: var(--tertiary-gradient);
+            border: none;
+            border-radius: 15px;
+            padding: 1rem 2rem;
+            color: #ffffff;
+            font-family: 'Orbitron', monospace;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.3);
+        }
+
+        .submit-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(79, 172, 254, 0.5);
+        }
+
+        .submit-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .message-display {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+            min-height: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .message-success {
+            background: rgba(79, 172, 254, 0.2);
+            border: 1px solid #4facfe;
+            color: #4facfe;
+        }
+
+        .message-error {
+            background: rgba(245, 87, 108, 0.2);
+            border: 1px solid #f5576c;
+            color: #f5576c;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .main-title {
+                font-size: 2rem;
+            }
+            
+            .content-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .input-console {
+                min-width: 90%;
+                left: 5%;
+                transform: none;
+            }
+            
+            .input-group {
+                flex-direction: column;
+            }
+            
+            .key-input {
+                width: 100%;
+            }
+        }
+
+        /* 加载动画 */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(79, 172, 254, 0.3);
+            border-radius: 50%;
+            border-top-color: #4facfe;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* 数据可视化元素 */
+        .data-viz {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(79, 172, 254, 0.3), transparent);
+            animation: dataFloat 8s ease-in-out infinite;
+        }
+
+        @keyframes dataFloat {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+
+        /* 全息效果 */
+        .hologram-effect {
+            position: relative;
+        }
+
+        .hologram-effect::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                90deg,
+                transparent 0%,
+                rgba(79, 172, 254, 0.1) 50%,
+                transparent 100%
+            );
+            animation: hologramScan 2s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes hologramScan {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
         }
     </style>
 </head>
 <body>
-    <!-- MODIFICATION: Star layers wrapped in a container that provides the black background -->
-    <div id="background-container">
-        <div class="star-layer" id="star-background"></div>
-        <div class="star-layer" id="twinkling-stars"></div>
-    </div>
-    
-    <div class="fullscreen-container" id="preloader"><div id="preloader-text">OBSERVER_OS BOOTING...<span class="blinking-cursor">_</span></div></div>
-    <div class="fullscreen-container" id="frameless-logs-container"></div>
-    <div class="fullscreen-container" id="loading-screen">
-        <div id="css-loader"><div class="arc"></div><div class="arc"></div><div class="arc"></div></div>
-        <div class="log-line info" style="opacity:1;">[SYNCHRONIZING VISUAL FEED...]</div>
+    <!-- 3D 场景 -->
+    <div class="scene-container">
+        <!-- 全息地球 -->
+        <div class="holographic-earth">
+            <div class="earth-core"></div>
+            <div class="data-ring ring-1"></div>
+            <div class="data-ring ring-2"></div>
+            <div class="data-ring ring-3"></div>
+        </div>
     </div>
 
-    <div id="terminal">
-        <div id="output-container"></div>
-        <div><div id="response-message"></div><div id="input-area"><span>[NODE5_KEY]></span><input type="text" id="key-input" autocomplete="off" spellcheck="false" autofocus disabled></div></div>
+    <!-- 粒子系统 -->
+    <div class="particle-system" id="particleSystem"></div>
+
+    <!-- 主容器 -->
+    <div class="main-container">
+        <!-- 标题区域 -->
+        <div class="title-section hologram-effect">
+            <h1 class="main-title">今日新闻速览</h1>
+        </div>
+
+        <!-- 内容网格 -->
+        <div class="content-grid">
+            <!-- 新闻卡片 -->
+            <div class="content-card">
+                <h2 class="card-title">赛事公告</h2>
+                <div class="card-content">
+                    <p>• 第X(被黑笔涂抹)届电子音乐马拉松今日正式开赛!比赛地点为"World of Memories"</p>
+                    <p>• 三天后小镇扫墓踏青活动将举办</p>
+                    <p>• 各镇镇长共同出席马拉松并致词——"音游健儿展风采,甲辰之年启新篇"</p>
+                </div>
+            </div>
+
+            <!-- 决赛专栏 -->
+            <div class="content-card">
+                <h2 class="card-title">马拉松决赛专栏</h2>
+                <div class="card-content">
+                    <p>来自世界各地的选手经过角逐剩余五位选手进行决赛,名单如下:</p>
+                    <p><strong>第X(被黑笔涂抹)届音乐电子马拉松决赛参赛名单</strong></p>
+                    <p>序号 留言 加成🔼 ACC▶️</p>
+                    
+                    <div class="contestant-grid">
+                        <div class="contestant-item">
+                            <div class="contestant-message">• ? 片側だけの正義,橫切る影に立ち,不自由選び続けてた.</div>
+                            <div class="contestant-stats">
+                                <span>加成: -1.83%</span>
+                                <span>ACC: 78.18%</span>
+                            </div>
+                        </div>
+                        <div class="contestant-item">
+                            <div class="contestant-message">• ? Under pressure I've been going off the deep end.</div>
+                            <div class="contestant-stats">
+                                <span>加成: -3.47%</span>
+                                <span>ACC: 62.22%</span>
+                            </div>
+                        </div>
+                        <div class="contestant-item">
+                            <div class="contestant-message">• ? Hey yo one for the blood two for the life.</div>
+                            <div class="contestant-stats">
+                                <span>加成: 64.2%</span>
+                                <span>ACC: 149.49%</span>
+                            </div>
+                        </div>
+                        <div class="contestant-item">
+                            <div class="contestant-message">• ? 她并没有留言,同时全曲结束.</div>
+                            <div class="contestant-stats">
+                                <span>加成: -9.19%</span>
+                                <span>ACC: 75.02%</span>
+                            </div>
+                        </div>
+                        <div class="contestant-item">
+                            <div class="contestant-message">• ? 全て壊して.</div>
+                            <div class="contestant-stats">
+                                <span>加成: 56.13%</span>
+                                <span>ACC: 106.35%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 观众留言 -->
+            <div class="content-card">
+                <h2 class="card-title">观众留言</h2>
+                <div class="card-content">
+                    <p>"第X(被黑笔涂抹)届连结成的主题元素是什么呢?"</p>
+                    <p>"听说这次决赛隐藏大奖将会是???新品首秀,到底会是什么呢?好期待啊..."</p>
+                </div>
+            </div>
+
+            <!-- 现场活动A -->
+            <div class="content-card">
+                <h2 class="card-title">现场活动A</h2>
+                <div class="card-content">
+                    <p>神秘评委即将登场!主题元素搜寻寻找评委身份活动现在开始!</p>
+                    <p>评委当时所在时空区域:①??.1+1-1+1-1…:/②55.6/③2.4</p>
+                    <p>比赛检查点全经过时的计算公式:</p>
+                    <div class="code-container">
+                        <div class="code-text">
+...(模糊不清)<br>
+cout<<"请输入各个检查点数量";<br>
+cin>>①>>②>>③;<br>
+…(模糊不清)<br>
+int P = 4 * floor(sqrt(①)) + 4 * floor(sqrt(②)) + 2 * floor(sqrt(③)) ;<br>
+P--;<br>
+...(模糊不清)
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 现场活动B -->
+            <div class="content-card">
+                <h2 class="card-title">现场活动B</h2>
+                <div class="card-content">
+                    <p>决赛隐藏大奖"P"谱面创作者藏匿在观众中,第一个找到其"笔名"的观众将会获得神秘礼品!</p>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <!-- 输入控制台 -->
+    <div class="input-console">
+        <div class="console-header">
+            <div class="console-title">QUANTUM ACCESS TERMINAL</div>
+        </div>
+        <div class="cooldown-indicator" id="cooldownDisplay"></div>
+        <div class="input-group">
+            <input type="text" class="key-input" id="keyInput" placeholder="输入量子密钥..." maxlength="50">
+            <button class="submit-button" id="submitBtn">传输</button>
+        </div>
+        <div class="message-display" id="messageDisplay"></div>
+    </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // --- 元素获取 ---
-            const preloader = document.getElementById('preloader');
-            const framelessLogsContainer = document.getElementById('frameless-logs-container');
-            const loadingScreen = document.getElementById('loading-screen');
-            const terminal = document.getElementById('terminal');
-            const outputContainer = document.getElementById('output-container');
-            const keyInput = document.getElementById('key-input');
-            const inputArea = document.getElementById('input-area');
-            const bodyEl = document.body;
+        // 全局变量
+        let isSubmitting = false;
+        let cooldownTimer = null;
+        let cooldownRemaining = 0;
+        
+        // API配置
+        const API_BASE = 'http://localhost:3000';
+        const NODE_ID = 'node5';
+        
+        // DOM元素
+        const keyInput = document.getElementById('keyInput');
+        const submitBtn = document.getElementById('submitBtn');
+        const messageDisplay = document.getElementById('messageDisplay');
+        const cooldownDisplay = document.getElementById('cooldownDisplay');
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeParticleSystem();
+            initializeAnimations();
+            checkCooldownStatus();
+            setupEventListeners();
+            createDataVisualization();
+        });
+        
+        // 粒子系统初始化
+        function initializeParticleSystem() {
+            const particleSystem = document.getElementById('particleSystem');
             
-            // --- API & 工具函数 ---
-            const API_BASE_URL = 'http://111.170.11.168:15114/proxy/3000';
-            const NODE_ID = 'node5';
-            const delay = ms => new Promise(res => setTimeout(res, ms));
-            let isCooldown = false;
+            function createParticle() {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 10 + 's';
+                particle.style.animationDuration = (Math.random() * 10 + 5) + 's';
+                particleSystem.appendChild(particle);
+                
+                // 移除粒子
+                setTimeout(() => {
+                    if (particle.parentNode) {
+                        particle.parentNode.removeChild(particle);
+                    }
+                }, 15000);
+            }
             
-            function addLog(text, classes = [], parent = outputContainer) {
-                const p = document.createElement('p');
-                p.textContent = text;
-                const finalClasses = ['log-line', ...classes.filter(c => c !== 'log-line')];
-                p.classList.add(...finalClasses);
-                parent.appendChild(p);
-                if (parent.id === 'output-container') {
-                    parent.scrollTop = parent.scrollHeight;
-                }
-                return p;
-            }
-            async function typeText(element, text, speed = 50) {
-                element.style.opacity = 1;
-                for (let i = 0; i < text.length; i++) {
-                    element.textContent += text[i];
-                    if (outputContainer) outputContainer.scrollTop = outputContainer.scrollHeight;
-                    await delay(speed);
-                }
-            }
-            async function backspaceText(element, speed = 35) {
-                const text = element.textContent;
-                for (let i = text.length; i > 0; i--) {
-                    element.textContent = element.textContent.slice(0, -1);
-                    await delay(speed);
-                }
-            }
-
-            // --- 主叙事流程 (在终端内) ---
-            async function playMainNarrative() {
-                terminal.style.display = 'flex';
-                await anime({ targets: terminal, opacity: 1, duration: 1500, easing: 'easeInOutQuad' }).finished;
-
-                const image = document.createElement('img');
-                image.id = 'node-image';
-                image.src = './img/node5.jpeg';
-                image.alt = '宇宙异常现象';
-                outputContainer.appendChild(image);
-                image.style.display = 'block';
-                await anime({ targets: image, opacity: [0, 1], duration: 2000 }).finished;
-                await delay(1000);
-
-                const p1 = addLog('', []); await typeText(p1, '995号观察者队长: 总部！听的到吗？～我们此次行动部队的部分队员观星舱窗出了些问题，这是他们现在对舱窗向外拍的截图，我眼前看到的也是这个样子，但总有队员反映这是异常现象......', 25);
-                await delay(1000);
-                const p2 = addLog('', []); await typeText(p2, '观察者总部: 收到，看上去是宇宙中漂浮的巨物，应该没什么危害性，可以派几个队员打开气闸先去测量一下这种红色物质的成分，说不定可以发现生命甚至文明......', 25);
-                await delay(1000);
-                const p3 = addLog('', []); await typeText(p3, '995号观察者队长: 是！我也该活动活动手脚了，除了队员，我也要亲自上场......', 25);
-                await delay(500);
-                const p4 = addLog('', ['system']); await typeText(p4, '[气闸打开......]', 50);
-                await delay(1000);
-                const p5 = addLog('', ['info']); await typeText(p5, '<如果照片中的红色代表着低温，那么......>', 50);
-                await delay(1500);
-                const p6 = addLog('', []);
-                await typeText(p6, '995号观察者队长: 不对！可是......可是......', 80);
-                await delay(1000);
-                await backspaceText(p6);
-                p6.textContent = '';
-                p6.style.filter = 'blur(5px)';
-                await typeText(p6, '金白光的前一秒上刻着:@-$％……是！％...￥＆是！口口口', 60);
-                await anime({ targets: p6, filter: ['blur(5px)', 'blur(0px)'], duration: 1000, easing: 'easeOutQuad' }).finished;
-                await delay(1500);
-                const p7 = addLog('', []);
-                await typeText(p7, '观察者总部: 知道你遵命了，干嘛说这么多遍"是"呢？快行动吧，毕竟......', 30);
-                terminal.style.background = 'white';
-                await delay(50);
-                terminal.style.background = 'var(--terminal-bg)';
-                await delay(50);
-                p7.textContent = p7.textContent.slice(0, -6);
-                const p8 = addLog('<NO EXISTING CONNECTION>', ['error']);
-                anime({ targets: p8, opacity: [0, 1], duration: 200, easing: 'steps(2)' });
-                await delay(1000);
-                const p9 = addLog('不知为何信号突然中断了，紧接着，留给总部的只有满屏幕的乱码，根本找不出任何逻辑:', ['system']);
-                anime({ targets: p9, opacity: [0, 1], duration: 500 });
-                await delay(500);
-                const p10 = addLog('', ['error']);
-                await typeText(p10, '5Lik5Liq5a2X6IO95qaC5ous5LuA5LmI77yf5oiW6K645piv5pio5pel77yM5Lqm5oiW5piv5LuK5pyd77yM5L2G5pyA5rWq5ryr55qE5LiA5a6a5pivLi4uLi4uCuS/oeWPt+eqgeeEtuS4reaWre+8jOi/h+W8se+8jOi/h+S6jua3t+S5sS4uLi4uLgo8REFUQSBFUlJPUu+8gT4K6YeN5paw5Yqg6L295Lit77yM6K+356iN562JLi4uLi4uCjZZQ2E1YjZBNXB5cTVwMmw1NXFFNUxpQTU0bUg1b0dTNXBpZkxpNHVMaTR1Q2p6bWxiRG1qYTdwbEpub3I2L3Z2SXprdTZQbm9JSG11cEE2WVVoU01HTklUVFpNZVRscFdWZE9jbU50T1haaVdFMTBaREpzY21GVE1XcGlhVFV6WVZkMGNGcEhPVEJNYlU1MllsTTVjMXBZV214aVF6QXhUMVJyUFQ0PQrliqDovb3lpLHotKXvvIHvvIHvvIE......', 5);
-                await delay(1000);
-                const p11 = addLog('或许只是去完成任务了吧，希望平安回来......', ['system']);
-                anime({ targets: p11, opacity: [0, 1], duration: 1000 });
-                await delay(1500);
-
-                inputArea.style.visibility = 'visible';
-                anime({ targets: inputArea, opacity: [0, 1], duration: 1000 });
-                keyInput.disabled = false;
-                keyInput.focus();
-            }
-
-            // --- API 交互 ---
-            async function checkKey(key) {
-                if (isCooldown) return;
-                setResponseMessage('正在验证密钥...', 'info');
-                keyInput.disabled = true;
-                try {
-                    const response = await fetch(`${API_BASE_URL}/check-key`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nodeId: NODE_ID, key: key }) });
-                    const data = await response.json();
-                    
-                    if (response.ok) {
-                        setResponseMessage(data.message, 'success');
-                        await delay(1500); 
-                        window.location.href = '../storyline/meta_front_sl.html';
-                    } else {
-                        setResponseMessage(data.message, 'error');
-                        if (data.cooldown) {
-                            startCooldown(data.cooldown);
-                        }
-                    }
-                } catch (error) {
-                    console.error('API Error:', error);
-                    setResponseMessage('连接后端服务失败，请检查网络或联系管理员。', 'error');
-                } finally {
-                    if (!isCooldown && !document.hidden) { 
-                        keyInput.disabled = false;
-                        keyInput.focus();
-                    }
-                    keyInput.value = '';
-                }
-            }
-
-            function setResponseMessage(message, type) { const responseMessage = document.getElementById('response-message'); responseMessage.textContent = message; responseMessage.className = `log-line ${type}`; anime({ targets: responseMessage, opacity: [0, 1], duration: 300 }); }
-            function startCooldown(seconds) { isCooldown = true; keyInput.disabled = true; let remaining = seconds; const intervalId = setInterval(() => { remaining--; setResponseMessage(`请求被拒绝，冷却中... ${remaining}s`, 'error'); if (remaining <= 0) { clearInterval(intervalId); isCooldown = false; keyInput.disabled = false; keyInput.focus(); setResponseMessage('可以再次尝试。', 'info'); } }, 1000); }
-            async function checkInitialCooldown() { try { const response = await fetch(`${API_BASE_URL}/cooldown-status`); if (response.ok) { const data = await response.json(); if (data.cooldownRemaining > 0) { startCooldown(data.cooldownRemaining); } } } catch (error) { console.warn('无法获取初始冷却状态:', error); } }
-
-            keyInput.addEventListener('keydown', (event) => {
-                if (event.key === 'Enter' && keyInput.value.trim() !== '') {
-                    checkKey(keyInput.value.trim());
+            // 定期创建粒子
+            setInterval(createParticle, 300);
+        }
+        
+        // 数据可视化
+        function createDataVisualization() {
+            const container = document.querySelector('.scene-container');
+            const dataValues = [78, 62, 149, 75, 106];
+            
+            dataValues.forEach((value, index) => {
+                const viz = document.createElement('div');
+                viz.className = 'data-viz';
+                viz.style.left = Math.random() * 80 + 10 + '%';
+                viz.style.top = Math.random() * 80 + 10 + '%';
+                viz.style.animationDelay = index * 0.5 + 's';
+                container.appendChild(viz);
+            });
+        }
+        
+        // 动画初始化
+        function initializeAnimations() {
+            // 卡片入场动画
+            anime({
+                targets: '.content-card',
+                translateY: [50, 0],
+                opacity: [0, 1],
+                duration: 1000,
+                delay: anime.stagger(200),
+                easing: 'easeOutQuart'
+            });
+            
+            // 标题动画
+            anime({
+                targets: '.main-title',
+                scale: [0.8, 1],
+                opacity: [0, 1],
+                duration: 1500,
+                easing: 'easeOutElastic(1, .8)'
+            });
+            
+            // 输入控制台动画
+            anime({
+                targets: '.input-console',
+                translateY: [100, 0],
+                opacity: [0, 1],
+                duration: 1000,
+                delay: 1000,
+                easing: 'easeOutQuart'
+            });
+            
+            // 参赛选手动画
+            anime({
+                targets: '.contestant-item',
+                translateX: [-30, 0],
+                opacity: [0, 1],
+                duration: 800,
+                delay: anime.stagger(100, {start: 1500}),
+                easing: 'easeOutQuart'
+            });
+        }
+        
+        // 事件监听器
+        function setupEventListeners() {
+            submitBtn.addEventListener('click', handleSubmit);
+            keyInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !submitBtn.disabled) {
+                    handleSubmit();
                 }
             });
-
-            // --- 启动流程 ---
-            async function initialize() {
-                // STAGE 1: 系统初始化 (全屏，无边框)
-                await delay(2500);
-                await anime({ targets: preloader, opacity: 0, duration: 1000 }).finished;
-                preloader.style.display = 'none';
-
-                framelessLogsContainer.style.display = 'flex';
-                await anime({ targets: framelessLogsContainer, opacity: 1, duration: 500 }).finished;
+            
+            // 输入框聚焦效果
+            keyInput.addEventListener('focus', function() {
+                createInputEffect();
+            });
+        }
+        
+        // 输入效果
+        function createInputEffect() {
+            anime({
+                targets: '.input-console',
+                scale: [1, 1.02, 1],
+                boxShadow: [
+                    '0 15px 50px rgba(0, 0, 0, 0.3)',
+                    '0 20px 60px rgba(79, 172, 254, 0.4)',
+                    '0 15px 50px rgba(0, 0, 0, 0.3)'
+                ],
+                duration: 600,
+                easing: 'easeInOutSine'
+            });
+        }
+        
+        // 检查冷却状态
+        async function checkCooldownStatus() {
+            try {
+                const response = await fetch(`${API_BASE}/cooldown-status`);
+                const data = await response.json();
                 
-                async function showTransientLog(text, classes, displayTime) {
-                    const logElement = addLog(text, ['bordered-log', ...classes], framelessLogsContainer);
-                    
-                    await anime({ targets: logElement, opacity: 1, duration: 400, easing: 'easeOutQuad' }).finished;
-                    await delay(displayTime);
-                    await anime({ targets: logElement, opacity: 0, duration: 300, easing: 'easeInQuad' }).finished;
-
-                    logElement.remove();
+                if (data.cooldownRemaining > 0) {
+                    startCooldown(data.cooldownRemaining);
+                } else {
+                    updateCooldownDisplay(0);
                 }
-
-                await showTransientLog('[Updating Data...]', ['info'], 800);
-                await showTransientLog('<HEATED ERROR！>', ['error'], 1000);
-                await showTransientLog('[Reconnection Service...]', ['info'], 1200);
-
-                const successLog = addLog('<SUCCEED！！>', ['bordered-log', 'success'], framelessLogsContainer);
-                await anime({ targets: successLog, opacity: 1, duration: 500, easing: 'easeOutQuad' }).finished;
-
-                await delay(500); 
-
-                bodyEl.classList.add('shake');
-                await anime({ targets: framelessLogsContainer, filter: ['blur(5px)', 'blur(0px)'], duration: 1000, easing: 'easeInOutQuad' }).finished;
-                bodyEl.classList.remove('shake');
-                
-                await delay(300); 
-
-                // STAGE 2: 模块加载
-                await anime({ targets: framelessLogsContainer, opacity: 0, duration: 500 }).finished;
-                framelessLogsContainer.style.display = 'none';
-                framelessLogsContainer.innerHTML = '';
-                
-                loadingScreen.style.display = 'flex';
-                await anime({ targets: loadingScreen, opacity: 1, duration: 1000 }).finished;
-                await delay(5000);
-                
-                await anime({ targets: loadingScreen, opacity: 0, duration: 1000 }).finished;
-                loadingScreen.style.display = 'none';
-                
-                // STAGE 3: 主终端界面
-                playMainNarrative();
-                checkInitialCooldown();
+            } catch (error) {
+                console.error('检查冷却状态失败:', error);
+                updateCooldownDisplay(0);
+            }
+        }
+        
+        // 处理提交
+        async function handleSubmit() {
+            if (isSubmitting || cooldownRemaining > 0) return;
+            
+            const key = keyInput.value.trim();
+            if (!key) {
+                showMessage('请输入量子密钥', 'error');
+                return;
             }
             
-            initialize();
+            isSubmitting = true;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="loading-spinner"></span> 传输中...';
+            
+            // 提交动画
+            createSubmitEffect();
+            
+            try {
+                const response = await fetch(`${API_BASE}/check-key`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        nodeId: NODE_ID,
+                        key: key
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showMessage(data.message, 'success');
+                    keyInput.value = '';
+                    
+                    // 成功效果
+                    createSuccessEffect();
+                    
+                    if (data.metaStarted) {
+                        createMetaStartEffect();
+                    }
+                    
+                    if (data.remainingSeconds) {
+                        showMessage(`${data.message} 剩余时间: ${data.remainingSeconds}秒`, 'success');
+                    }
+                } else {
+                    showMessage(data.message, 'error');
+                    
+                    if (data.cooldown) {
+                        startCooldown(data.cooldown);
+                        createCooldownEffect();
+                    }
+                }
+            } catch (error) {
+                console.error('提交失败:', error);
+                showMessage('量子传输失败，请重试', 'error');
+            } finally {
+                isSubmitting = false;
+                if (cooldownRemaining === 0) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = '传输';
+                }
+            }
+        }
+        
+        // 开始冷却
+        function startCooldown(seconds) {
+            cooldownRemaining = seconds;
+            submitBtn.disabled = true;
+            
+            if (cooldownTimer) {
+                clearInterval(cooldownTimer);
+            }
+            
+            cooldownTimer = setInterval(() => {
+                cooldownRemaining--;
+                updateCooldownDisplay(cooldownRemaining);
+                
+                if (cooldownRemaining <= 0) {
+                    clearInterval(cooldownTimer);
+                    cooldownTimer = null;
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = '传输';
+                }
+            }, 1000);
+        }
+        
+        // 更新冷却显示
+        function updateCooldownDisplay(seconds) {
+            if (seconds > 0) {
+                cooldownDisplay.textContent = `量子冷却中: ${seconds}秒`;
+                cooldownDisplay.style.display = 'block';
+            } else {
+                cooldownDisplay.textContent = '';
+                cooldownDisplay.style.display = 'none';
+            }
+        }
+        
+        // 显示消息
+        function showMessage(message, type) {
+            messageDisplay.textContent = message;
+            messageDisplay.className = `message-display message-${type}`;
+            
+            anime({
+                targets: messageDisplay,
+                scale: [0.8, 1],
+                opacity: [0, 1],
+                duration: 300,
+                easing: 'easeOutBack'
+            });
+        }
+        
+        // 提交效果
+        function createSubmitEffect() {
+            anime({
+                targets: '.holographic-earth',
+                scale: [1, 1.1, 1],
+                duration: 1000,
+                easing: 'easeInOutSine'
+            });
+        }
+        
+        // 成功效果
+        function createSuccessEffect() {
+            // 全屏闪光
+            const flash = document.createElement('div');
+            flash.style.position = 'fixed';
+            flash.style.top = '0';
+            flash.style.left = '0';
+            flash.style.width = '100%';
+            flash.style.height = '100%';
+            flash.style.background = 'radial-gradient(circle, rgba(79, 172, 254, 0.3), transparent)';
+            flash.style.zIndex = '9999';
+            flash.style.opacity = '0';
+            flash.style.pointerEvents = 'none';
+            document.body.appendChild(flash);
+            
+            anime({
+                targets: flash,
+                opacity: [0, 1, 0],
+                duration: 1000,
+                easing: 'easeInOutSine',
+                complete: function() {
+                    if (flash.parentNode) {
+                        flash.parentNode.removeChild(flash);
+                    }
+                }
+            });
+            
+            // 地球发光
+            anime({
+                targets: '.earth-core',
+                boxShadow: [
+                    '0 0 50px rgba(79, 172, 254, 0.5), inset 0 0 50px rgba(255, 255, 255, 0.1)',
+                    '0 0 100px rgba(79, 172, 254, 1), inset 0 0 100px rgba(255, 255, 255, 0.3)',
+                    '0 0 50px rgba(79, 172, 254, 0.5), inset 0 0 50px rgba(255, 255, 255, 0.1)'
+                ],
+                duration: 2000,
+                easing: 'easeInOutSine'
+            });
+        }
+        
+        // 冷却效果
+        function createCooldownEffect() {
+            anime({
+                targets: '.input-console',
+                borderColor: ['rgba(255, 255, 255, 0.2)', 'rgba(245, 87, 108, 0.8)', 'rgba(255, 255, 255, 0.2)'],
+                duration: 1000,
+                easing: 'easeInOutSine'
+            });
+        }
+        
+        // Meta启动效果
+        function createMetaStartEffect() {
+            // 创建能量波
+            for (let i = 0; i < 5; i++) {
+                const wave = document.createElement('div');
+                wave.style.position = 'fixed';
+                wave.style.top = '50%';
+                wave.style.left = '50%';
+                wave.style.width = '100px';
+                wave.style.height = '100px';
+                wave.style.border = '2px solid rgba(79, 172, 254, 0.8)';
+                wave.style.borderRadius = '50%';
+                wave.style.transform = 'translate(-50%, -50%)';
+                wave.style.pointerEvents = 'none';
+                wave.style.zIndex = '9998';
+                document.body.appendChild(wave);
+                
+                anime({
+                    targets: wave,
+                    scale: [0, 10],
+                    opacity: [1, 0],
+                    duration: 2000,
+                    delay: i * 200,
+                    easing: 'easeOutQuart',
+                    complete: function() {
+                        if (wave.parentNode) {
+                            wave.parentNode.removeChild(wave);
+                        }
+                    }
+                });
+            }
+        }
+        
+        // 窗口调整
+        window.addEventListener('resize', function() {
+            // 重新计算粒子位置
+            const particles = document.querySelectorAll('.particle');
+            particles.forEach(particle => {
+                particle.style.left = Math.random() * 100 + '%';
+            });
         });
     </script>
 </body>
 </html>
+
