@@ -1,406 +1,323 @@
-**解谜游戏后端 API 开发文档 (v4.1 - 详细版)**
---------------------------------
+## **后端 API 开发手册 (v1.2)**
 
-### 1\. 简介 (Introduction)
+### **一、 概述**
 
-#### 1.1 项目目标
+本文档详细描述了游戏后端服务器提供的所有 API 接口。前端开发人员应遵循此文档与后端进行数据交互。
 
-本文档为“解谜游戏”后端API提供全面、详细的规范。该API旨在支持一个多阶段的在线解谜活动，其核心功能包括：
+*   **服务器基地址**: 默认为 `http://localhost:3000`。
+*   **数据格式**: 所有 `POST` 和 `DELETE` 请求的请求体（Request Body）均为 JSON 格式。请确保请求头包含 `Content-Type: application/json`。
+*   **响应格式**: 所有接口的响应均为 JSON 格式。响应体中通常包含 `success` (布尔值) 和 `message` (字符串) 字段，用以判断请求是否成功和获取相关信息。
 
--   **分步密钥验证**: 验证玩家为不同谜题节点提交的答案。
-    
--   **IP冷却机制**: 为防止暴力破解，对提交错误答案的玩家IP进行临时限制。
-    
--   **全局Meta倒计时**: 一个由所有玩家共享的、用于最终挑战的游戏事件。
-    
+---
 
-#### 1.2 目标读者
+### **二、 账户管理接口 (Account Management)**
 
-本文档主要面向**前端开发人员**，以及任何需要与此API进行集成的团队成员。
+#### **1. 添加账号**
 
-### 2\. 通用规范 (General Principles)
-
-#### 2.1 API 根路径 (Base URL)
-
-所有API路径都基于以下根路径。
-
--   **开发环境**: http://localhost:3000
-    
-
-#### 2.2 数据格式 (Data Format)
-
--   所有请求体（Request Body）和响应体（Response Body）均采用 application/json 格式。
-    
--   客户端在发送 POST 请求时，必须设置 Content-Type: application/json 请求头。
-    
-
-#### 2.3 HTTP 状态码 (HTTP Status Codes)
-
-API使用标准的HTTP状态码来表示请求的结果：
-
--   200 OK: 请求成功。
-    
--   400 Bad Request: 请求无效。通常是由于缺少必要的参数或参数格式错误。响应体中会包含具体的错误信息。
-    
--   401 Unauthorized: 密钥错误。这特指玩家提交的答案不正确。
-    
--   429 Too Many Requests: 请求被拒绝，因为客户端IP正处于冷却状态。
-    
-
-#### 2.4 标准错误响应格式
-
-当请求发生错误时（4xx状态码），响应体将遵循以下格式，以便前端统一处理：
-
-```
-{
-    ”success“: false,
-    ”message“: ”描述错误的字符串“,
-    ”cooldown“: 0 // (可选) 如果是冷却相关的错误，会包含此字段
-}
-```
-
-Use code [with caution](https://support.google.com/legal/answer/13505487). Json
-
-### 3\. 核心概念详解 (Core Concepts Explained)
-
-#### 3.1 IP 冷却机制
-
--   **目的**: 防止恶意用户通过脚本对答案进行暴力破解。
-    
--   **触发**: 当且仅当通过 POST /check-key 接口提交的 key 与服务器端存储的密码不匹配时。
-    
--   **作用域**: 冷却状态是与客户端的**公网IP地址**绑定的。
-    
--   **影响**: 处于冷却状态的IP在调用 POST /check-key 时会收到 429 错误，直到冷却时间结束。此机制**不影响**其他API的调用（如状态查询接口）。
-    
--   **生命周期**:
-    
-    -   玩家提交错误密钥。
-        
-    -   服务器记录 \[IP\_Address, Cooldown\_End\_Timestamp\]。
-        
-    -   玩家再次提交，服务器检查当前时间是否小于 Cooldown\_End\_Timestamp。
-        
-    -   冷却时间过后，记录自动失效（或在下一次请求时被清除）。
-        
-    
-
-#### 3.2 全局 Meta 倒计时
-
--   **目的**: 创造一个有时间限制的、所有玩家共同参与的最终挑战阶段。
-    
--   **性质**: 这是一个**全局共享状态**。无论哪个玩家触发了倒计时，所有其他玩家通过状态查询接口都会看到同一个倒计时。
-    
--   **状态机 (State Machine)**: Meta倒计时有三种状态：
-    
-    -   idle (空闲): 初始状态。可以被 false\_meta 密钥触发。
-        
-    -   running (运行中): 倒计时正在进行。此状态下可以提交 true\_meta 密钥。
-        
-    -   finished (已结束): 倒计时自然走完或被 true\_meta 成功解开。
-        
-    
--   **流程**:
-    
-    -   游戏开始时，状态为 idle。
-        
-    -   某玩家提交正确的 false\_meta 密钥，状态切换到 running，并开始计时。
-        
-    -   在 running 状态下，某玩家提交正确的 true\_meta 密钥，游戏胜利，状态被**重置**回 idle（为下一轮游戏做准备）。
-        
-    -   如果在 running 状态下时间耗尽，状态自动切换到 finished。需要管理员调用 /reset-meta 才能再次开始。
-        
-    
-
-### 4\. 接口端点详述 (Endpoint Specification)
-
-* * *
-
-#### **接口 1: POST /check-key**
-
--   **描述**: 这是游戏的核心交互接口。用于验证玩家为任意节点提交的密钥，并根据节点类型触发不同的游戏事件。
-    
--   **请求体参数**:
-    
-
-<table _ngcontent-ng-c2459883256=”“ style=”box-sizing: border-box; border-radius: 8px; overflow-x: scroll;“><tbody><tr _ngcontent-ng-c2459883256=”“ class=”table-header ng-star-inserted“ style=”box-sizing: border-box;“><td _ngcontent-ng-c2459883256=”“ class=”ng-star-inserted“ style=”box-sizing: border-box; padding: 6px 12px; overflow-wrap: normal; font-size: 14px; font-weight: 700; line-height: 20px; font-family: &quot;Google Sans Text&quot;, &quot;Helvetica Neue&quot;, sans-serif; letter-spacing: normal; border-top-width: medium; border-top-style: none; border-top-color: currentcolor; border-right-width: medium; border-right-style: none; border-right-color: currentcolor;“><ms-cmark-node _ngcontent-ng-c2459883256=”“ _nghost-ng-c2459883256=”“ style=”box-sizing: border-box; display: contents;“><span _ngcontent-ng-c2459883256=”“ class=”ng-star-inserted“ style=”box-sizing: border-box;“>字段名</span></ms-cmark-node></td><td _ngcontent-ng-c2459883256=”“ class=”ng-star-inserted“ style=”box-sizing: border-box; padding: 6px 12px; overflow-wrap: normal; font-size: 14px; font-weight: 700; line-height: 20px; font-family: &quot;Google Sans Text&quot;, &quot;Helvetica Neue&quot;, sans-serif; letter-spacing: normal; border-top-width: medium; border-top-style: none; border-top-color: currentcolor; border-right-width: medium; border-right-style: none; border-right-color: currentcolor;“><ms-cmark-node _ngcontent-ng-c2459883256=”“ _nghost-ng-c2459883256=”“ style=”box-sizing: border-box; display: contents;“><span _ngcontent-ng-c2459883256=”“ class=”ng-star-inserted“ style=”box-sizing: border-box;“>类型</span></ms-cmark-node></td><td _ngcontent-ng-c2459883256=”“ class=”ng-star-inserted“ style=”box-sizing: border-box; padding: 6px 12px; overflow-wrap: normal; font-size: 14px; font-weight: 700; line-height: 20px; font-family: &quot;Google Sans Text&quot;, &quot;Helvetica Neue&quot;, sans-serif; letter-spacing: normal; border-top-width: medium; border-top-style: none; border-top-color: currentcolor; border-right-width: medium; border-right-style: none; border-right-color: currentcolor;“><ms-cmark-node _ngcontent-ng-c2459883256=”“ _nghost-ng-c2459883256=”“ style=”box-sizing: border-box; display: contents;“><span _ngcontent-ng-c2459883256=”“ class=”ng-star-inserted“ style=”box-sizing: border-box;“>是否必填</span></ms-cmark-node></td><td _ngcontent-ng-c2459883256=”“ class=”ng-star-inserted“ style=”box-sizing: border-box; padding: 6px 12px; overflow-wrap: normal; font-size: 14px; font-weight: 700; line-height: 20px; font-family: &quot;Google Sans Text&quot;, &quot;Helvetica Neue&quot;, sans-serif; letter-spacing: normal; border-top-width: medium; border-top-style: none; border-top-color: currentcolor; border-right-width: medium; border-right-style: none; border-right-color: currentcolor;“><ms-cmark-node _ngcontent-ng-c2459883256=”“ _nghost-ng-c2459883256=”“ style=”box-sizing: border-box; display: contents;“><span _ngcontent-ng-c2459883256=”“ class=”ng-star-inserted“ style=”box-sizing: border-box;“>描述</span></ms-cmark-node></td></tr><tr _ngcontent-ng-c2459883256=”“ class=”ng-star-inserted“ style=”box-sizing: border-box;“><td _ngcontent-ng-c2459883256=”“ class=”ng-star-inserted“ style=”box-sizing: border-box; padding: 6px 12px; overflow-wrap: normal; font-size: 14px; font-weight: 400; line-height: 20px; font-family: &quot;Google Sans Text&quot;, &quot;Helvetica Neue&quot;, sans-serif; letter-spacing: normal; border-right-width: medium; border-right-style: none; border-right-color: currentcolor;“><ms-cmark-node _ngcontent-ng-c2459883256=”“ _nghost-ng-c2459883256=”“ style=”box-sizing: border-box; display: contents;“><span _ngcontent-ng-c2459883256=”“ class=”inline-code ng-star-inserted“ style=”box-sizing: border-box; background: var(--color-surface-container-low); border: 1px solid var(--color-surface-container-low); border-radius: 3px; font-size: 13px; padding: 0px 3px; display: inline-block; font-family: &quot;DM Mono&quot;, monospace;“>nodeId</span></ms-cmark-node></td><td _ngcontent-ng-c2459883256=”“ class=”ng-star-inserted“ style=”box-sizing: border-box; padding: 6px 12px; overflow-wrap: normal; font-size: 14px; font-weight: 400; line-height: 20px; font-family: &quot;Google Sans Text&quot;, &quot;Helvetica Neue&quot;, sans-serif; letter-spacing: normal; border-right-width: medium; border-right-style: none; border-right-color: currentcolor;“><ms-cmark-node _ngcontent-ng-c2459883256=”“ _nghost-ng-c2459883256=”“ style=”box-sizing: border-box; display: contents;“><span _ngcontent-ng-c2459883256=”“ class=”ng-star-inserted“ style=”box-sizing: border-box;“>String</span></ms-cmark-node></td><td _ngcontent-ng-c2459883256=”“ class=”ng-star-inserted“ style=”box-sizing: border-box; padding: 6px 12px; overflow-wrap: normal; font-size: 14px; font-weight: 400; line-height: 20px; font-family: &quot;Google Sans Text&quot;, &quot;Helvetica Neue&quot;, sans-serif; letter-spacing: normal; border-right-width: medium; border-right-style: none; border-right-color: currentcolor;“><ms-cmark-node _ngcontent-ng-c2459883256=”“ _nghost-ng-c2459883256=”“ style=”box-sizing: border-box; display: contents;“><span _ngcontent-ng-c2459883256=”“ class=”ng-star-inserted“ style=”box-sizing: border-box;“>是</span></ms-cmark-node></td><td _ngcontent-ng-c2459883256=”“ class=”ng-star-inserted“ style=”box-sizing: border-box; padding: 6px 12px; overflow-wrap: normal; font-size: 14px; font-weight: 400; line-height: 20px; font-family: &quot;Google Sans Text&quot;, &quot;Helvetica Neue&quot;, sans-serif; letter-spacing: normal; border-right-width: medium; border-right-style: none; border-right-color: currentcolor;“><ms-cmark-node _ngcontent-ng-c2459883256=”“ _nghost-ng-c2459883256=”“ style=”box-sizing: border-box; display: contents;“><span _ngcontent-ng-c2459883256=”“ class=”ng-star-inserted“ style=”box-sizing: border-box;“>目标节点的ID。有效值包括：</span><span _ngcontent-ng-c2459883256=”“ class=”inline-code ng-star-inserted“ style=”box-sizing: border-box; background: var(--color-surface-container-low); border: 1px solid var(--color-surface-container-low); border-radius: 3px; font-size: 13px; padding: 0px 3px; display: inline-block; font-family: &quot;DM Mono&quot;, monospace;“>”node1“</span><span _ngcontent-ng-c2459883256=”“ class=”ng-star-inserted“ style=”box-sizing: border-box;“>,<span class=”Apple-converted-space“>&nbsp;</span></span><span _ngcontent-ng-c2459883256=”“ class=”inline-code ng-star-inserted“ style=”box-sizing: border-box; background: var(--color-surface-container-low); border: 1px solid var(--color-surface-container-low); border-radius: 3px; font-size: 13px; padding: 0px 3px; display: inline-block; font-family: &quot;DM Mono&quot;, monospace;“>”node2“</span><span _ngcontent-ng-c2459883256=”“ class=”ng-star-inserted“ style=”box-sizing: border-box;“>,<span class=”Apple-converted-space“>&nbsp;</span></span><span _ngcontent-ng-c2459883256=”“ class=”inline-code ng-star-inserted“ style=”box-sizing: border-box; background: var(--color-surface-container-low); border: 1px solid var(--color-surface-container-low); border-radius: 3px; font-size: 13px; padding: 0px 3px; display: inline-block; font-family: &quot;DM Mono&quot;, monospace;“>”node3“</span><span _ngcontent-ng-c2459883256=”“ class=”ng-star-inserted“ style=”box-sizing: border-box;“>,<span class=”Apple-converted-space“>&nbsp;</span></span><span _ngcontent-ng-c2459883256=”“ class=”inline-code ng-star-inserted“ style=”box-sizing: border-box; background: var(--color-surface-container-low); border: 1px solid var(--color-surface-container-low); border-radius: 3px; font-size: 13px; padding: 0px 3px; display: inline-block; font-family: &quot;DM Mono&quot;, monospace;“>”node4“</span><span _ngcontent-ng-c2459883256=”“ class=”ng-star-inserted“ style=”box-sizing: border-box;“>,<span class=”Apple-converted-space“>&nbsp;</span></span><span _ngcontent-ng-c2459883256=”“ class=”inline-code ng-star-inserted“ style=”box-sizing: border-box; background: var(--color-surface-container-low); border: 1px solid var(--color-surface-container-low); border-radius: 3px; font-size: 13px; padding: 0px 3px; display: inline-block; font-family: &quot;DM Mono&quot;, monospace;“>”node5“</span><span _ngcontent-ng-c2459883256=”“ class=”ng-star-inserted“ style=”box-sizing: border-box;“>,<span class=”Apple-converted-space“>&nbsp;</span></span><span _ngcontent-ng-c2459883256=”“ class=”inline-code ng-star-inserted“ style=”box-sizing: border-box; background: var(--color-surface-container-low); border: 1px solid var(--color-surface-container-low); border-radius: 3px; font-size: 13px; padding: 0px 3px; display: inline-block; font-family: &quot;DM Mono&quot;, monospace;“>”meta_front“</span><span _ngcontent-ng-c2459883256=”“ class=”ng-star-inserted“ style=”box-sizing: border-box;“>,<span class=”Apple-converted-space“>&nbsp;</span></span><span _ngcontent-ng-c2459883256=”“ class=”inline-code ng-star-inserted“ style=”box-sizing: border-box; background: var(--color-surface-container-low); border: 1px solid var(--color-surface-container-low); border-radius: 3px; font-size: 13px; padding: 0px 3px; display: inline-block; font-family: &quot;DM Mono&quot;, monospace;“>”false_meta“</span><span _ngcontent-ng-c2459883256=”“ class=”ng-star-inserted“ style=”box-sizing: border-box;“>,<span class=”Apple-converted-space“>&nbsp;</span></span><span _ngcontent-ng-c2459883256=”“ class=”inline-code ng-star-inserted“ style=”box-sizing: border-box; background: var(--color-surface-container-low); border: 1px solid var(--color-surface-container-low); border-radius: 3px; font-size: 13px; padding: 0px 3px; display: inline-block; font-family: &quot;DM Mono&quot;, monospace;“>”true_meta“</span><span _ngcontent-ng-c2459883256=”“ class=”ng-star-inserted“ style=”box-sizing: border-box;“>。</span></ms-cmark-node></td></tr><tr _ngcontent-ng-c2459883256=”“ class=”ng-star-inserted“ style=”box-sizing: border-box;“><td _ngcontent-ng-c2459883256=”“ class=”ng-star-inserted“ style=”box-sizing: border-box; padding: 6px 12px; overflow-wrap: normal; font-size: 14px; font-weight: 400; line-height: 20px; font-family: &quot;Google Sans Text&quot;, &quot;Helvetica Neue&quot;, sans-serif; letter-spacing: normal; border-right-width: medium; border-right-style: none; border-right-color: currentcolor;“><ms-cmark-node _ngcontent-ng-c2459883256=”“ _nghost-ng-c2459883256=”“ style=”box-sizing: border-box; display: contents;“><span _ngcontent-ng-c2459883256=”“ class=”inline-code ng-star-inserted“ style=”box-sizing: border-box; background: var(--color-surface-container-low); border: 1px solid var(--color-surface-container-low); border-radius: 3px; font-size: 13px; padding: 0px 3px; display: inline-block; font-family: &quot;DM Mono&quot;, monospace;“>key</span></ms-cmark-node></td><td _ngcontent-ng-c2459883256=”“ class=”ng-star-inserted“ style=”box-sizing: border-box; padding: 6px 12px; overflow-wrap: normal; font-size: 14px; font-weight: 400; line-height: 20px; font-family: &quot;Google Sans Text&quot;, &quot;Helvetica Neue&quot;, sans-serif; letter-spacing: normal; border-right-width: medium; border-right-style: none; border-right-color: currentcolor;“><ms-cmark-node _ngcontent-ng-c2459883256=”“ _nghost-ng-c2459883256=”“ style=”box-sizing: border-box; display: contents;“><span _ngcontent-ng-c2459883256=”“ class=”ng-star-inserted“ style=”box-sizing: border-box;“>String</span></ms-cmark-node></td><td _ngcontent-ng-c2459883256=”“ class=”ng-star-inserted“ style=”box-sizing: border-box; padding: 6px 12px; overflow-wrap: normal; font-size: 14px; font-weight: 400; line-height: 20px; font-family: &quot;Google Sans Text&quot;, &quot;Helvetica Neue&quot;, sans-serif; letter-spacing: normal; border-right-width: medium; border-right-style: none; border-right-color: currentcolor;“><ms-cmark-node _ngcontent-ng-c2459883256=”“ _nghost-ng-c2459883256=”“ style=”box-sizing: border-box; display: contents;“><span _ngcontent-ng-c2459883256=”“ class=”ng-star-inserted“ style=”box-sizing: border-box;“>是</span></ms-cmark-node></td><td _ngcontent-ng-c2459883256=”“ class=”ng-star-inserted“ style=”box-sizing: border-box; padding: 6px 12px; overflow-wrap: normal; font-size: 14px; font-weight: 400; line-height: 20px; font-family: &quot;Google Sans Text&quot;, &quot;Helvetica Neue&quot;, sans-serif; letter-spacing: normal; border-right-width: medium; border-right-style: none; border-right-color: currentcolor;“><ms-cmark-node _ngcontent-ng-c2459883256=”“ _nghost-ng-c2459883256=”“ style=”box-sizing: border-box; display: contents;“><span _ngcontent-ng-c2459883256=”“ class=”ng-star-inserted“ style=”box-sizing: border-box;“>玩家输入的密钥字符串。</span></ms-cmark-node></td></tr></tbody></table>
-
--   **请求体示例**:
-    
-    ```
+*   **接口**: `POST /add_acc`
+*   **功能**: 创建一个新的玩家账号，并初始化默认数据。
+*   **请求体示例**:
+    ```json
     {
-        ”nodeId“: ”node1“,
-        ”key“: ”puzzle_alpha“
+      "username": "new_player_123",
+      "password": "his_secret_password"
     }
     ```
-    
-    Use code [with caution](https://support.google.com/legal/answer/13505487). Json
-    
--   **成功响应 (200 OK)**:
-    
-    -   **场景**: 验证普通节点密钥正确。
-        
-    -   **响应体**:
-        
-        ```
+*   **响应示例**:
+    *   **成功 (201 Created)**:
+        ```json
         {
-            ”success“: true,
-            ”message“: ”密钥正确!“
+          "success": true,
+          "message": "账号添加成功！"
         }
         ```
-        
-        Use code [with caution](https://support.google.com/legal/answer/13505487). Json
-        
-    -   **场景**: 验证 false\_meta 密钥正确，并成功启动倒计时。
-        
-    -   **响应体**:
-        
-        ```
+    *   **失败 (用户名已存在, 409 Conflict)**:
+        ```json
         {
-            ”success“: true,
-            ”message“: ”假Meta正确！最终倒计时已启动。“,
-            ”metaStarted“: true
+          "success": false,
+          "message": "用户名已存在。"
         }
         ```
-        
-        Use code [with caution](https://support.google.com/legal/answer/13505487). Json
-        
-    -   **场景**: 在倒计时期间验证 true\_meta 密钥正确，赢得游戏。
-        
-    -   **响应体**:
-        
-        ```
-        {
-            ”success“: true,
-            ”message“: ”恭喜！你已成功解开最终Meta！“,
-            ”remainingSeconds“: 178
-        }
-        ```
-        
-        Use code [with caution](https://support.google.com/legal/answer/13505487). Json
-        
-    
--   **失败响应 (4xx)**:
-    
-    -   **场景**: 提交的 key 不正确。
-        
-    -   **响应**: 401 Unauthorized
-        
-    -   **响应体**:
-        
-        ```
-        {
-            ”success“: false,
-            ”message“: ”密钥错误，已触发冷却。“,
-            ”cooldown“: 60
-        }
-        ```
-        
-        Use code [with caution](https://support.google.com/legal/answer/13505487). Json
-        
-    -   **场景**: IP正处于冷却中。
-        
-    -   **响应**: 429 Too Many Requests
-        
-    -   **响应体**:
-        
-        ```
-        {
-            ”success“: false,
-            ”message“: ”请求过于频繁，请稍后再试。“,
-            ”cooldown“: 42
-        }
-        ```
-        
-        Use code [with caution](https://support.google.com/legal/answer/13505487). Json
-        
-    -   **场景**: 尝试启动一个已在运行的倒计时。
-        
-    -   **响应**: 400 Bad Request
-        
-    -   **响应体**:
-        
-        ```
-        {
-            ”success“: false,
-            ”message“: ”Meta倒计时已经启动或已结束。“
-        }
-        ```
-        
-        Use code [with caution](https://support.google.com/legal/answer/13505487). Json
-        
-    
--   **cURL 示例**:
-    
-    ```
-    # 验证一个普通节点
-    curl -X POST -H ”Content-Type: application/json“ -d ’{”nodeId“: ”node1“, ”key“: ”puzzle_alpha“}‘ http://localhost:3000/check-key
-    
-    # 启动Meta倒计时
-    curl -X POST -H ”Content-Type: application/json“ -d ’{”nodeId“: ”false_meta“, ”key“: ”almost_there“}‘ http://localhost:3000/check-key
-    
-    # 提交错误密钥以触发冷却
-    curl -X POST -H ”Content-Type: application/json“ -d ’{”nodeId“: ”node2“, ”key“: ”wrong_key“}‘ http://localhost:3000/check-key
-    ```
-    
-    Use code [with caution](https://support.google.com/legal/answer/13505487). Bash
-    
 
-* * *
+---
 
-#### **接口 2: GET /cooldown-status**
+#### **2. 检查账号密码 (登录)**
 
--   **描述**: 查询发起请求的客户端IP当前的冷却状态。此接口不受冷却机制限制，可随时调用。
-    
--   **响应 (200 OK)**:
-    
-    -   **响应体**:
-        
-        ```
-        {
-            ”cooldownRemaining“: 28
-        }
-        ```
-        
-        Use code [with caution](https://support.google.com/legal/answer/13505487). Json
-        
-        cooldownRemaining (Number): 剩余的冷却秒数。如果为 0，表示没有冷却。
-        
-    
--   **cURL 示例**:
-    
-    ```
-    curl http://localhost:3000/cooldown-status
-    ```
-    
-    Use code [with caution](https://support.google.com/legal/answer/13505487). Bash
-    
-
-* * *
-
-#### **接口 3: GET /meta-status**
-
--   **描述**: 查询全局Meta倒计时的当前状态。前端应定时轮询此接口（推荐每秒一次）以实时更新UI。
-    
--   **响应 (200 OK)**:
-    
-    -   **响应体**:
-        
-        ```
-        {
-            ”status“: ”running“,
-            ”remainingSeconds“: 295
-        }
-        ```
-        
-        Use code [with caution](https://support.google.com/legal/answer/13505487). Json
-        
-        status (String): 当前状态，值为 ”idle“, ”running“, 或 ”finished“。  
-        remainingSeconds (Number): 当状态为 running 时，表示剩余秒数。
-        
-    
--   **cURL 示例**:
-    
-    ```
-    curl http://localhost:3000/meta-status
-    ```
-    
-    Use code [with caution](https://support.google.com/legal/answer/13505487). Bash
-    
-
-* * *
-
-#### **接口 4: POST /stop-meta**
-
--   **描述**: （管理/调试功能）强制停止当前正在运行的Meta倒计时，并将其状态重置为 idle。
-    
--   **响应 (200 OK)**:
-    
-    ```
+*   **接口**: `POST /acc_check_password`
+*   **功能**: 验证用户提供的账号和密码是否正确，成功后返回该用户的完整数据。
+*   **请求体示例**:
+    ```json
     {
-        ”success“: true,
-        ”message“: ”Meta 倒计时已停止。“,
-        ”remainingSeconds“: 210
+      "username": "existing_player_456",
+      "password": "the_correct_password"
     }
     ```
-    
-    Use code [with caution](https://support.google.com/legal/answer/13505487). Json
-    
--   **cURL 示例**:
-    
-    ```
-    curl -X POST http://localhost:3000/stop-meta
-    ```
-    
-    Use code [with caution](https://support.google.com/legal/answer/13505487). Bash
-    
+*   **响应示例**:
+    *   **成功 (200 OK)**:
+        ```json
+        {
+          "success": true,
+          "message": "密码正确。",
+          "user_data": {
+            "password": "the_correct_password",
+            "cool_down": "0",
+            "progress": "1",
+            "meta_xy": "[1,7]",
+            "meta_progress": "[1,7],[4,6]",
+            "meta_key_number": "2",
+            "meta_power_number": "1",
+            "meta_card": true
+          }
+        }
+        ```
+    *   **失败 (密码错误, 401 Unauthorized)**:
+        ```json
+        {
+          "success": false,
+          "message": "密码错误。"
+        }
+        ```
+    *   **失败 (账号不存在, 404 Not Found)**:
+        ```json
+        {
+          "success": false,
+          "message": "账号不存在。"
+        }
+        ```
 
-* * *
+cookie为username和password
+---
 
-#### **接口 5: POST /reset-meta**
+#### **3. 获取所有账号信息**
 
--   **描述**: （管理功能）一个更强大的重置工具，无论当前处于何种状态（running 或 finished），都将其强制恢复到初始的 idle 状态。主要用于游戏结束后为下一轮做准备。
-    
--   **响应 (200 OK)**:
-    
-    ```
+*   **接口**: `GET /acc_get`
+*   **功能**: （管理功能）获取当前存储的所有用户信息。
+*   **响应示例 (200 OK)**:
+    ```json
     {
-        ”success“: true,
-        ”message“: ”Meta 倒计时状态已重置为 idle。“
+      "success": true,
+      "accounts": {
+        "player_one": {
+          "password": "p1", "progress": "3", "meta_key_number": "1", "...": "..."
+        },
+        "player_two": {
+          "password": "p2", "progress": "5", "meta_key_number": "3", "...": "..."
+        }
+      }
     }
     ```
-    
-    Use code [with caution](https://support.google.com/legal/answer/13505487). Json
-    
--   **cURL 示例**:
-    
+
+---
+
+#### **4. 删除指定账号**
+
+*   **接口**: `DELETE /acc_delete`
+*   **功能**: （管理功能）根据用户名删除一个账号。
+*   **请求体示例**:
+    ```json
+    {
+      "username": "player_to_be_deleted"
+    }
     ```
-    curl -X POST http://localhost:3000/reset-meta
+*   **响应示例**:
+    *   **成功 (200 OK)**:
+        ```json
+        {
+          "success": true,
+          "message": "账号 player_to_be_deleted 已被删除。"
+        }
+        ```
+    *   **失败 (账号不存在, 404 Not Found)**:
+        ```json
+        {
+          "success": false,
+          "message": "要删除的账号不存在。"
+        }
+        ```
+
+---
+
+### **三、 Meta 谜题与玩家状态接口**
+
+#### **1. 获取随机谜题**
+
+*   **接口**: `GET /random`
+*   **功能**: 从 `meta_random.json` 文件中随机抽取一道谜题及其答案。
+*   **响应示例 (200 OK)**:
+    ```json
+    {
+      "success": true,
+      "puzzle": {
+        "puzzle": "什么东西早上四条腿，中午两条腿，晚上三条腿？",
+        "key": "人"
+      }
+    }
     ```
-    
-    Use code [with caution](https://support.google.com/legal/answer/13505487). Bash
-    
 
-* * *
+---
 
-### 5\. 前端集成策略 (Frontend Integration Strategy)
+#### **2. 更新玩家状态与道具**
 
--   **初始化与状态轮询**:
-    
-    -   页面加载完成后，立即启动一个定时器 (setInterval)，每秒执行一次状态获取函数。
-        
-    -   该函数应并（Promise.all）调用 GET /cooldown-status 和 GET /meta-status。
-        
-    -   根据返回的数据，实时更新UI，例如显示“冷却中：35秒”或“最终挑战剩余：120秒”。
-        
-    
--   **处理用户提交**:
-    
-    -   当用户点击“提交”按钮时，构造 POST /check-key 的请求体。
-        
-    -   使用 async/await 和 try...catch 结构来处理API调用。
-        
-    -   **try 块内**:
-        
-        -   const response = await fetch(...)
-            
-        -   如果 response.ok (状态码 2xx)，解析 data = await response.json()，并根据 data.message 显示成功提示。如果 data.metaStarted 为 true，可以播放一个特殊的动画或音效。
-            
-        
-    -   **catch 块或 !response.ok**:
-        
-        -   解析错误响应体 errorData = await response.json()。
-            
-        -   根据 errorData.message 和 errorData.cooldown向用户显示清晰的错误反馈，例如：“答案错误，请60秒后再试。”
-            
-        
-    
--   **UI/UX 建议**:
-    
-    -   **反馈要即时**: 无论成功或失败，立即给出视觉反馈。
-        
-    -   **禁用输入**: 在API请求期间，或在用户IP处于冷却状态时，应禁用输入框和提交按钮，防止用户重复无效操作。
-        
-    -   **倒计时显示**: 将秒数格式化为 MM:SS (例如 04:55)，对用户更友好。
-        
-    -   **全局事件**: 当Meta倒计时开始时，可以考虑在页面顶部显示一个全局横幅，让所有玩家都能感知到游戏进入了新阶段。
+*   **增加钥匙数量**: `POST /add_key`
+    *   请求体: `{"username": "player_one"}`
+    *   响应: `{"success": true, "message": "用户 player_one 的钥匙数量已增加。", "new_key_count": "3"}`
+
+*   **增加电力装置数量**: `POST /add_power`
+    *   请求体: `{"username": "player_one"}`
+    *   响应: `{"success": true, "message": "用户 player_one 的电力装置数量已增加。", "new_power_count": "2"}`
+
+*   **获得门禁卡**: `POST /add_card`
+    *   请求体: `{"username": "player_one"}`
+    *   响应: `{"success": true, "message": "用户 player_one 已获得门禁卡。"}`
+
+*   **增加 Meta 解谜进度**: `POST /add_meta`
+    *   请求体: `{"username": "player_one", "progress": "[5,5]"}`
+    *   响应: `{"success": true, "message": "用户 player_one 的 Meta 进度已更新。", "new_progress": "[1,7],[4,6],[5,5]"}`
+
+*   **更改玩家 Meta 坐标**: `POST /change_meta_xy`
+    *   请求体: `{"username": "player_one", "new_xy": "[5,5]"}`
+    *   响应: `{"success": true, "message": "用户 player_one 的坐标已更新。", "new_xy": "[5,5]"}`
+
+---
+
+### **四、 冷却系统接口 (User-Specific Cooldowns)**
+
+**通用流程**:
+1.  在用户尝试输入答案**之前**，先调用对应的 `..._cooldown_status` 接口。
+2.  如果返回的 `cooldownRemaining` 大于 0，则禁止用户输入。
+3.  如果等于 0，则允许用户输入。
+4.  用户提交答案后，调用对应的 `check_..._key` 或 `start_..._cooldown` 接口。
+
+---
+
+#### **1. 小谜题 (Simple Puzzle)**
+
+*   **检查冷却状态**: `POST /simple_cooldown_status`
+    *   请求体: `{"username": "player_two"}`
+    *   响应: `{"cooldownRemaining": 110}` (表示还需冷却110秒) 或 `{"cooldownRemaining": 0}` (无冷却)
+*   **开启冷却 (前端判断答案错误后调用)**: `POST /start_simple_cooldown`
+    *   请求体: `{"username": "player_two"}`
+    *   响应: `{"success": true, "message": "用户 player_two 的小谜题冷却已开始，持续 120 秒。"}`
+
+---
+
+#### **2. 4x4 谜题**
+
+*   **检查冷却状态**: `POST /4x4_cooldown_status`
+    *   请求体: `{"username": "player_two"}`
+    *   响应: `{"cooldownRemaining": 290}`
+*   **验证密钥并触发冷却**: `POST /check_4x4_key`
+    *   请求体: `{ "username": "player_two", "keys": ["row1_wrong", "row2_correct", "row3_correct", "row4_correct"] }`
+    *   成功响应 (200 OK): `{"success": true, "message": "4x4 密钥正确！"}`
+    *   失败响应 (401 Unauthorized): `{"success": false, "message": "密钥错误，已触发冷却。", "cooldown": 300}`
+
+---
+
+#### **3. 守门员谜题 (Goalkeeper Puzzle)**
+
+*   **检查冷却状态**: `POST /goalkeeper_cooldown_status`
+    *   请求体: `{"username": "player_two"}`
+    *   响应: `{"cooldownRemaining": 175}`
+*   **验证密钥并触发冷却**: `POST /check_goalkeeper_key`
+    *   请求体: `{ "username": "player_two", "id": "east_gate", "key": "wrong_key_for_east_gate" }`
+    *   成功响应 (200 OK): `{"success": true, "message": "守门员格子 east_gate 密钥正确！"}`
+    *   失败响应 (401 Unauthorized): `{"success": false, "message": "密钥错误，已触发冷却。", "cooldown": 180}`
+
+---
+
+### **五、 核心解谜及全局倒计时接口**
+
+这些接口使用 **IP 地址** 进行冷却。
+
+---
+
+#### **1. 验证节点密钥 (IP 冷却)**
+
+*   **接口**: `POST /check-key`
+*   **请求体**: `{ "nodeId": "node1", "key": "correct_key_for_node1" }`
+*   **响应示例**:
+    *   **普通节点正确**:
+        ```json
+        {"success": true, "message": "密钥正确!"}
+        ```
+    *   **假 Meta 正确 (启动倒计时)**:
+        ```json
+        {"success": true, "message": "假Meta正确！最终倒计时已启动。", "metaStarted": true}
+        ```
+    *   **真 Meta 正确 (获胜)**:
+        ```json
+        {"success": true, "message": "恭喜！你已成功解开最终Meta！", "remainingSeconds": 1500}
+        ```
+    *   **密钥错误 (触发 IP 冷却, 401 Unauthorized)**:
+        ```json
+        {"success": false, "message": "密钥错误，已触发冷却。", "cooldown": 60}
+        ```
+    *   **请求频繁 (IP 冷却中, 429 Too Many Requests)**:
+        ```json
+        {"success": false, "message": "请求过于频繁，请稍后再试。", "cooldown": 45}
+        ```
+
+---
+
+#### **2. 获取 IP 冷却状态**
+
+*   **接口**: `GET /cooldown-status`
+*   **功能**: 检查当前用户的 IP 是否处于 `/check-key` 接口的冷却中。
+*   **响应示例**: `{"cooldownRemaining": 50}`
+
+---
+
+#### **3. 获取全局 Meta 倒计时状态**
+
+*   **接口**: `GET /meta-status`
+*   **功能**: 查询最终倒计时的状态和剩余时间。
+*   **响应示例 (倒计时进行中)**:
+    ```json
+    {
+      "status": "running",
+      "remainingSeconds": 1780
+    }
+    ```
+
+---
+
+#### **4. 减少 Meta 倒计时总时间**
+
+*   **接口**: `POST /diminish_meta_time`
+*   **功能**: 当玩家完成特定小谜题时，调用此接口以减少全局倒计时的总时间。
+*   **响应示例 (200 OK)**:
+    ```json
+    {
+      "success": true,
+      "message": "Meta 总时间已减少 60 秒。"
+    }
+    ```
+
+---
+
+### **六、 管理接口**
+
+#### **1. 重置 Meta 状态**
+
+*   **接口**: `POST /reset-meta`
+*   **功能**: 重置全局 Meta 倒计时状态为 `idle`。
+*   **响应示例 (200 OK)**:
+    ```json
+    {
+      "success": true,
+      "message": "Meta 倒计时状态已重置为 idle。"
+    }
+    ```
+
+#### **2. 停止 Meta 倒计时**
+
+*   **接口**: `POST /stop-meta`
+*   **功能**: 强制停止正在运行的 Meta 倒计时。
+*   **响应示例 (200 OK)**:
+    ```json
+    {
+      "success": true,
+      "message": "Meta 倒计时已停止。",
+      "remainingSeconds": 1234
+    }
+    ```

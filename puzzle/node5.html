@@ -6,7 +6,7 @@
     <title>Abyssal Puzzle - Node5</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&family=Electrolize:wght@400&display=swap');
         
         * {
             margin: 0;
@@ -15,396 +15,438 @@
         }
 
         :root {
-            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            --tertiary-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            --glass-bg: rgba(255, 255, 255, 0.1);
-            --glass-border: rgba(255, 255, 255, 0.2);
-            --shadow-color: rgba(0, 0, 0, 0.3);
+            --dark-bg-primary: #0a0a0a;
+            --dark-bg-secondary: #111111;
+            --dark-bg-tertiary: #1a1a1a;
+            --neon-cyan: #00ffff;
+            --neon-green: #00ff88;
+            --neon-blue: #88ffff;
+            --neon-purple: #aa88ff;
+            --neon-pink: #ff88aa;
+            --dark-gold: #ffd700;
+            --space-purple: #2d1b69;
+            --deep-purple: #4c1d95;
+            --glass-dark: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(0, 255, 255, 0.2);
         }
 
         body {
-            font-family: 'Exo 2', sans-serif;
-            background: linear-gradient(45deg, #0f0f23, #1a1a2e, #16213e, #0f3460);
-            background-size: 400% 400%;
-            animation: gradientShift 15s ease infinite;
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--dark-bg-primary);
             color: #ffffff;
             overflow-x: hidden;
             min-height: 100vh;
             position: relative;
         }
 
-        @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        /* 3D 场景容器 */
-        .scene-container {
+        /* 深空背景动画 */
+        .deep-space-bg {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            perspective: 1000px;
+            background: 
+                radial-gradient(circle at 20% 30%, var(--space-purple) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, var(--deep-purple) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, #1a0033 0%, transparent 50%),
+                linear-gradient(135deg, var(--dark-bg-primary) 0%, var(--dark-bg-secondary) 50%, var(--dark-bg-tertiary) 100%);
+            animation: spaceShift 20s ease-in-out infinite;
+            z-index: -3;
+        }
+
+        @keyframes spaceShift {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(1deg); }
+        }
+
+        /* 星空粒子系统 */
+        .star-field {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: var(--neon-cyan);
+            border-radius: 50%;
+            animation: starTwinkle 3s ease-in-out infinite;
+        }
+
+        @keyframes starTwinkle {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.5); }
+        }
+
+        /* 全息网格背景 */
+        .hologram-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 255, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridPulse 4s ease-in-out infinite;
             z-index: -1;
         }
 
-        /* 全息地球 */
-        .holographic-earth {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 300px;
-            height: 300px;
-            transform: translate(-50%, -50%) rotateX(20deg);
-            transform-style: preserve-3d;
+        @keyframes gridPulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.6; }
         }
 
-        .earth-core {
+        /* 主容器 */
+        .main-container {
+            position: relative;
+            z-index: 10;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        /* 全息标题 */
+        .holographic-title {
+            text-align: center;
+            margin: 2rem 0 4rem 0;
+            position: relative;
+        }
+
+        .title-text {
+            font-family: 'Orbitron', monospace;
+            font-size: 4rem;
+            font-weight: 900;
+            background: linear-gradient(45deg, var(--neon-cyan), var(--neon-green), var(--neon-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px var(--neon-cyan);
+            animation: titleGlow 3s ease-in-out infinite;
+            position: relative;
+        }
+
+        .title-text::before {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            color: var(--neon-cyan);
+            opacity: 0.3;
+            animation: hologramFlicker 0.1s linear infinite;
+        }
+
+        @keyframes titleGlow {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.3); }
+        }
+
+        @keyframes hologramFlicker {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(1px); }
+            75% { transform: translateX(-1px); }
+        }
+
+        /* 时空隧道新闻容器 */
+        .news-tunnel {
+            perspective: 1000px;
+            position: relative;
+            min-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3rem;
+        }
+
+        /* 新闻全息投影卡片 */
+        .news-hologram {
+            background: var(--glass-dark);
+            backdrop-filter: blur(20px);
+            border: 2px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 800px;
+            width: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 
+                0 10px 40px rgba(0, 255, 255, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .news-hologram::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, var(--neon-cyan), var(--neon-green), var(--neon-purple), var(--neon-pink));
+            border-radius: 20px;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .news-hologram:hover {
+            transform: translateY(-10px) rotateX(5deg) rotateY(2deg);
+            box-shadow: 
+                0 20px 60px rgba(0, 255, 255, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .news-hologram:hover::before {
+            opacity: 1;
+        }
+
+        /* 全息扫描线 */
+        .scan-line {
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--neon-cyan), transparent);
+            animation: scanMove 3s linear infinite;
+        }
+
+        @keyframes scanMove {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        /* 新闻标题 */
+        .news-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--neon-cyan);
+            margin-bottom: 1.5rem;
+            text-shadow: 0 0 10px var(--neon-cyan);
+            position: relative;
+        }
+
+        .news-title::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--neon-green);
+            transition: width 0.5s ease;
+        }
+
+        .news-hologram:hover .news-title::after {
+            width: 100%;
+        }
+
+        /* 新闻内容 */
+        .news-content {
+            line-height: 1.8;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.1rem;
+        }
+
+        .news-content p {
+            margin-bottom: 1rem;
+        }
+
+        /* 数据流参赛选手展示 */
+        .contestants-matrix {
+            background: var(--glass-dark);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2rem;
+            margin: 2rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .contestants-matrix::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
-            border-radius: 50%;
-            background: conic-gradient(from 0deg, #4facfe, #00f2fe, #667eea, #764ba2, #4facfe);
-            position: relative;
-            animation: earthRotate 20s linear infinite;
-            box-shadow: 
-                0 0 50px rgba(79, 172, 254, 0.5),
-                inset 0 0 50px rgba(255, 255, 255, 0.1);
+            background: 
+                repeating-linear-gradient(
+                    90deg,
+                    transparent,
+                    transparent 98px,
+                    rgba(0, 255, 255, 0.1) 100px
+                );
+            animation: matrixFlow 2s linear infinite;
         }
 
-        .earth-core::before {
+        @keyframes matrixFlow {
+            0% { transform: translateX(-100px); }
+            100% { transform: translateX(0); }
+        }
+
+        .contestant-item {
+            background: rgba(0, 255, 255, 0.05);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            position: relative;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .contestant-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .contestant-item:hover::before {
+            left: 100%;
+        }
+
+        .contestant-item:hover {
+            transform: translateX(10px);
+            border-color: var(--neon-cyan);
+            box-shadow: 0 5px 20px rgba(0, 255, 255, 0.3);
+        }
+
+        .contestant-message {
+            font-size: 1.2rem;
+            color: #ffffff;
+            margin-bottom: 0.8rem;
+            font-family: 'Electrolize', monospace;
+        }
+
+        .contestant-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .stat-boost {
+            color: var(--neon-green);
+            text-shadow: 0 0 5px var(--neon-green);
+        }
+
+        .stat-acc {
+            color: var(--neon-blue);
+            text-shadow: 0 0 5px var(--neon-blue);
+        }
+
+        /* 全息代码块 */
+        .hologram-code {
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid var(--neon-green);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+            font-family: 'Orbitron', monospace;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hologram-code::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(0, 255, 0, 0.1) 4px
+                );
+            animation: codeMatrix 1s linear infinite;
+        }
+
+        @keyframes codeMatrix {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(4px); }
+        }
+
+        .code-text {
+            color: var(--neon-green);
+            line-height: 2;
+            text-shadow: 0 0 10px var(--neon-green);
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 量子输入终端 */
+        .quantum-terminal {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--glass-dark);
+            backdrop-filter: blur(25px);
+            border: 2px solid var(--neon-purple);
+            border-radius: 25px;
+            padding: 2rem;
+            min-width: 500px;
+            box-shadow: 
+                0 15px 50px rgba(170, 136, 255, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            z-index: 100;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .quantum-terminal::before {
             content: '';
             position: absolute;
             top: -50%;
             left: -50%;
             width: 200%;
             height: 200%;
-            background: radial-gradient(circle, transparent 30%, rgba(79, 172, 254, 0.1) 70%);
-            border-radius: 50%;
-            animation: pulse 4s ease-in-out infinite;
-        }
-
-        @keyframes earthRotate {
-            0% { transform: rotateY(0deg) rotateZ(0deg); }
-            100% { transform: rotateY(360deg) rotateZ(360deg); }
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 0.3; }
-            50% { transform: scale(1.2); opacity: 0.7; }
-        }
-
-        /* 数据轨道环 */
-        .data-ring {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            border: 2px solid transparent;
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            background: linear-gradient(45deg, transparent, rgba(79, 172, 254, 0.3), transparent);
-            background-clip: padding-box;
-        }
-
-        .ring-1 { 
-            width: 400px; 
-            height: 400px; 
-            animation: ringRotate1 15s linear infinite;
-            border-image: linear-gradient(45deg, #4facfe, #00f2fe) 1;
-        }
-        .ring-2 { 
-            width: 500px; 
-            height: 500px; 
-            animation: ringRotate2 25s linear infinite reverse;
-            border-image: linear-gradient(45deg, #667eea, #764ba2) 1;
-        }
-        .ring-3 { 
-            width: 600px; 
-            height: 600px; 
-            animation: ringRotate3 35s linear infinite;
-            border-image: linear-gradient(45deg, #f093fb, #f5576c) 1;
-        }
-
-        @keyframes ringRotate1 {
-            0% { transform: translate(-50%, -50%) rotateZ(0deg) rotateX(60deg); }
-            100% { transform: translate(-50%, -50%) rotateZ(360deg) rotateX(60deg); }
-        }
-
-        @keyframes ringRotate2 {
-            0% { transform: translate(-50%, -50%) rotateZ(0deg) rotateY(45deg); }
-            100% { transform: translate(-50%, -50%) rotateZ(360deg) rotateY(45deg); }
-        }
-
-        @keyframes ringRotate3 {
-            0% { transform: translate(-50%, -50%) rotateZ(0deg) rotateX(-30deg); }
-            100% { transform: translate(-50%, -50%) rotateZ(360deg) rotateX(-30deg); }
-        }
-
-        /* 粒子系统 */
-        .particle-system {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
+            background: conic-gradient(from 0deg, transparent, var(--neon-purple), transparent);
+            animation: quantumRotate 4s linear infinite;
             z-index: -1;
         }
 
-        .particle {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            background: radial-gradient(circle, #4facfe, transparent);
-            border-radius: 50%;
-            animation: particleFloat 10s linear infinite;
+        @keyframes quantumRotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
-        @keyframes particleFloat {
-            0% {
-                transform: translateY(100vh) translateX(0px) scale(0);
-                opacity: 0;
-            }
-            10% {
-                opacity: 1;
-                transform: scale(1);
-            }
-            90% {
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(-100px) translateX(100px) scale(0);
-                opacity: 0;
-            }
-        }
-
-        /* 主容器 - 玻璃拟态设计 */
-        .main-container {
-            position: relative;
-            z-index: 10;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 2rem;
-        }
-
-        /* 标题区域 */
-        .title-section {
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 2rem;
-            margin: 2rem 0;
+        .terminal-header {
             text-align: center;
-            box-shadow: 0 8px 32px var(--shadow-color);
-            transform: translateY(0);
-            transition: all 0.3s ease;
+            margin-bottom: 1.5rem;
         }
 
-        .title-section:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 40px var(--shadow-color);
-        }
-
-        .main-title {
+        .terminal-title {
             font-family: 'Orbitron', monospace;
-            font-size: 3rem;
-            font-weight: 900;
-            background: var(--tertiary-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 1rem;
-            text-shadow: 0 0 30px rgba(79, 172, 254, 0.5);
+            font-size: 1.3rem;
+            color: var(--neon-purple);
+            text-shadow: 0 0 15px var(--neon-purple);
+            letter-spacing: 2px;
         }
 
-        /* 内容卡片网格 */
-        .content-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 2rem;
-            max-width: 1200px;
-            width: 100%;
-            margin: 2rem 0;
-        }
-
-        .content-card {
-            background: var(--glass-bg);
-            backdrop-filter: blur(15px);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 2rem;
-            box-shadow: 0 8px 32px var(--shadow-color);
-            transform: translateZ(0);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .content-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-            transition: left 0.5s ease;
-        }
-
-        .content-card:hover::before {
-            left: 100%;
-        }
-
-        .content-card:hover {
-            transform: translateY(-10px) rotateX(5deg);
-            box-shadow: 0 20px 60px var(--shadow-color);
-            border-color: rgba(79, 172, 254, 0.5);
-        }
-
-        .card-title {
-            font-family: 'Orbitron', monospace;
-            font-size: 1.5rem;
-            font-weight: 700;
-            background: var(--primary-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 1rem;
-        }
-
-        .card-content {
-            line-height: 1.6;
-            color: rgba(255, 255, 255, 0.9);
-        }
-
-        /* 参赛选手列表 */
-        .contestant-grid {
-            display: grid;
-            gap: 1rem;
-            margin-top: 1rem;
-        }
-
-        .contestant-item {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(79, 172, 254, 0.3);
-            border-radius: 15px;
-            padding: 1.5rem;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .contestant-item::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--tertiary-gradient);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            z-index: -1;
-        }
-
-        .contestant-item:hover::after {
-            opacity: 0.1;
-        }
-
-        .contestant-item:hover {
-            transform: scale(1.02);
-            border-color: rgba(79, 172, 254, 0.8);
-            box-shadow: 0 10px 30px rgba(79, 172, 254, 0.2);
-        }
-
-        .contestant-message {
-            font-size: 1.1rem;
-            margin-bottom: 0.5rem;
-            color: #ffffff;
-        }
-
-        .contestant-stats {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.9rem;
-            color: rgba(79, 172, 254, 0.8);
-            font-weight: 600;
-        }
-
-        /* 代码块 */
-        .code-container {
-            background: rgba(0, 0, 0, 0.4);
-            border: 2px solid rgba(79, 172, 254, 0.5);
-            border-radius: 15px;
-            padding: 2rem;
+        .cooldown-display {
+            text-align: center;
             margin: 1rem 0;
-            font-family: 'Orbitron', monospace;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .code-container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 2px;
-            background: var(--tertiary-gradient);
-            animation: codeScan 3s linear infinite;
-        }
-
-        @keyframes codeScan {
-            0% { left: -100%; }
-            100% { left: 100%; }
-        }
-
-        .code-text {
-            color: #4facfe;
-            line-height: 1.8;
-            text-shadow: 0 0 10px rgba(79, 172, 254, 0.5);
-        }
-
-        /* 输入控制台 */
-        .input-console {
-            position: fixed;
-            bottom: 2rem;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            border: 2px solid var(--glass-border);
-            border-radius: 25px;
-            padding: 2rem;
-            min-width: 500px;
-            box-shadow: 0 15px 50px var(--shadow-color);
-            z-index: 100;
-        }
-
-        .console-header {
-            text-align: center;
-            margin-bottom: 1rem;
-        }
-
-        .console-title {
-            font-family: 'Orbitron', monospace;
-            font-size: 1.2rem;
-            background: var(--secondary-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .cooldown-indicator {
-            margin: 1rem 0;
-            text-align: center;
-            color: #f5576c;
+            color: var(--neon-pink);
             font-weight: 600;
+            text-shadow: 0 0 10px var(--neon-pink);
         }
 
         .input-group {
@@ -413,27 +455,29 @@
             align-items: center;
         }
 
-        .key-input {
+        .quantum-input {
             flex: 1;
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid rgba(79, 172, 254, 0.3);
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid var(--neon-cyan);
             border-radius: 15px;
             padding: 1rem 1.5rem;
-            color: #ffffff;
+            color: var(--neon-cyan);
             font-family: 'Orbitron', monospace;
             font-size: 1rem;
             outline: none;
             transition: all 0.3s ease;
+            text-shadow: 0 0 5px var(--neon-cyan);
         }
 
-        .key-input:focus {
-            border-color: #4facfe;
-            box-shadow: 0 0 20px rgba(79, 172, 254, 0.4);
-            background: rgba(255, 255, 255, 0.15);
+        .quantum-input:focus {
+            border-color: var(--neon-green);
+            color: var(--neon-green);
+            text-shadow: 0 0 10px var(--neon-green);
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.4);
         }
 
-        .submit-button {
-            background: var(--tertiary-gradient);
+        .quantum-button {
+            background: linear-gradient(45deg, var(--neon-purple), var(--neon-pink));
             border: none;
             border-radius: 15px;
             padding: 1rem 2rem;
@@ -443,52 +487,52 @@
             font-size: 1rem;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.3);
+            box-shadow: 0 5px 15px rgba(170, 136, 255, 0.4);
+            text-shadow: 0 0 5px #ffffff;
         }
 
-        .submit-button:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(79, 172, 254, 0.5);
+        .quantum-button:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(170, 136, 255, 0.6);
+            filter: brightness(1.2);
         }
 
-        .submit-button:disabled {
+        .quantum-button:disabled {
             opacity: 0.5;
             cursor: not-allowed;
         }
 
         .message-display {
-            margin-top: 1rem;
+            margin-top: 1.5rem;
             padding: 1rem;
             border-radius: 10px;
             text-align: center;
             min-height: 20px;
             transition: all 0.3s ease;
+            font-weight: 600;
         }
 
         .message-success {
-            background: rgba(79, 172, 254, 0.2);
-            border: 1px solid #4facfe;
-            color: #4facfe;
+            background: rgba(0, 255, 136, 0.2);
+            border: 1px solid var(--neon-green);
+            color: var(--neon-green);
+            text-shadow: 0 0 10px var(--neon-green);
         }
 
         .message-error {
-            background: rgba(245, 87, 108, 0.2);
-            border: 1px solid #f5576c;
-            color: #f5576c;
+            background: rgba(255, 136, 170, 0.2);
+            border: 1px solid var(--neon-pink);
+            color: var(--neon-pink);
+            text-shadow: 0 0 10px var(--neon-pink);
         }
 
         /* 响应式设计 */
         @media (max-width: 768px) {
-            .main-title {
-                font-size: 2rem;
+            .title-text {
+                font-size: 2.5rem;
             }
             
-            .content-grid {
-                grid-template-columns: 1fr;
-                gap: 1rem;
-            }
-            
-            .input-console {
+            .quantum-terminal {
                 min-width: 90%;
                 left: 5%;
                 transform: none;
@@ -498,168 +542,182 @@
                 flex-direction: column;
             }
             
-            .key-input {
+            .quantum-input {
                 width: 100%;
+            }
+            
+            .news-hologram {
+                margin: 1rem;
+                padding: 1.5rem;
             }
         }
 
         /* 加载动画 */
-        .loading-spinner {
+        .quantum-spinner {
             display: inline-block;
             width: 20px;
             height: 20px;
-            border: 3px solid rgba(79, 172, 254, 0.3);
+            border: 3px solid rgba(170, 136, 255, 0.3);
             border-radius: 50%;
-            border-top-color: #4facfe;
-            animation: spin 1s ease-in-out infinite;
+            border-top-color: var(--neon-purple);
+            animation: quantumSpin 1s ease-in-out infinite;
         }
 
-        @keyframes spin {
+        @keyframes quantumSpin {
             to { transform: rotate(360deg); }
         }
 
         /* 数据可视化元素 */
-        .data-viz {
+        .data-orb {
             position: absolute;
-            width: 100px;
-            height: 100px;
+            width: 80px;
+            height: 80px;
             border-radius: 50%;
-            background: radial-gradient(circle, rgba(79, 172, 254, 0.3), transparent);
-            animation: dataFloat 8s ease-in-out infinite;
+            background: radial-gradient(circle, var(--neon-cyan), transparent);
+            animation: orbFloat 6s ease-in-out infinite;
+            opacity: 0.6;
         }
 
-        @keyframes dataFloat {
+        @keyframes orbFloat {
             0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-20px) rotate(180deg); }
+            50% { transform: translateY(-30px) rotate(180deg); }
         }
 
-        /* 全息效果 */
-        .hologram-effect {
+        /* 全息干扰效果 */
+        .hologram-interference {
             position: relative;
         }
 
-        .hologram-effect::before {
+        .hologram-interference::after {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(
-                90deg,
-                transparent 0%,
-                rgba(79, 172, 254, 0.1) 50%,
-                transparent 100%
-            );
-            animation: hologramScan 2s linear infinite;
+            background: 
+                repeating-linear-gradient(
+                    90deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(0, 255, 255, 0.1) 3px,
+                    rgba(0, 255, 255, 0.1) 4px,
+                    transparent 5px
+                );
+            animation: interference 0.1s linear infinite;
             pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
-        @keyframes hologramScan {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
+        .hologram-interference:hover::after {
+            opacity: 1;
+        }
+
+        @keyframes interference {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(5px); }
         }
     </style>
 </head>
 <body>
-    <!-- 3D 场景 -->
-    <div class="scene-container">
-        <!-- 全息地球 -->
-        <div class="holographic-earth">
-            <div class="earth-core"></div>
-            <div class="data-ring ring-1"></div>
-            <div class="data-ring ring-2"></div>
-            <div class="data-ring ring-3"></div>
-        </div>
-    </div>
-
-    <!-- 粒子系统 -->
-    <div class="particle-system" id="particleSystem"></div>
+    <!-- 深空背景 -->
+    <div class="deep-space-bg"></div>
+    
+    <!-- 星空粒子 -->
+    <div class="star-field" id="starField"></div>
+    
+    <!-- 全息网格 -->
+    <div class="hologram-grid"></div>
 
     <!-- 主容器 -->
     <div class="main-container">
-        <!-- 标题区域 -->
-        <div class="title-section hologram-effect">
-            <h1 class="main-title">今日新闻速览</h1>
+        <!-- 全息标题 -->
+        <div class="holographic-title">
+            <h1 class="title-text hologram-interference" data-text="今日新闻速览">今日新闻速览</h1>
         </div>
 
-        <!-- 内容网格 -->
-        <div class="content-grid">
-            <!-- 新闻卡片 -->
-            <div class="content-card">
-                <h2 class="card-title">赛事公告</h2>
-                <div class="card-content">
+        <!-- 时空隧道新闻容器 -->
+        <div class="news-tunnel">
+            <!-- 赛事公告全息投影 -->
+            <div class="news-hologram hologram-interference">
+                <div class="scan-line"></div>
+                <h2 class="news-title">赛事公告</h2>
+                <div class="news-content">
                     <p>• 第X(被黑笔涂抹)届电子音乐马拉松今日正式开赛!比赛地点为"World of Memories"</p>
                     <p>• 三天后小镇扫墓踏青活动将举办</p>
                     <p>• 各镇镇长共同出席马拉松并致词——"音游健儿展风采,甲辰之年启新篇"</p>
                 </div>
             </div>
 
-            <!-- 决赛专栏 -->
-            <div class="content-card">
-                <h2 class="card-title">马拉松决赛专栏</h2>
-                <div class="card-content">
+            <!-- 决赛专栏全息投影 -->
+            <div class="news-hologram hologram-interference">
+                <div class="scan-line"></div>
+                <h2 class="news-title">马拉松决赛专栏</h2>
+                <div class="news-content">
                     <p>来自世界各地的选手经过角逐剩余五位选手进行决赛,名单如下:</p>
                     <p><strong>第X(被黑笔涂抹)届音乐电子马拉松决赛参赛名单</strong></p>
                     <p>序号 留言 加成🔼 ACC▶️</p>
                     
-                    <div class="contestant-grid">
+                    <div class="contestants-matrix">
                         <div class="contestant-item">
                             <div class="contestant-message">• ? 片側だけの正義,橫切る影に立ち,不自由選び続けてた.</div>
                             <div class="contestant-stats">
-                                <span>加成: -1.83%</span>
-                                <span>ACC: 78.18%</span>
+                                <span class="stat-boost">加成: -1.83%</span>
+                                <span class="stat-acc">ACC: 78.18%</span>
                             </div>
                         </div>
                         <div class="contestant-item">
                             <div class="contestant-message">• ? Under pressure I've been going off the deep end.</div>
                             <div class="contestant-stats">
-                                <span>加成: -3.47%</span>
-                                <span>ACC: 62.22%</span>
+                                <span class="stat-boost">加成: -3.47%</span>
+                                <span class="stat-acc">ACC: 62.22%</span>
                             </div>
                         </div>
                         <div class="contestant-item">
                             <div class="contestant-message">• ? Hey yo one for the blood two for the life.</div>
                             <div class="contestant-stats">
-                                <span>加成: 64.2%</span>
-                                <span>ACC: 149.49%</span>
+                                <span class="stat-boost">加成: 64.2%</span>
+                                <span class="stat-acc">ACC: 149.49%</span>
                             </div>
                         </div>
                         <div class="contestant-item">
                             <div class="contestant-message">• ? 她并没有留言,同时全曲结束.</div>
                             <div class="contestant-stats">
-                                <span>加成: -9.19%</span>
-                                <span>ACC: 75.02%</span>
+                                <span class="stat-boost">加成: -9.19%</span>
+                                <span class="stat-acc">ACC: 75.02%</span>
                             </div>
                         </div>
                         <div class="contestant-item">
                             <div class="contestant-message">• ? 全て壊して.</div>
                             <div class="contestant-stats">
-                                <span>加成: 56.13%</span>
-                                <span>ACC: 106.35%</span>
+                                <span class="stat-boost">加成: 56.13%</span>
+                                <span class="stat-acc">ACC: 106.35%</span>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 观众留言 -->
-            <div class="content-card">
-                <h2 class="card-title">观众留言</h2>
-                <div class="card-content">
+            <!-- 观众留言全息投影 -->
+            <div class="news-hologram hologram-interference">
+                <div class="scan-line"></div>
+                <h2 class="news-title">观众留言</h2>
+                <div class="news-content">
                     <p>"第X(被黑笔涂抹)届连结成的主题元素是什么呢?"</p>
                     <p>"听说这次决赛隐藏大奖将会是???新品首秀,到底会是什么呢?好期待啊..."</p>
                 </div>
             </div>
 
-            <!-- 现场活动A -->
-            <div class="content-card">
-                <h2 class="card-title">现场活动A</h2>
-                <div class="card-content">
+            <!-- 现场活动A全息投影 -->
+            <div class="news-hologram hologram-interference">
+                <div class="scan-line"></div>
+                <h2 class="news-title">现场活动A</h2>
+                <div class="news-content">
                     <p>神秘评委即将登场!主题元素搜寻寻找评委身份活动现在开始!</p>
                     <p>评委当时所在时空区域:①??.1+1-1+1-1…:/②55.6/③2.4</p>
                     <p>比赛检查点全经过时的计算公式:</p>
-                    <div class="code-container">
+                    <div class="hologram-code">
                         <div class="code-text">
 ...(模糊不清)<br>
 cout<<"请输入各个检查点数量";<br>
@@ -673,25 +731,26 @@ P--;<br>
                 </div>
             </div>
 
-            <!-- 现场活动B -->
-            <div class="content-card">
-                <h2 class="card-title">现场活动B</h2>
-                <div class="card-content">
+            <!-- 现场活动B全息投影 -->
+            <div class="news-hologram hologram-interference">
+                <div class="scan-line"></div>
+                <h2 class="news-title">现场活动B</h2>
+                <div class="news-content">
                     <p>决赛隐藏大奖"P"谱面创作者藏匿在观众中,第一个找到其"笔名"的观众将会获得神秘礼品!</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 输入控制台 -->
-    <div class="input-console">
-        <div class="console-header">
-            <div class="console-title">QUANTUM ACCESS TERMINAL</div>
+    <!-- 量子输入终端 -->
+    <div class="quantum-terminal">
+        <div class="terminal-header">
+            <div class="terminal-title">QUANTUM ACCESS TERMINAL</div>
         </div>
-        <div class="cooldown-indicator" id="cooldownDisplay"></div>
+        <div class="cooldown-display" id="cooldownDisplay"></div>
         <div class="input-group">
-            <input type="text" class="key-input" id="keyInput" placeholder="输入量子密钥..." maxlength="50">
-            <button class="submit-button" id="submitBtn">传输</button>
+            <input type="text" class="quantum-input" id="keyInput" placeholder="输入量子密钥..." maxlength="50">
+            <button class="quantum-button" id="submitBtn">传输</button>
         </div>
         <div class="message-display" id="messageDisplay"></div>
     </div>
@@ -703,7 +762,7 @@ P--;<br>
         let cooldownRemaining = 0;
         
         // API配置
-        const API_BASE = 'http://localhost:3000';
+        const API_BASE = 'http://http://111.170.11.168:15114/proxy/3000';
         const NODE_ID = 'node5';
         
         // DOM元素
@@ -714,91 +773,94 @@ P--;<br>
         
         // 初始化
         document.addEventListener('DOMContentLoaded', function() {
-            initializeParticleSystem();
+            initializeStarField();
             initializeAnimations();
             checkCooldownStatus();
             setupEventListeners();
-            createDataVisualization();
+            createDataOrbs();
         });
         
-        // 粒子系统初始化
-        function initializeParticleSystem() {
-            const particleSystem = document.getElementById('particleSystem');
+        // 星空初始化
+        function initializeStarField() {
+            const starField = document.getElementById('starField');
             
-            function createParticle() {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                particle.style.left = Math.random() * 100 + '%';
-                particle.style.animationDelay = Math.random() * 10 + 's';
-                particle.style.animationDuration = (Math.random() * 10 + 5) + 's';
-                particleSystem.appendChild(particle);
-                
-                // 移除粒子
-                setTimeout(() => {
-                    if (particle.parentNode) {
-                        particle.parentNode.removeChild(particle);
-                    }
-                }, 15000);
+            for (let i = 0; i < 200; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 3 + 's';
+                star.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                starField.appendChild(star);
             }
-            
-            // 定期创建粒子
-            setInterval(createParticle, 300);
         }
         
-        // 数据可视化
-        function createDataVisualization() {
-            const container = document.querySelector('.scene-container');
-            const dataValues = [78, 62, 149, 75, 106];
+        // 数据球体
+        function createDataOrbs() {
+            const container = document.querySelector('.main-container');
+            const orbCount = 8;
             
-            dataValues.forEach((value, index) => {
-                const viz = document.createElement('div');
-                viz.className = 'data-viz';
-                viz.style.left = Math.random() * 80 + 10 + '%';
-                viz.style.top = Math.random() * 80 + 10 + '%';
-                viz.style.animationDelay = index * 0.5 + 's';
-                container.appendChild(viz);
-            });
+            for (let i = 0; i < orbCount; i++) {
+                const orb = document.createElement('div');
+                orb.className = 'data-orb';
+                orb.style.left = Math.random() * 90 + 5 + '%';
+                orb.style.top = Math.random() * 80 + 10 + '%';
+                orb.style.animationDelay = i * 0.8 + 's';
+                orb.style.animationDuration = (Math.random() * 4 + 4) + 's';
+                container.appendChild(orb);
+            }
         }
         
         // 动画初始化
         function initializeAnimations() {
-            // 卡片入场动画
+            // 全息投影入场动画
             anime({
-                targets: '.content-card',
-                translateY: [50, 0],
-                opacity: [0, 1],
-                duration: 1000,
-                delay: anime.stagger(200),
-                easing: 'easeOutQuart'
-            });
-            
-            // 标题动画
-            anime({
-                targets: '.main-title',
-                scale: [0.8, 1],
-                opacity: [0, 1],
-                duration: 1500,
-                easing: 'easeOutElastic(1, .8)'
-            });
-            
-            // 输入控制台动画
-            anime({
-                targets: '.input-console',
+                targets: '.news-hologram',
                 translateY: [100, 0],
                 opacity: [0, 1],
-                duration: 1000,
-                delay: 1000,
+                rotateX: [15, 0],
+                duration: 1200,
+                delay: anime.stagger(300),
                 easing: 'easeOutQuart'
             });
             
-            // 参赛选手动画
+            // 标题全息效果
+            anime({
+                targets: '.title-text',
+                scale: [0.8, 1],
+                opacity: [0, 1],
+                duration: 2000,
+                easing: 'easeOutElastic(1, .6)'
+            });
+            
+            // 量子终端入场
+            anime({
+                targets: '.quantum-terminal',
+                translateY: [150, 0],
+                opacity: [0, 1],
+                duration: 1500,
+                delay: 1500,
+                easing: 'easeOutQuart'
+            });
+            
+            // 参赛选手数据流动画
             anime({
                 targets: '.contestant-item',
-                translateX: [-30, 0],
+                translateX: [-50, 0],
                 opacity: [0, 1],
                 duration: 800,
-                delay: anime.stagger(100, {start: 1500}),
+                delay: anime.stagger(150, {start: 2000}),
                 easing: 'easeOutQuart'
+            });
+            
+            // 数据球体动画
+            anime({
+                targets: '.data-orb',
+                scale: [0, 1],
+                opacity: [0, 0.6],
+                duration: 1000,
+                delay: anime.stagger(200, {start: 1000}),
+                easing: 'easeOutBack'
             });
         }
         
@@ -811,23 +873,40 @@ P--;<br>
                 }
             });
             
-            // 输入框聚焦效果
+            // 输入框量子效果
             keyInput.addEventListener('focus', function() {
-                createInputEffect();
+                createQuantumEffect();
+            });
+            
+            // 全息卡片交互
+            document.querySelectorAll('.news-hologram').forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    createHologramEffect(this);
+                });
             });
         }
         
-        // 输入效果
-        function createInputEffect() {
+        // 量子效果
+        function createQuantumEffect() {
             anime({
-                targets: '.input-console',
-                scale: [1, 1.02, 1],
+                targets: '.quantum-terminal',
+                scale: [1, 1.05, 1],
                 boxShadow: [
-                    '0 15px 50px rgba(0, 0, 0, 0.3)',
-                    '0 20px 60px rgba(79, 172, 254, 0.4)',
-                    '0 15px 50px rgba(0, 0, 0, 0.3)'
+                    '0 15px 50px rgba(170, 136, 255, 0.3)',
+                    '0 25px 70px rgba(170, 136, 255, 0.6)',
+                    '0 15px 50px rgba(170, 136, 255, 0.3)'
                 ],
-                duration: 600,
+                duration: 800,
+                easing: 'easeInOutSine'
+            });
+        }
+        
+        // 全息效果
+        function createHologramEffect(element) {
+            anime({
+                targets: element,
+                borderColor: ['rgba(0, 255, 255, 0.2)', 'rgba(0, 255, 255, 0.8)', 'rgba(0, 255, 255, 0.2)'],
+                duration: 1000,
                 easing: 'easeInOutSine'
             });
         }
@@ -861,7 +940,7 @@ P--;<br>
             
             isSubmitting = true;
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="loading-spinner"></span> 传输中...';
+            submitBtn.innerHTML = '<span class="quantum-spinner"></span> 传输中...';
             
             // 提交动画
             createSubmitEffect();
@@ -956,56 +1035,57 @@ P--;<br>
                 targets: messageDisplay,
                 scale: [0.8, 1],
                 opacity: [0, 1],
-                duration: 300,
+                duration: 400,
                 easing: 'easeOutBack'
             });
         }
         
         // 提交效果
         function createSubmitEffect() {
-            anime({
-                targets: '.holographic-earth',
-                scale: [1, 1.1, 1],
-                duration: 1000,
-                easing: 'easeInOutSine'
+            // 全息干扰效果
+            document.querySelectorAll('.news-hologram').forEach(card => {
+                anime({
+                    targets: card,
+                    rotateY: [0, 5, 0],
+                    duration: 1000,
+                    easing: 'easeInOutSine'
+                });
             });
         }
         
         // 成功效果
         function createSuccessEffect() {
-            // 全屏闪光
-            const flash = document.createElement('div');
-            flash.style.position = 'fixed';
-            flash.style.top = '0';
-            flash.style.left = '0';
-            flash.style.width = '100%';
-            flash.style.height = '100%';
-            flash.style.background = 'radial-gradient(circle, rgba(79, 172, 254, 0.3), transparent)';
-            flash.style.zIndex = '9999';
-            flash.style.opacity = '0';
-            flash.style.pointerEvents = 'none';
-            document.body.appendChild(flash);
+            // 量子爆发效果
+            const burst = document.createElement('div');
+            burst.style.position = 'fixed';
+            burst.style.top = '50%';
+            burst.style.left = '50%';
+            burst.style.width = '100px';
+            burst.style.height = '100px';
+            burst.style.background = 'radial-gradient(circle, rgba(0, 255, 136, 0.8), transparent)';
+            burst.style.borderRadius = '50%';
+            burst.style.transform = 'translate(-50%, -50%)';
+            burst.style.pointerEvents = 'none';
+            burst.style.zIndex = '9999';
+            document.body.appendChild(burst);
             
             anime({
-                targets: flash,
-                opacity: [0, 1, 0],
-                duration: 1000,
-                easing: 'easeInOutSine',
+                targets: burst,
+                scale: [0, 20],
+                opacity: [1, 0],
+                duration: 2000,
+                easing: 'easeOutQuart',
                 complete: function() {
-                    if (flash.parentNode) {
-                        flash.parentNode.removeChild(flash);
+                    if (burst.parentNode) {
+                        burst.parentNode.removeChild(burst);
                     }
                 }
             });
             
-            // 地球发光
+            // 全息卡片发光
             anime({
-                targets: '.earth-core',
-                boxShadow: [
-                    '0 0 50px rgba(79, 172, 254, 0.5), inset 0 0 50px rgba(255, 255, 255, 0.1)',
-                    '0 0 100px rgba(79, 172, 254, 1), inset 0 0 100px rgba(255, 255, 255, 0.3)',
-                    '0 0 50px rgba(79, 172, 254, 0.5), inset 0 0 50px rgba(255, 255, 255, 0.1)'
-                ],
+                targets: '.news-hologram',
+                borderColor: ['rgba(0, 255, 255, 0.2)', 'rgba(0, 255, 136, 1)', 'rgba(0, 255, 255, 0.2)'],
                 duration: 2000,
                 easing: 'easeInOutSine'
             });
@@ -1014,24 +1094,24 @@ P--;<br>
         // 冷却效果
         function createCooldownEffect() {
             anime({
-                targets: '.input-console',
-                borderColor: ['rgba(255, 255, 255, 0.2)', 'rgba(245, 87, 108, 0.8)', 'rgba(255, 255, 255, 0.2)'],
-                duration: 1000,
+                targets: '.quantum-terminal',
+                borderColor: ['rgba(170, 136, 255, 1)', 'rgba(255, 136, 170, 1)', 'rgba(170, 136, 255, 1)'],
+                duration: 1500,
                 easing: 'easeInOutSine'
             });
         }
         
         // Meta启动效果
         function createMetaStartEffect() {
-            // 创建能量波
-            for (let i = 0; i < 5; i++) {
+            // 创建量子波
+            for (let i = 0; i < 8; i++) {
                 const wave = document.createElement('div');
                 wave.style.position = 'fixed';
                 wave.style.top = '50%';
                 wave.style.left = '50%';
-                wave.style.width = '100px';
-                wave.style.height = '100px';
-                wave.style.border = '2px solid rgba(79, 172, 254, 0.8)';
+                wave.style.width = '50px';
+                wave.style.height = '50px';
+                wave.style.border = '3px solid rgba(170, 136, 255, 0.8)';
                 wave.style.borderRadius = '50%';
                 wave.style.transform = 'translate(-50%, -50%)';
                 wave.style.pointerEvents = 'none';
@@ -1040,10 +1120,10 @@ P--;<br>
                 
                 anime({
                     targets: wave,
-                    scale: [0, 10],
+                    scale: [0, 15],
                     opacity: [1, 0],
-                    duration: 2000,
-                    delay: i * 200,
+                    duration: 3000,
+                    delay: i * 300,
                     easing: 'easeOutQuart',
                     complete: function() {
                         if (wave.parentNode) {
@@ -1056,10 +1136,11 @@ P--;<br>
         
         // 窗口调整
         window.addEventListener('resize', function() {
-            // 重新计算粒子位置
-            const particles = document.querySelectorAll('.particle');
-            particles.forEach(particle => {
-                particle.style.left = Math.random() * 100 + '%';
+            // 重新计算数据球体位置
+            const orbs = document.querySelectorAll('.data-orb');
+            orbs.forEach(orb => {
+                orb.style.left = Math.random() * 90 + 5 + '%';
+                orb.style.top = Math.random() * 80 + 10 + '%';
             });
         });
     </script>
