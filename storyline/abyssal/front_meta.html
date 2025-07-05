@@ -1,44 +1,63 @@
+<!-- 剧情⑥: 秘密与陷阱 -->
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Abyssal剧情5</title>
+    <title>Abyssal剧情6</title>
     <style>
-        :root { --text-color: #EAEFF5; --glow-color-1: rgba(80, 150, 255, 0.5); --glow-color-2: rgba(180, 220, 255, 0.6); }
+        :root {
+            --text-color: #EAEFF5;
+            --glow-color-1: rgba(80, 150, 255, 0.5);
+            --glow-color-2: rgba(180, 220, 255, 0.6);
+            --tech-color: #00ffff;
+            --alarm-color: #ff1111;
+            --poison-color: #7cfc00;
+            --highlight-glow: rgba(255, 235, 150, 0.8);
+        }
+
+        /* --- 基础设定 (无修改) --- */
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #010409; color: var(--text-color); font-family: 'Helvetica Neue', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif; cursor: pointer; }
+
+        /* --- 动态背景 (调整颜色以匹配陷阱氛围) --- */
         #background-canvas { position: fixed; top: 0; left: 0; z-index: -2; }
         #aurora-background { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; mix-blend-mode: screen; opacity: 0.6; }
-        .aurora-layer { position: absolute; width: 150%; height: 150%; background-image: radial-gradient(circle at var(--x, 50%) var(--y, 50%), var(--c, transparent), transparent 40%); animation: flow 40s linear infinite alternate; }
-        @keyframes flow { from { transform: rotate(0deg) scale(1); } to { transform: rotate(360deg) scale(1.2); } }
+        .aurora-layer { position: absolute; width: 150%; height: 150%; background-image: radial-gradient(circle at var(--x, 50%) var(--y, 50%), var(--c, transparent), transparent 40%); animation: flow 25s linear infinite alternate; }
+        @keyframes flow { from { transform: rotate(0deg) scale(1); } to   { transform: rotate(360deg) scale(1.2); } }
+
+        /* --- 符文描绘加载动画 (无修改) --- */
         #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; background-color: #010409; z-index: 100; }
         .loader-glyph { width: 80px; height: 80px; stroke-width: 2; fill: none; stroke: var(--text-color); stroke-linecap: round; stroke-linejoin: round; }
+
+        /* --- 剧情布局 (无修改) --- */
         #story-container { position: relative; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; opacity: 0; padding: 0 2rem; box-sizing: border-box; perspective: 800px; }
         .story-line { font-size: 2rem; text-shadow: 0 0 6px var(--glow-color-1), 0 0 10px var(--glow-color-2); margin: 0.5rem 0; opacity: 0; position: absolute; text-align: center; }
+        
+        /* --- 特殊词语效果 --- */
+        .tech-word { color: var(--tech-color); text-shadow: 0 0 8px var(--tech-color); font-family: 'Courier New', Courier, monospace; }
+        .electric-word { color: #ffff00; text-shadow: 0 0 10px #ffff00; animation: electric-flicker 0.1s infinite; }
+        @keyframes electric-flicker { 50% { opacity: 0.7; } }
+        .secret-word { color: #ccc; font-style: italic; filter: blur(0.5px); }
+        .highlight-word { color: #fff; text-shadow: 0 0 8px var(--highlight-glow), 0 0 15px var(--highlight-glow); font-weight: bold; }
+        .alarm-word { color: var(--alarm-color); font-weight: bold; animation: alarm-flash 1s infinite steps(1); }
+        @keyframes alarm-flash { 50% { color: #900; } }
+        .poison-word { color: var(--poison-color); text-shadow: 0 0 10px #32cd32; font-weight: bold; }
+        
+        /* --- 交互箭头 (无修改) --- */
         #next-arrow { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); width: 30px; height: 30px; opacity: 0; pointer-events: none; }
         #next-arrow svg { width: 100%; height: 100%; fill: var(--text-color); filter: drop-shadow(0 0 5px var(--glow-color-2)); }
-        
-        .danger-word { color: #FF4500; animation: danger-pulse 1s infinite; }
-        @keyframes danger-pulse {
-            0%, 100% { text-shadow: 0 0 5px #ff0000, 0 0 10px #ff0000; }
-            50% { text-shadow: 0 0 10px #ff4500, 0 0 20px #ff4500, 0 0 30px #ff0000; }
-        }
-        .tech-word { color: #00FFC6; text-shadow: 0 0 5px #00FFC6; animation: glitch 0.3s steps(2, start) infinite; }
-        @keyframes glitch {
-            0% { text-shadow: -2px -2px 0 #FF00E0, 2px 2px 0 #00FFC6; } 33% { text-shadow: 2px 2px 0 #FF00E0, -2px -2px 0 #00FFC6; }
-            66% { text-shadow: -2px 2px 0 #FF00E0, 2px -2px 0 #00FFC6; } 100% { text-shadow: 2px -2px 0 #FF00E0, -2px 2px 0 #00FFC6; }
-        }
     </style>
 </head>
 <body>
     <canvas id="background-canvas"></canvas>
     <div id="aurora-background">
-        <div class="aurora-layer" style="--x: 20%; --y: 30%; --c: var(--glow-color-1);"></div>
-        <div class="aurora-layer" style="--x: 80%; --y: 70%; --c: var(--glow-color-2); animation-direction: reverse;"></div>
+        <div class="aurora-layer" style="--x: 20%; --y: 20%; --c: var(--alarm-color);"></div>
+        <div class="aurora-layer" style="--x: 80%; --y: 80%; --c: var(--poison-color); animation-direction: reverse; animation-duration: 15s;"></div>
     </div>
-    <div id="loader"><svg class="loader-glyph" viewBox="0 0 100 100"><path d="M50 10 V 90 M10 50 H 90 M20 20 L 80 80 M20 80 L 80 20"/></svg></div>
+    <div id="loader"> <svg class="loader-glyph" viewBox="0 0 100 100"><path d="M50 10 V 90 M10 50 H 90 M20 20 L 80 80 M20 80 L 80 20"/></svg> </div>
     <div id="story-container"></div>
-    <div id="next-arrow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 15.586l-4.293-4.293-1.414 1.414L12 18.414l5.707-5.707-1.414-1.414z"/><path d="M12 8.586l-4.293-4.293-1.414 1.414L12 11.414l5.707-5.707-1.414-1.414z"/></svg></div>
+    <div id="next-arrow"> <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 15.586l-4.293-4.293-1.414 1.414L12 18.414l5.707-5.707-1.414-1.414z"/><path d="M12 8.586l-4.293-4.293-1.414 1.414L12 11.414l5.707-5.707-1.414-1.414z"/></svg> </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
     <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -46,15 +65,21 @@
         const nextArrow = document.getElementById('next-arrow');
         let isAnimating = true, currentLineIndex = -1, arrowTimeline;
 
+        // 剧情文本
         const storyScript = [
-            { text: '在躲避无尽的追赶时，她们意外冲进了一间地下室。' },
-            { text: '这里似乎是…城市的<span class="tech-word">电源中控室</span>。' },
-            { text: 'Cryst精通<span class="tech-word">编程</span>，立刻着手重启城市的电源与防御系统。' },
-            { text: '而Abyss则守在门口，抵御着门外来势汹汹的<span class="danger-word">敌人</span>。' },
-            { text: '她必须为Cryst争取到足够的时间。' },
+            { text: '<span class="tech-word">电力系统</span>成功重启。' },
+            { text: '野兽被<span class="electric-word">防御系统产生的电流</span>逼退到城郊。' },
+            { text: 'Cryst意外在电脑中发现了一些<span class="secret-word">秘密文件</span>。' },
+            { text: '里面似乎保存着当年<span class="highlight-word">Insight</span>的部分档案...' },
+            { text: '她开始尝试破解，却触发了<span class="alarm-word">警报</span>！' },
+            { text: '电脑瞬间死机，房间四角开始排放<span class="poison-word">呛人的气体</span>…' },
+            { text: '陷阱启动了，两人急忙向外逃跑！' },
         ];
 
-        const loaderPath = document.querySelector('.loader-glyph path'); const pathLength = loaderPath.getTotalLength(); loaderPath.style.strokeDasharray = pathLength; loaderPath.style.strokeDashoffset = pathLength; anime.timeline({ easing: 'easeInOutSine', duration: 2000 }).add({ targets: loaderPath, strokeDashoffset: [pathLength, 0] }).add({ targets: '.loader-glyph', scale: [1, 1.1, 1], filter: ['drop-shadow(0 0 3px var(--glow-color-2))', 'drop-shadow(0 0 10px var(--glow-color-2))', 'drop-shadow(0 0 3px var(--glow-color-2))'], duration: 1000, easing: 'easeInOutQuad' }, '-=500').add({ targets: '#loader', opacity: 0, duration: 800, easing: 'easeOutQuad', complete: () => { document.getElementById('loader').style.display = 'none'; initializeStory(); } }); const canvas = document.getElementById('background-canvas'); const ctx = canvas.getContext('2d'); canvas.width = window.innerWidth; canvas.height = window.innerHeight; let particles = []; const particleCount = 100; for (let i = 0; i < particleCount; i++) { particles.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, radius: Math.random() * 1.5 + 0.5, vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3, opacity: Math.random() * 0.5 + 0.2 }); } function drawParticles() { ctx.clearRect(0, 0, canvas.width, canvas.height); particles.forEach(p => { p.x += p.vx; p.y += p.vy; if (p.x < 0 || p.x > canvas.width) p.vx *= -1; if (p.y < 0 || p.y > canvas.height) p.vy *= -1; ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); ctx.fillStyle = `rgba(234, 239, 245, ${p.opacity})`; ctx.fill(); }); requestAnimationFrame(drawParticles); } drawParticles(); window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+        // --- 加载及背景动画 (无修改) ---
+        const loaderPath = document.querySelector('.loader-glyph path'); const pathLength = loaderPath.getTotalLength(); loaderPath.style.strokeDasharray = pathLength; loaderPath.style.strokeDashoffset = pathLength; anime.timeline({ easing: 'easeInOutSine', duration: 2000 }).add({ targets: loaderPath, strokeDashoffset: [pathLength, 0] }).add({ targets: '.loader-glyph', scale: [1, 1.1, 1], filter: ['drop-shadow(0 0 3px var(--glow-color-2))', 'drop-shadow(0 0 10px var(--glow-color-2))', 'drop-shadow(0 0 3px var(--glow-color-2))'], duration: 1000, easing: 'easeInOutQuad' }, '-=500').add({ targets: '#loader', opacity: 0, duration: 800, easing: 'easeOutQuad', complete: () => { document.getElementById('loader').style.display = 'none'; initializeStory(); } }); const canvas = document.getElementById('background-canvas'); const ctx = canvas.getContext('2d'); canvas.width = window.innerWidth; canvas.height = window.innerHeight; let particles = []; const particleCount = 120; for (let i = 0; i < particleCount; i++) { particles.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, radius: Math.random() * 1.5 + 0.5, vx: (Math.random() - 0.5) * 0.4, vy: (Math.random() - 0.5) * 0.4, opacity: Math.random() * 0.5 + 0.2 }); } function drawParticles() { ctx.clearRect(0, 0, canvas.width, canvas.height); particles.forEach(p => { p.x += p.vx; p.y += p.vy; if (p.x < 0 || p.x > canvas.width) p.vx *= -1; if (p.y < 0 || p.y > canvas.height) p.vy *= -1; ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); ctx.fillStyle = `rgba(234, 239, 245, ${p.opacity})`; ctx.fill(); }); requestAnimationFrame(drawParticles); } drawParticles(); window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+
+        // --- 剧情核心逻辑 (无修改) ---
         function initializeStory() { document.body.addEventListener('click', handleInteraction); document.addEventListener('keydown', handleInteraction); anime({ targets: '#story-container', opacity: 1, duration: 500, complete: () => { isAnimating = false; advanceStory(); } }); }
         function handleInteraction(e) { if (e.type === 'keydown' && e.code !== 'Space' && e.code !== 'Enter') return; e.preventDefault(); if (isAnimating) return; if (currentLineIndex >= storyScript.length - 1) { proceedToNextScene(); } else { advanceStory(); } }
         function advanceStory() { isAnimating = true; const currentLineEl = storyContainer.querySelector('.story-line'); const hideAnimation = new Promise(resolve => { if (currentLineEl) { anime({ targets: currentLineEl, opacity: 0, translateY: '-=20px', filter: ['blur(0px)', 'blur(5px)'], duration: 600, easing: 'easeInQuint', complete: () => { currentLineEl.remove(); resolve(); } }); } else { resolve(); } }); hideAnimation.then(() => { currentLineIndex++; const lineData = storyScript[currentLineIndex]; const newLineEl = document.createElement('div'); newLineEl.className = 'story-line'; newLineEl.innerHTML = lineData.text; storyContainer.appendChild(newLineEl); anime({ targets: newLineEl, opacity: [0, 1], translateY: ['20px', '0px'], filter: ['blur(5px)', 'blur(0px)'], duration: 1200, easing: 'easeOutQuint', begin: () => { if (arrowTimeline) arrowTimeline.pause(); nextArrow.style.opacity = '0'; }, complete: () => { isAnimating = false; if (currentLineIndex < storyScript.length - 1) { toggleArrow(true); } } }); }); }

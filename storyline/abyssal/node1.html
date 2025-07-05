@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abyssal剧情1</title>
+    <style>
+        :root {
+            --text-color: #EAEFF5;
+            --glow-color-1: rgba(80, 150, 255, 0.5);
+            --glow-color-2: rgba(180, 220, 255, 0.6);
+        }
+
+        /* --- 基础设定 --- */
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            overflow: hidden;
+            background-color: #010409;
+            color: var(--text-color);
+            font-family: 'Helvetica Neue', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            cursor: pointer; /* 将光标应用到整个页面 */
+        }
+
+        /* --- 动态背景 --- */
+        #background-canvas {
+            position: fixed; top: 0; left: 0; z-index: -2;
+        }
+        #aurora-background {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1; mix-blend-mode: screen; opacity: 0.6;
+        }
+        .aurora-layer {
+            position: absolute; width: 150%; height: 150%;
+            background-image: radial-gradient(circle at var(--x, 50%) var(--y, 50%), var(--c, transparent), transparent 40%);
+            animation: flow 40s linear infinite alternate;
+        }
+        @keyframes flow {
+            from { transform: rotate(0deg) scale(1); }
+            to   { transform: rotate(360deg) scale(1.2); }
+        }
+
+        /* --- 符文描绘加载动画 --- */
+        #loader {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; justify-content: center; align-items: center;
+            background-color: #010409; z-index: 100;
+        }
+        .loader-glyph {
+            width: 80px; height: 80px;
+            stroke-width: 2; fill: none; stroke: var(--text-color);
+            stroke-linecap: round; stroke-linejoin: round;
+        }
+
+        /* --- 剧情布局 --- */
+        #story-container { /* 修改为container */
+            position: relative; width: 100%; height: 100%;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            opacity: 0; padding: 0 2rem; box-sizing: border-box;
+            perspective: 800px; /* 为3D动画效果添加透视 */
+        }
+        .story-line {
+            font-size: 2rem;
+            text-shadow: 0 0 6px var(--glow-color-1), 0 0 10px var(--glow-color-2);
+            margin: 0.5rem 0;
+            opacity: 0;
+            position: absolute; /* 让所有行在同一位置出现和消失 */
+            text-align: center; /* 文本居中 */
+        }
+        
+        /* 特殊词语效果 */
+        .rainbow-word {
+            background: linear-gradient(90deg, #00E5FF, #D500F9, #FFEA00, #00E5FF);
+            background-size: 200% 200%; color: transparent;
+            -webkit-background-clip: text; background-clip: text;
+            animation: rainbow-flow 4s linear infinite;
+        }
+        @keyframes rainbow-flow { to { background-position: 200% center; } }
+        
+        .chaos-word span { 
+            display: inline-block;
+            /* 效果将在JS中动态应用，这里保持基础样式 */
+        }
+        
+        /* --- 交互箭头 --- */
+        #next-arrow {
+            position: fixed; bottom: 30px; left: 50%;
+            transform: translateX(-50%); width: 30px; height: 30px;
+            opacity: 0; pointer-events: none;
+        }
+        #next-arrow svg {
+            width: 100%; height: 100%; fill: var(--text-color);
+            filter: drop-shadow(0 0 5px var(--glow-color-2));
+        }
+    </style>
+</head>
+<body>
+    <canvas id="background-canvas"></canvas>
+    <div id="aurora-background">
+        <div class="aurora-layer" style="--x: 20%; --y: 30%; --c: var(--glow-color-1);"></div>
+        <div class="aurora-layer" style="--x: 80%; --y: 70%; --c: var(--glow-color-2); animation-direction: reverse;"></div>
+    </div>
+
+    <div id="loader">
+        <svg class="loader-glyph" viewBox="0 0 100 100">
+            <path d="M50 10 V 90 M10 50 H 90 M20 20 L 80 80 M20 80 L 80 20"/>
+        </svg>
+    </div>
+
+    <div id="story-container"></div> <!-- ID已修改 -->
+    <div id="next-arrow">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 15.586l-4.293-4.293-1.414 1.414L12 18.414l5.707-5.707-1.414-1.414z"/><path d="M12 8.586l-4.293-4.293-1.414 1.414L12 11.414l5.707-5.707-1.414-1.414z"/></svg>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- 元素获取 ---
+        const storyContainer = document.getElementById('story-container');
+        const nextArrow = document.getElementById('next-arrow');
+        
+        // --- 状态变量 ---
+        let isAnimating = true; // 初始为true，防止加载时误触
+        let currentLineIndex = -1;
+        let chaosInterval;
+        let arrowTimeline;
+
+        const storyScript = [
+            { text: 'Abyss从小屋走出来，' },
+            { text: '却发现Cryst不见了踪影。' },
+            { text: '眼前是水天一色的蔚蓝大海，' },
+            { text: '<span class="rainbow-word">彩虹</span>下，有着若隐若现的一座城市。' },
+            { text: '港口，一座小船被<span class="chaos-word"><span>混</span><span>沌</span></span>污染。', special: 'chaos' },
+            { text: '她决定，用解谜让其回归秩序。' },
+        ];
+
+        // --- 1. 符文描绘加载动画 (无修改) ---
+        const loaderPath = document.querySelector('.loader-glyph path');
+        const pathLength = loaderPath.getTotalLength();
+        loaderPath.style.strokeDasharray = pathLength;
+        loaderPath.style.strokeDashoffset = pathLength;
+        anime.timeline({ easing: 'easeInOutSine', duration: 2000 })
+        .add({ targets: loaderPath, strokeDashoffset: [pathLength, 0] })
+        .add({ targets: '.loader-glyph', scale: [1, 1.1, 1], filter: ['drop-shadow(0 0 3px var(--glow-color-2))', 'drop-shadow(0 0 10px var(--glow-color-2))', 'drop-shadow(0 0 3px var(--glow-color-2))'], duration: 1000, easing: 'easeInOutQuad' }, '-=500')
+        .add({
+            targets: '#loader', opacity: 0, duration: 800, easing: 'easeOutQuad',
+            complete: () => {
+                document.getElementById('loader').style.display = 'none';
+                initializeStory();
+            }
+        });
+
+        // --- 2. Canvas 浮动粒子背景 (无修改) ---
+        const canvas = document.getElementById('background-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        let particles = []; const particleCount = 100;
+        for (let i = 0; i < particleCount; i++) { particles.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, radius: Math.random() * 1.5 + 0.5, vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3, opacity: Math.random() * 0.5 + 0.2 }); }
+        function drawParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.x += p.vx; p.y += p.vy; if (p.x < 0 || p.x > canvas.width) p.vx *= -1; if (p.y < 0 || p.y > canvas.height) p.vy *= -1; ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); ctx.fillStyle = `rgba(234, 239, 245, ${p.opacity})`; ctx.fill(); });
+            requestAnimationFrame(drawParticles);
+        }
+        drawParticles();
+        window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+
+        // --- 3. 剧情核心逻辑 (重构) ---
+        
+        // 初始化剧情
+        function initializeStory() {
+            // 添加事件监听器
+            document.body.addEventListener('click', handleInteraction);
+            document.addEventListener('keydown', handleInteraction);
+
+            // 淡入剧情容器，然后显示第一行
+            anime({
+                targets: '#story-container',
+                opacity: 1,
+                duration: 500,
+                complete: () => {
+                    isAnimating = false; // 允许第一次交互
+                    advanceStory();
+                }
+            });
+        }
+
+        // 统一处理用户交互（点击或按键）
+        function handleInteraction(e) {
+            // 如果是按键事件，但不是空格或回车，则忽略
+            if (e.type === 'keydown' && e.code !== 'Space' && e.code !== 'Enter') {
+                return;
+            }
+            e.preventDefault(); // 阻止空格键的默认滚动行为
+            if (isAnimating) return; // 动画期间禁止交互
+
+            // 检查是否是最后一行
+            if (currentLineIndex >= storyScript.length - 1) {
+                proceedToNextScene();
+            } else {
+                advanceStory();
+            }
+        }
+        
+        // 推进剧情（核心函数）
+        function advanceStory() {
+            isAnimating = true;
+            if (chaosInterval) clearInterval(chaosInterval); // 清除上个特效
+            
+            const currentLineEl = storyContainer.querySelector('.story-line');
+            
+            // 步骤1: 隐藏当前行 (如果存在)
+            const hideAnimation = new Promise(resolve => {
+                if (currentLineEl) {
+                    anime({
+                        targets: currentLineEl,
+                        opacity: 0,
+                        translateY: '-=20px', // 向上移出
+                        filter: ['blur(0px)', 'blur(5px)'],
+                        duration: 600,
+                        easing: 'easeInQuint',
+                        complete: () => {
+                            currentLineEl.remove();
+                            resolve();
+                        }
+                    });
+                } else {
+                    resolve(); // 如果没有当前行，直接继续
+                }
+            });
+
+            // 步骤2: 显示下一行 (在上一行隐藏后)
+            hideAnimation.then(() => {
+                currentLineIndex++;
+                const lineData = storyScript[currentLineIndex];
+                
+                const newLineEl = document.createElement('div');
+                newLineEl.className = 'story-line';
+                newLineEl.innerHTML = lineData.text;
+                storyContainer.appendChild(newLineEl);
+
+                anime({
+                    targets: newLineEl,
+                    opacity: [0, 1],
+                    translateY: ['20px', '0px'], // 从下方移入
+                    filter: ['blur(5px)', 'blur(0px)'],
+                    duration: 1200,
+                    easing: 'easeOutQuint',
+                    begin: () => {
+                        // 隐藏箭头，因为它会在动画结束后重新出现
+                        if (arrowTimeline) arrowTimeline.pause();
+                        nextArrow.style.opacity = '0';
+                    },
+                    complete: () => {
+                        isAnimating = false; // 允许下一次交互
+                        
+                        // 显示并激活箭头动画 (除了最后一行)
+                        if (currentLineIndex < storyScript.length - 1) {
+                            toggleArrow(true);
+                        }
+
+                        // 应用特殊效果
+                        if (lineData.special === 'chaos') {
+                            applyChaosEffect(newLineEl);
+                        }
+                    }
+                });
+            });
+        }
+        
+        // 前往下一个场景
+        function proceedToNextScene() {
+            isAnimating = true;
+            if (chaosInterval) clearInterval(chaosInterval);
+            toggleArrow(false); // 隐藏箭头
+
+            anime({
+                targets: '.story-line, #story-container',
+                opacity: 0,
+                duration: 1000,
+                easing: 'easeInOutExpo',
+                complete: () => window.location.href = 'node2.html' // 修改为你实际的下一场景路径
+            });
+        }
+
+        // 控制指示箭头的显示与动画
+        function toggleArrow(show) {
+            if (show) {
+                nextArrow.style.opacity = '1';
+                if (!arrowTimeline) { // 仅首次创建
+                     arrowTimeline = anime({
+                        targets: '#next-arrow',
+                        translateY: [0, -8, 0],
+                        loop: true,
+                        direction: 'alternate',
+                        duration: 1200,
+                        easing: 'easeInOutSine'
+                    });
+                }
+                arrowTimeline.play();
+            } else {
+                if (arrowTimeline) arrowTimeline.pause();
+                nextArrow.style.opacity = '0';
+            }
+        }
+        
+        // 应用“混沌”特效（效果升级）
+        function applyChaosEffect(lineEl) {
+            const chaosSpans = lineEl.querySelectorAll('.chaos-word span');
+            chaosInterval = setInterval(() => {
+               anime({
+                    targets: chaosSpans,
+                    translateX: () => anime.random(-5, 5),
+                    translateY: () => anime.random(-5, 5),
+                    rotate: () => anime.random(-15, 15), // 新增旋转
+                    skew: () => anime.random(-10, 10),  // 新增倾斜
+                    color: ['#F0F8FF', '#ff00ff', '#00ffff', '#FF4500'][anime.random(0,3)], // 增加颜色
+                    duration: 150,
+                    easing: 'steps(1)'
+               });
+            }, 100);
+        }
+
+    });
+    </script>
+</body>
+</html>

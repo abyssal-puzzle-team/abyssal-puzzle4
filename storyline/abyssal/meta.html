@@ -1,25 +1,27 @@
-<!-- 剧情④: 抵达城市与遇袭 -->
+<!-- 结局: 黑暗中的逃生 -->
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Abyssal剧情4</title>
+    <title>Abyssal剧情 - 终章</title>
     <style>
         :root {
             --text-color: #EAEFF5;
-            --glow-color-1: rgba(80, 150, 255, 0.5);
-            --glow-color-2: rgba(180, 220, 255, 0.6);
-            --danger-color: #ff4d4d;
+            --glow-color-1: rgba(180, 200, 255, 0.4);
+            --glow-color-2: rgba(220, 230, 255, 0.5);
+            --alarm-color: #ff1111;
+            --boss-glow: #a200ff;
+            --hope-color: #00e5ff;
         }
 
         /* --- 基础设定 (无修改) --- */
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #010409; color: var(--text-color); font-family: 'Helvetica Neue', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif; cursor: pointer; }
 
-        /* --- 动态背景 (调整颜色以匹配阴沉氛围) --- */
+        /* --- 动态背景 (调整为BOSS主题的紫色主导) --- */
         #background-canvas { position: fixed; top: 0; left: 0; z-index: -2; }
-        #aurora-background { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; mix-blend-mode: screen; opacity: 0.4; }
-        .aurora-layer { position: absolute; width: 150%; height: 150%; background-image: radial-gradient(circle at var(--x, 50%) var(--y, 50%), var(--c, transparent), transparent 40%); animation: flow 50s linear infinite alternate; }
+        #aurora-background { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; mix-blend-mode: screen; opacity: 0.8; }
+        .aurora-layer { position: absolute; width: 150%; height: 150%; background-image: radial-gradient(circle at var(--x, 50%) var(--y, 50%), var(--c, transparent), transparent 40%); animation: flow 18s linear infinite alternate; }
         @keyframes flow { from { transform: rotate(0deg) scale(1); } to   { transform: rotate(360deg) scale(1.2); } }
 
         /* --- 符文描绘加载动画 (无修改) --- */
@@ -31,19 +33,22 @@
         .story-line { font-size: 2rem; text-shadow: 0 0 6px var(--glow-color-1), 0 0 10px var(--glow-color-2); margin: 0.5rem 0; opacity: 0; position: absolute; text-align: center; }
         
         /* --- 特殊词语效果 --- */
-        .dark-word {
-            color: #9ab;
-            text-shadow: 0 0 8px #223;
+        .dark-word { color: #889; text-shadow: 0 0 8px #112; font-style: italic; }
+        .alarm-word { color: var(--alarm-color); font-weight: bold; animation: alarm-flash 1s infinite steps(1); }
+        @keyframes alarm-flash { 50% { color: #900; } }
+        .hope-word { /* 新增 */
+            color: var(--hope-color);
+            text-shadow: 0 0 10px var(--hope-color);
         }
-        .danger-word {
-            color: var(--danger-color);
+        .final-boss-glow {
+            color: #e0b0ff;
             font-weight: bold;
-            text-shadow: 0 0 8px var(--danger-color);
-            animation: danger-pulse 1.5s infinite;
+            text-shadow: 0 0 5px #d180ff, 0 0 15px #c150ff, 0 0 30px var(--boss-glow);
+            animation: boss-glow-pulse 2s infinite;
         }
-        @keyframes danger-pulse {
-            0%, 100% { text-shadow: 0 0 8px var(--danger-color); }
-            50% { text-shadow: 0 0 16px var(--danger-color); }
+        @keyframes boss-glow-pulse {
+            0%, 100% { text-shadow: 0 0 5px #d180ff, 0 0 15px #c150ff, 0 0 30px var(--boss-glow); }
+            50% { text-shadow: 0 0 10px #d180ff, 0 0 25px #c150ff, 0 0 50px var(--boss-glow); }
         }
         
         /* --- 交互箭头 (无修改) --- */
@@ -54,8 +59,8 @@
 <body>
     <canvas id="background-canvas"></canvas>
     <div id="aurora-background">
-        <div class="aurora-layer" style="--x: 50%; --y: 10%; --c: #455a64;"></div>
-        <div class="aurora-layer" style="--x: 80%; --y: 90%; --c: #263238; animation-direction: reverse;"></div>
+        <div class="aurora-layer" style="--x: 50%; --y: 50%; --c: var(--boss-glow);"></div>
+        <div class="aurora-layer" style="--x: 80%; --y: 20%; --c: var(--alarm-color); animation-direction: reverse; animation-duration: 8s;"></div>
     </div>
     <div id="loader"> <svg class="loader-glyph" viewBox="0 0 100 100"><path d="M50 10 V 90 M10 50 H 90 M20 20 L 80 80 M20 80 L 80 20"/></svg> </div>
     <div id="story-container"></div>
@@ -68,24 +73,25 @@
         const nextArrow = document.getElementById('next-arrow');
         let isAnimating = true, currentLineIndex = -1, arrowTimeline;
 
-        // 剧情文本
+        // 剧情文本 (结局部分)
         const storyScript = [
-            { text: '风暴之后，两人成功汇合并交换了信息。' },
-            { text: '不久，她们便抵达了岛上的城市。' },
-            { text: '整个城市被<span class="dark-word">浓密的乌云</span>覆盖，大门敞开。' },
-            { text: '街道<span class="dark-word">十分昏暗</span>。' },
-            { text: '忽然，她们在街角遇到了一些<span class="danger-word">饥饿的野生动物</span>。' },
-            { text: '眨眼间，它们便向两人冲来！' },
+            { text: 'Abyss在抵御中关闭了电源，四周<span class="dark-word">陷入一片黑暗</span>。' },
+            { text: '两人趁机用细电缆缠住了神秘人的双腿，准备逃出地下区域。' },
+            { text: '但神秘人启动了<span class="alarm-word">封锁装置</span>！' },
+            { text: '整个地下区域将在启动后彻底封锁，再也无法逃出。' },
+            { text: '她们想起了唯一的希望——那台<span class="hope-word">紧急逃生电梯</span>。' },
+            { text: '边躲避追击，边启动电梯是最后的生路…' },
+            { text: '黑暗中，神秘人的双眼发出<span class="final-boss-glow">紫色的亮光</span>…' },
         ];
 
         // --- 加载及背景动画 (无修改) ---
-        const loaderPath = document.querySelector('.loader-glyph path'); const pathLength = loaderPath.getTotalLength(); loaderPath.style.strokeDasharray = pathLength; loaderPath.style.strokeDashoffset = pathLength; anime.timeline({ easing: 'easeInOutSine', duration: 2000 }).add({ targets: loaderPath, strokeDashoffset: [pathLength, 0] }).add({ targets: '.loader-glyph', scale: [1, 1.1, 1], filter: ['drop-shadow(0 0 3px var(--glow-color-2))', 'drop-shadow(0 0 10px var(--glow-color-2))', 'drop-shadow(0 0 3px var(--glow-color-2))'], duration: 1000, easing: 'easeInOutQuad' }, '-=500').add({ targets: '#loader', opacity: 0, duration: 800, easing: 'easeOutQuad', complete: () => { document.getElementById('loader').style.display = 'none'; initializeStory(); } }); const canvas = document.getElementById('background-canvas'); const ctx = canvas.getContext('2d'); canvas.width = window.innerWidth; canvas.height = window.innerHeight; let particles = []; const particleCount = 80; for (let i = 0; i < particleCount; i++) { particles.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, radius: Math.random() * 1.5 + 0.5, vx: (Math.random() - 0.5) * 0.2, vy: (Math.random() - 0.5) * 0.2, opacity: Math.random() * 0.5 + 0.2 }); } function drawParticles() { ctx.clearRect(0, 0, canvas.width, canvas.height); particles.forEach(p => { p.x += p.vx; p.y += p.vy; if (p.x < 0 || p.x > canvas.width) p.vx *= -1; if (p.y < 0 || p.y > canvas.height) p.vy *= -1; ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); ctx.fillStyle = `rgba(234, 239, 245, ${p.opacity})`; ctx.fill(); }); requestAnimationFrame(drawParticles); } drawParticles(); window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+        const loaderPath = document.querySelector('.loader-glyph path'); const pathLength = loaderPath.getTotalLength(); loaderPath.style.strokeDasharray = pathLength; loaderPath.style.strokeDashoffset = pathLength; anime.timeline({ easing: 'easeInOutSine', duration: 2000 }).add({ targets: loaderPath, strokeDashoffset: [pathLength, 0] }).add({ targets: '.loader-glyph', scale: [1, 1.1, 1], filter: ['drop-shadow(0 0 3px var(--glow-color-2))', 'drop-shadow(0 0 10px var(--glow-color-2))', 'drop-shadow(0 0 3px var(--glow-color-2))'], duration: 1000, easing: 'easeInOutQuad' }, '-=500').add({ targets: '#loader', opacity: 0, duration: 800, easing: 'easeOutQuad', complete: () => { document.getElementById('loader').style.display = 'none'; initializeStory(); } }); const canvas = document.getElementById('background-canvas'); const ctx = canvas.getContext('2d'); canvas.width = window.innerWidth; canvas.height = window.innerHeight; let particles = []; const particleCount = 180; for (let i = 0; i < particleCount; i++) { particles.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, radius: Math.random() * 2 + 0.5, vx: (Math.random() - 0.5) * 0.8, vy: (Math.random() - 0.5) * 0.8, opacity: Math.random() * 0.5 + 0.2 }); } function drawParticles() { ctx.clearRect(0, 0, canvas.width, canvas.height); particles.forEach(p => { p.x += p.vx; p.y += p.vy; if (p.x < 0 || p.x > canvas.width) p.vx *= -1; if (p.y < 0 || p.y > canvas.height) p.vy *= -1; ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); ctx.fillStyle = `rgba(234, 239, 245, ${p.opacity})`; ctx.fill(); }); requestAnimationFrame(drawParticles); } drawParticles(); window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
 
         // --- 剧情核心逻辑 (无修改) ---
         function initializeStory() { document.body.addEventListener('click', handleInteraction); document.addEventListener('keydown', handleInteraction); anime({ targets: '#story-container', opacity: 1, duration: 500, complete: () => { isAnimating = false; advanceStory(); } }); }
         function handleInteraction(e) { if (e.type === 'keydown' && e.code !== 'Space' && e.code !== 'Enter') return; e.preventDefault(); if (isAnimating) return; if (currentLineIndex >= storyScript.length - 1) { proceedToNextScene(); } else { advanceStory(); } }
         function advanceStory() { isAnimating = true; const currentLineEl = storyContainer.querySelector('.story-line'); const hideAnimation = new Promise(resolve => { if (currentLineEl) { anime({ targets: currentLineEl, opacity: 0, translateY: '-=20px', filter: ['blur(0px)', 'blur(5px)'], duration: 600, easing: 'easeInQuint', complete: () => { currentLineEl.remove(); resolve(); } }); } else { resolve(); } }); hideAnimation.then(() => { currentLineIndex++; const lineData = storyScript[currentLineIndex]; const newLineEl = document.createElement('div'); newLineEl.className = 'story-line'; newLineEl.innerHTML = lineData.text; storyContainer.appendChild(newLineEl); anime({ targets: newLineEl, opacity: [0, 1], translateY: ['20px', '0px'], filter: ['blur(5px)', 'blur(0px)'], duration: 1200, easing: 'easeOutQuint', begin: () => { if (arrowTimeline) arrowTimeline.pause(); nextArrow.style.opacity = '0'; }, complete: () => { isAnimating = false; if (currentLineIndex < storyScript.length - 1) { toggleArrow(true); } } }); }); }
-        function proceedToNextScene() { isAnimating = true; toggleArrow(false); anime({ targets: '.story-line, #story-container', opacity: 0, duration: 1000, easing: 'easeInOutExpo', complete: () => window.location.href = '../../puzzle/node4.html' }); }
+        function proceedToNextScene() { isAnimating = true; toggleArrow(false); anime({ targets: '.story-line, #story-container', opacity: 0, duration: 1000, easing: 'easeInOutExpo', complete: () => { /* 在这里设置跳转到下一个章节的开头，或者一个游戏环节 */ window.location.href = '../../meta/index.html'; } }); }
         function toggleArrow(show) { if (show) { nextArrow.style.opacity = '1'; if (!arrowTimeline) { arrowTimeline = anime({ targets: '#next-arrow', translateY: [0, -8, 0], loop: true, direction: 'alternate', duration: 1200, easing: 'easeInOutSine' }); } arrowTimeline.play(); } else { if (arrowTimeline) arrowTimeline.pause(); nextArrow.style.opacity = '0'; } }
     });
     </script>

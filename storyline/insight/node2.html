@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>剧情 2</title>
+    <style>
+        :root { --text-color: #D8B4FE; --glow-color-1: rgba(216, 180, 254, 0.6); --glow-color-2: rgba(180, 150, 255, 0.5); }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #010409; color: var(--text-color); font-family: 'Helvetica Neue', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif; cursor: pointer; }
+        #background-canvas { position: fixed; top: 0; left: 0; z-index: -2; }
+        #aurora-background { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; mix-blend-mode: screen; opacity: 0.6; }
+        .aurora-layer { position: absolute; width: 150%; height: 150%; background-image: radial-gradient(circle at var(--x, 50%) var(--y, 50%), var(--c, transparent), transparent 40%); animation: flow 40s linear infinite alternate; }
+        @keyframes flow { from { transform: rotate(0deg) scale(1); } to   { transform: rotate(360deg) scale(1.2); } }
+        #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; background-color: #010409; z-index: 100; }
+        .loader-core-container { width: 150px; height: 150px; position: relative; display: flex; justify-content: center; align-items: center; }
+        .loader-orb { width: 15px; height: 15px; background-color: var(--text-color); border-radius: 50%; box-shadow: 0 0 10px var(--glow-color-1), 0 0 20px var(--glow-color-1), 0 0 30px var(--glow-color-2); animation: pulsate 2s ease-in-out infinite; }
+        .loader-ring { position: absolute; width: 15px; height: 15px; border-radius: 50%; border: 2px solid var(--text-color); opacity: 0; animation: expand 2s ease-out infinite; }
+        .loader-ring:nth-child(2) { animation-delay: 0.5s; }
+        .loader-ring:nth-child(3) { animation-delay: 1s; }
+        @keyframes pulsate { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
+        @keyframes expand { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(8); opacity: 0; } }
+        #story-container { position: relative; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; opacity: 0; padding: 0 2rem; box-sizing: border-box; perspective: 800px; }
+        .story-line { font-size: 2rem; text-shadow: 0 0 8px var(--glow-color-1), 0 0 12px var(--glow-color-2); margin: 0.5rem 0; opacity: 0; position: absolute; text-align: center; }
+        #next-arrow { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); width: 30px; height: 30px; opacity: 0; pointer-events: none; }
+        #next-arrow svg { width: 100%; height: 100%; fill: var(--text-color); filter: drop-shadow(0 0 5px var(--glow-color-2)); }
+    </style>
+</head>
+<body>
+    <canvas id="background-canvas"></canvas>
+    <div id="aurora-background">
+        <div class="aurora-layer" style="--x: 20%; --y: 30%; --c: var(--glow-color-1);"></div>
+        <div class="aurora-layer" style="--x: 80%; --y: 70%; --c: var(--glow-color-2); animation-direction: reverse;"></div>
+    </div>
+    <div id="loader">
+        <div class="loader-core-container">
+            <div class="loader-orb"></div>
+            <div class="loader-ring"></div>
+            <div class="loader-ring"></div>
+        </div>
+    </div>
+    <div id="story-container"></div>
+    <div id="next-arrow">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 15.586l-4.293-4.293-1.414 1.414L12 18.414l5.707-5.707-1.414-1.414z"/><path d="M12 8.586l-4.293-4.293-1.414 1.414L12 11.414l5.707-5.707-1.414-1.414z"/></svg>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const storyContainer = document.getElementById('story-container');
+        const nextArrow = document.getElementById('next-arrow');
+        let isAnimating = true;
+        let currentLineIndex = -1;
+        let arrowTimeline;
+        const storyScript = [ { text: "探索者?不过如此.我使用着侵夺她人色彩的与生俱来的能力,用混乱洗刷这个混浊的世界" } ];
+        setTimeout(() => {
+            anime({ targets: '#loader', opacity: 0, duration: 800, easing: 'easeOutQuad', complete: () => {
+                document.getElementById('loader').style.display = 'none';
+                initializeStory();
+            }});
+        }, 2500);
+        const canvas = document.getElementById('background-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        let particles = []; const particleCount = 100;
+        for (let i = 0; i < particleCount; i++) { particles.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, radius: Math.random() * 1.5 + 0.5, vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3, opacity: Math.random() * 0.5 + 0.2 }); }
+        function drawParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.x += p.vx; p.y += p.vy; if (p.x < 0 || p.x > canvas.width) p.vx *= -1; if (p.y < 0 || p.y > canvas.height) p.vy *= -1; ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); ctx.fillStyle = `rgba(216, 180, 254, ${p.opacity})`; ctx.fill(); });
+            requestAnimationFrame(drawParticles);
+        }
+        drawParticles();
+        window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+        function initializeStory() {
+            document.body.addEventListener('click', handleInteraction);
+            document.addEventListener('keydown', handleInteraction);
+            anime({ targets: '#story-container', opacity: 1, duration: 500, complete: () => { isAnimating = false; advanceStory(); }});
+        }
+        function handleInteraction(e) {
+            if (e.type === 'keydown' && e.code !== 'Space' && e.code !== 'Enter') return;
+            e.preventDefault();
+            if (isAnimating) return;
+            if (currentLineIndex >= storyScript.length - 1) { proceedToNextScene(); } else { advanceStory(); }
+        }
+        function advanceStory() {
+            isAnimating = true;
+            const currentLineEl = storyContainer.querySelector('.story-line');
+            const hideAnimation = new Promise(resolve => {
+                if (currentLineEl) {
+                    anime({ targets: currentLineEl, opacity: 0, translateY: '-=20px', filter: ['blur(0px)', 'blur(5px)'], duration: 600, easing: 'easeInQuint', complete: () => { currentLineEl.remove(); resolve(); }});
+                } else { resolve(); }
+            });
+            hideAnimation.then(() => {
+                currentLineIndex++;
+                const lineData = storyScript[currentLineIndex];
+                const newLineEl = document.createElement('div');
+                newLineEl.className = 'story-line';
+                newLineEl.innerHTML = lineData.text;
+                storyContainer.appendChild(newLineEl);
+                anime({
+                    targets: newLineEl, opacity: [0, 1], translateY: ['20px', '0px'], filter: ['blur(5px)', 'blur(0px)'], duration: 1200, easing: 'easeOutQuint',
+                    begin: () => { if (arrowTimeline) arrowTimeline.pause(); nextArrow.style.opacity = '0'; },
+                    complete: () => {
+                        isAnimating = false;
+                        toggleArrow(true);
+                    }
+                });
+            });
+        }
+        function proceedToNextScene() {
+            isAnimating = true;
+            toggleArrow(false);
+            anime({ targets: '.story-line, #story-container', opacity: 0, duration: 1000, easing: 'easeInOutExpo',
+                complete: () => window.location.href = '../../puzzle/node3.html'
+            });
+        }
+        function toggleArrow(show) {
+            if (show) {
+                nextArrow.style.opacity = '1';
+                if (!arrowTimeline) {
+                     arrowTimeline = anime({ targets: '#next-arrow', translateY: [0, -8, 0], loop: true, direction: 'alternate', duration: 1200, easing: 'easeInOutSine' });
+                }
+                arrowTimeline.play();
+            } else {
+                if (arrowTimeline) arrowTimeline.pause();
+                nextArrow.style.opacity = '0';
+            }
+        }
+    });
+    </script>
+</body>
+</html>

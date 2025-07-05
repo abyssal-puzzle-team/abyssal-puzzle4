@@ -184,6 +184,74 @@ app.delete('/acc_delete', async (req, res) => {
     }
 });
 
+
+// =================================================================
+// ==================== 新增接口：通用信息修改 =======================
+// =================================================================
+/**
+ * 接口 5: 更改指定用户的指定信息
+ * POST /set_user_data
+ * body: { "username": "user1", "option": "progress", "value": "2" }
+ */
+app.post('/set_user_data', async (req, res) => {
+    const { username, option, value } = req.body;
+
+    // 1. 基本验证
+    if (!username || !option || typeof value === 'undefined') {
+        return res.status(400).json({ success: false, message: '请求参数不完整 (需要 username, option, value)。' });
+    }
+
+    // 2. 安全性：定义允许修改的字段白名单
+    const editableFields = [
+        'password',
+        'cool_down',
+        'progress',
+        'meta_xy',
+        'meta_progress',
+        'meta_key_number',
+        'meta_power_number',
+        'meta_card'
+    ];
+
+    if (!editableFields.includes(option)) {
+        return res.status(403).json({ success: false, message: `不允许修改受保护或不存在的字段: '${option}'。` });
+    }
+    
+    try {
+        const accounts = await readAccounts();
+        const user = accounts[username];
+
+        // 3. 检查用户是否存在
+        if (!user) {
+            return res.status(404).json({ success: false, message: '账号不存在。' });
+        }
+
+        // 4. 更新值 (可以根据字段类型进行特殊处理)
+        let processedValue = value;
+        if (option === 'meta_card') {
+            // 将 "true" 或 true 转换为布尔值 true，其他都为 false
+            processedValue = (value === true || String(value).toLowerCase() === 'true');
+        }
+
+        user[option] = processedValue;
+        
+        // 5. 写回文件
+        await writeAccounts(accounts);
+
+        // 6. 返回成功响应
+        res.json({ 
+            success: true, 
+            message: `用户 ${username} 的 ${option} 已成功更新。`,
+            updated_user: user // 返回更新后的用户信息
+        });
+
+    } catch (error) {
+        console.error(`更新用户 ${username} 数据时出错:`, error);
+        res.status(500).json({ success: false, message: '服务器内部错误。' });
+    }
+});
+
+
 // =================================================================
 // ================= 新增功能：Meta 谜题接口 =========================
 // =================================================================
