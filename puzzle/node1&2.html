@@ -63,6 +63,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            flex-direction: column; /* 为了让文字在动画下方 */
             z-index: 9999;
             transition: opacity 0.8s ease-in-out;
         }
@@ -71,6 +72,15 @@
             position: relative;
             width: 150px;
             height: 150px;
+        }
+
+        #loader-status {
+            position: absolute;
+            bottom: 20%;
+            font-size: 1rem;
+            color: var(--text-color);
+            text-align: center;
+            width: 100%;
         }
 
         .loader-gate div {
@@ -468,6 +478,7 @@
             <div></div>
             <div></div>
         </div>
+        <p id="loader-status"></p>
     </div>
 
     <div class="container" id="main-container">
@@ -605,6 +616,7 @@
             let isSubmitting = false;
             let typingTimeout = null;
             let solvedStatus = { node1: false, node2: false };
+            let currentUser = null; // 用于存储已验证的用户名
 
             // DOM 元素获取
             const hubOverlay = document.getElementById('hub-overlay');
@@ -615,6 +627,41 @@
             const modalOverlay = document.getElementById('modal-overlay');
             const modalTitle = document.getElementById('modal-title');
             const modalText = document.getElementById('modal-text');
+
+            // --- 新增功能函数 ---
+
+            const getCookie = (name) => {
+                const value = `; ${document.cookie}`;
+                const parts = value.split(`; ${name}=`);
+                if (parts.length === 2) return parts.pop().split(';').shift();
+                return null;
+            };
+
+            const updateProgress = async (username, progressValue) => {
+                if (!username) {
+                    console.error("无法更新进度：用户名未知。");
+                    return;
+                }
+                try {
+                    const response = await fetch(`${API_BASE_URL}/set_user_data`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            username: username,
+                            option: "progress",
+                            value: String(progressValue)
+                        })
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        console.log(`用户 ${username} 的进度已成功更新为 ${progressValue}。`);
+                    } else {
+                        console.error(`更新进度失败: ${data.message}`);
+                    }
+                } catch (error) {
+                    console.error('调用 /set_user_data 接口时发生网络错误:', error);
+                }
+            };
 
             // 核心逻辑函数
             const performKeyCheck = async (key) => {
@@ -640,7 +687,7 @@
                                 solvedNode.classList.remove('solved');
                                 solvedNode.classList.add('unlocked');
                             }, 2000);
-                            checkWinCondition();
+                            await checkWinCondition(); // 每次成功都检查胜利条件
                         }
                     } else {
                         showTemporaryMessage(data.message, 'error');
@@ -652,13 +699,24 @@
                 }
             };
             
-            const checkWinCondition = () => {
+            const checkWinCondition = async () => {
+                // 检查是否所有节点都已解决
                 if (Object.values(solvedStatus).every(status => status === true)) {
+                    
+                    // 禁用所有节点交互
                     document.querySelectorAll('.node').forEach(n => n.style.pointerEvents = 'none');
-                    animateFinalConnection().then(() => {
-                        showTemporaryMessage('所有节点已解密！正在跳转至下一阶段...', 'success', null);
-                        setTimeout(() => { window.location.href = '../storyline/node3_sl.html'; }, 1000);
-                    });
+                    
+                    // 首先，更新用户进度
+                    await updateProgress(currentUser, '3');
+                    
+                    // 然后，播放最终动画
+                    await animateFinalConnection();
+                    
+                    // 最后，显示消息并准备跳转
+                    showTemporaryMessage('所有节点已解密！正在跳转至下一阶段...', 'success', null);
+                    setTimeout(() => { 
+                        window.location.href = '../storyline/node3_sl.html'; 
+                    }, 2000); // 增加一点延时以确保用户能看到消息
                 }
             };
             
@@ -871,6 +929,55 @@
                 });
             };
 
+            const verifyAccountAndProgress = async () => {
+                const loaderStatus = document.getElementById('loader-status');
+                if (loaderStatus) {
+                    loaderStatus.textContent = '正在判断账户进度...';
+                }
+
+                const username = getCookie('username');
+                const password = getCookie('password');
+
+                if (!username || !password) {
+                    window.location.href = '../../index.html';
+                    return Promise.reject('未找到凭据'); 
+                }
+
+                currentUser = username; 
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}/acc_check_password`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username, password })
+                    });
+
+                    if (!response.ok) {
+                        window.location.href = '../../index.html';
+                        return Promise.reject('凭据无效'); 
+                    }
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        if (data.user_data.progress !== '1') {
+                            window.location.href = '../../main.html';
+                            return Promise.reject('进度不正确');
+                        }
+                        return Promise.resolve();
+                    } else {
+                        window.location.href = '../../index.html';
+                        return Promise.reject('API报告失败');
+                    }
+                } catch (error) {
+                    console.error('账户验证期间发生错误:', error);
+                    if (loaderStatus) {
+                        loaderStatus.textContent = '验证失败，请检查网络并刷新。';
+                    }
+                    return Promise.reject('网络或其它错误');
+                }
+            };
+
             // 事件监听器
             document.querySelectorAll('.node').forEach(node => {
                 node.addEventListener('click', (event) => handleNodeClick(node.dataset.nodeId, event));
@@ -888,17 +995,30 @@
             });
 
             // 初始化
-            window.addEventListener('load', () => {
-                const loader = document.getElementById('loader');
-                const mainContainer = document.getElementById('main-container');
-                setTimeout(() => {
+            window.addEventListener('load', async () => {
+                try {
+                    await verifyAccountAndProgress();
+
+                    // 验证成功，继续加载页面
+                    const loader = document.getElementById('loader');
+                    const mainContainer = document.getElementById('main-container');
+                    
                     loader.style.opacity = '0';
-                    loader.addEventListener('transitionend', () => loader.style.display = 'none');
-                    mainContainer.classList.add('loaded');
-                    checkCooldownStatus().then(cooldown => {
-                        if (cooldown > 0) startCooldownTimer(cooldown);
+                    loader.addEventListener('transitionend', () => {
+                        if(loader) {
+                           loader.style.display = 'none';
+                        }
                     });
-                }, 1800);
+                    mainContainer.classList.add('loaded');
+                    
+                    checkCooldownStatus().then(cooldown => {
+                        if (cooldown > 0) {
+                            startCooldownTimer(cooldown);
+                        }
+                    });
+                } catch (error) {
+                    console.log('页面加载因验证失败而中止:', error);
+                }
             });
         });
     </script>

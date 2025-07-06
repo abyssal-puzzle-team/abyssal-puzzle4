@@ -8,5 +8,15 @@
     "meta_key_number": "0",
     "meta_power_number": "0",
     "meta_card": false
+  },
+  "Test": {
+    "password": "test",
+    "cool_down": "0",
+    "progress": "1",
+    "meta_xy": "[0,0]",
+    "meta_progress": "",
+    "meta_key_number": "0",
+    "meta_power_number": "0",
+    "meta_card": false
   }
 }
