@@ -3,477 +3,395 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>谜题节点 3 - 雪的形态</title>
+    <title>节点 3 - 雪之回响</title>
+    <!-- Google Fonts: Cinzel for title, Lato for body -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Lato:wght@300;400&display=swap" rel="stylesheet">
+    
     <style>
-        /* --- 全局与重置 --- */
-        :root {
-            --bg-light: #f8f9fa;
-            --card-bg: #ffffff;
-            --primary-text: #212529;
-            --secondary-text: #495057;
-            --accent-color: #007bff;
-            --accent-light: rgba(0, 123, 255, 0.2);
-            --error-text: #721c24;
-            --error-bg: #f8d7da;
-            --success-text: #155724;
-            --success-bg: #d4edda;
-            --snowflake-color: #ced4da; /* 雪粒子颜色 */
-            --border-color: #dee2e6;
-            --font-family: 'Noto Serif SC', serif;
-        }
-
+        /* --- Base & Reset --- */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        body {
-            font-family: var(--font-family);
-            background: var(--bg-light);
-            color: var(--primary-text);
-            padding: 5vh 20px;
+        html, body {
+            height: 100%;
+            overflow: hidden;
+            background-color: #0c142b;
+            color: #f0f8ff; /* AliceBlue */
+            font-family: 'Lato', 'Microsoft YaHei', sans-serif;
         }
-        
-        /* --- 加载动画 (全新几何风格) --- */
-        #loader-wrapper {
+
+        /* --- Loading Animation --- */
+        #loader {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: var(--bg-light);
+            background: #0c142b;
+            z-index: 9999;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            z-index: 1000;
-            transition: opacity 0.75s ease-out;
-            opacity: 1;
-            flex-direction: column; /* 为了让文字在加载器下方 */
+            transition: opacity 0.8s ease-out, visibility 0.8s ease-out;
         }
 
-        #loader-wrapper.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .stylized-loader {
+        .snowflake-loader {
             width: 50px;
             height: 50px;
-            position: relative;
-            animation: spin 2s linear infinite;
-            margin-bottom: 20px; /* 与文字间距 */
-        }
-
-        .stylized-loader::before,
-        .stylized-loader::after {
-            content: '';
-            position: absolute;
-            width: 100%;
-            height: 4px; /* 线条粗细 */
-            background-color: var(--accent-color);
-            top: 50%;
-            left: 0;
-            transform-origin: center;
-            border-radius: 2px;
-        }
-
-        .stylized-loader::before {
-            transform: translateY(-50%) rotate(60deg);
-        }
-
-        .stylized-loader::after {
-            transform: translateY(-50%) rotate(-60deg);
+            font-size: 50px;
+            color: #fff;
+            animation: spin 2s linear infinite, fall 2s linear infinite;
         }
 
         @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes fall {
+            0% { opacity: 1; transform: translateY(-20px) rotate(0deg); }
+            50% { opacity: 0.8; }
+            100% { opacity: 1; transform: translateY(20px) rotate(360deg); }
+        }
+
+        #loader-status-text {
+            margin-top: 20px;
+            color: #a6adc8;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            opacity: 0;
+            animation: fadeInStatus 1s forwards;
         }
         
-        /* --- 落雪背景 (使用简单的圆点) --- */
-        .snow-container {
-            position: fixed;
-            top: 0;
-            left: 0;
+        @keyframes fadeInStatus {
+            to { opacity: 1; }
+        }
+
+        #loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        /* --- Particle Background --- */
+        #particles-js {
+            position: absolute;
             width: 100%;
             height: 100%;
-            pointer-events: none;
-            z-index: -1;
+            top: 0;
+            left: 0;
+            z-index: 0;
         }
 
-        .snowflake {
-            position: absolute;
-            top: -5%;
-            color: var(--snowflake-color);
-            user-select: none;
-            animation: fall linear infinite;
-            /* 使用 text-shadow 增加柔和感 */
-            text-shadow: 0 0 2px var(--snowflake-color);
-        }
-
-        /* 随机化雪粒子动画 */
-        .snowflake:nth-child(1) { left: 10%; animation-duration: 15s; animation-delay: 0s; font-size: 14px; opacity: 0.8; }
-        .snowflake:nth-child(2) { left: 20%; animation-duration: 18s; animation-delay: -3s; font-size: 10px; opacity: 0.6; }
-        .snowflake:nth-child(3) { left: 30%; animation-duration: 12s; animation-delay: -5s; font-size: 16px; opacity: 0.9; }
-        .snowflake:nth-child(4) { left: 40%; animation-duration: 20s; animation-delay: -1s; font-size: 8px; opacity: 0.5; }
-        .snowflake:nth-child(5) { left: 50%; animation-duration: 16s; animation-delay: -7s; font-size: 15px; opacity: 0.8; }
-        .snowflake:nth-child(6) { left: 60%; animation-duration: 19s; animation-delay: -2s; font-size: 12px; opacity: 0.7; }
-        .snowflake:nth-child(7) { left: 70%; animation-duration: 13s; animation-delay: -4s; font-size: 18px; opacity: 1; }
-        .snowflake:nth-child(8) { left: 80%; animation-duration: 22s; animation-delay: -6s; font-size: 9px; opacity: 0.5; }
-        .snowflake:nth-child(9) { left: 90%; animation-duration: 17s; animation-delay: -8s; font-size: 16px; opacity: 0.9; }
-        .snowflake:nth-child(10) { left: 5%; animation-duration: 25s; animation-delay: -10s; font-size: 11px; opacity: 0.6; }
-
-        @keyframes fall {
-            from { transform: translateY(0); }
-            to { transform: translateY(105vh); } /* 移除了rotate，因为圆点旋转无意义 */
-        }
-        
-        /* --- 谜题容器及其他样式 (保持不变) --- */
+        /* --- Puzzle Content --- */
         .puzzle-container {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 15px;
-            padding: 40px;
-            width: 90%;
-            max-width: 650px;
-            margin: 0 auto;
-            text-align: left;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.08);
-            animation: fadeIn 1s ease-out forwards;
-            opacity: 0;
-            animation-delay: 0.5s;
-        }
-
-        @keyframes fadeIn {
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 20px;
-            font-weight: 700;
-            color: var(--primary-text);
-            text-align: center;
-            letter-spacing: 3px;
-        }
-
-        .puzzle-text {
-            font-size: 1.1rem;
-            line-height: 2;
-            margin-bottom: 20px;
-            color: var(--secondary-text);
-            font-weight: 400;
-        }
-        
-        .puzzle-image {
-            width: 100%;
-            max-width: 400px;
-            height: auto;
-            border-radius: 10px;
-            margin: 20px auto;
-            display: block;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-
-        #puzzle-form {
+            position: relative;
+            z-index: 1;
             display: flex;
-            flex-direction: column;
-            gap: 20px;
-            margin-top: 30px;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            padding: 20px;
+            opacity: 0;
+            animation: fadeInContent 2s 0.5s forwards;
         }
+        @keyframes fadeInContent { to { opacity: 1; } }
 
-        #key-input {
-            background: #fff;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 15px;
-            font-size: 1.1rem;
-            color: var(--primary-text);
-            font-family: var(--font-family);
-            outline: none;
+        .puzzle-box {
+            background: rgba(12, 20, 43, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 50px 40px;
+            border-radius: 15px;
             text-align: center;
-            transition: all 0.3s ease;
+            max-width: 600px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
         }
-
-        #key-input::placeholder { color: #adb5bd; }
-        #key-input:focus {
-            border-color: var(--accent-color);
-            box-shadow: 0 0 0 4px var(--accent-light);
+        h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 2.8rem;
+            margin-bottom: 25px;
+            letter-spacing: 5px;
+            color: #ffffff;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
         }
-        #key-input.shake { animation: shake 0.5s ease-in-out; }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); }
-            20%, 40%, 60%, 80% { transform: translateX(8px); }
-        }
-
-        #submit-btn {
-            background: var(--accent-color);
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            padding: 15px;
+        .prompt-text {
             font-size: 1.2rem;
-            font-weight: 700;
+            font-weight: 300;
+            line-height: 1.8;
+            margin-bottom: 40px;
+            color: #cdd6f4;
+            letter-spacing: 1px;
+        }
+        .input-group {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        #key-input {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            color: white;
+            padding: 12px 18px;
+            border-radius: 8px;
+            font-size: 1rem;
+            width: 280px;
+            transition: all 0.3s ease;
+            outline: none;
+            letter-spacing: 1px;
+        }
+        #key-input::placeholder { color: rgba(255, 255, 255, 0.4); }
+        #key-input:focus {
+            border-color: #89b4fa;
+            box-shadow: 0 0 10px rgba(137, 180, 250, 0.5);
+        }
+        #submit-btn {
+            background: rgba(137, 180, 250, 0.8);
+            border: none;
+            color: #1e1e2e;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
             cursor: pointer;
             transition: all 0.3s ease;
-            font-family: var(--font-family);
-            letter-spacing: 5px;
         }
-
         #submit-btn:hover:not(:disabled) {
-            background: #0056b3;
+            background: #89b4fa;
             transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
+            box-shadow: 0 4px 15px rgba(137, 180, 250, 0.4);
         }
         #submit-btn:disabled {
-            background-color: #6c757d;
+            background: #6c757d;
             cursor: not-allowed;
             opacity: 0.7;
         }
 
-        #message-area {
-            margin-top: 20px;
-            padding: 15px 20px;
-            border-radius: 8px;
-            font-size: 1rem;
-            min-height: 20px;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            font-weight: 700;
-            text-align: center;
-        }
-
-        #message-area.visible { opacity: 1; }
-        #message-area.success {
-            background-color: var(--success-bg);
-            color: var(--success-text);
-            border: 1px solid var(--success-text);
-        }
-        #message-area.error {
-            background-color: var(--error-bg);
-            color: var(--error-text);
-            border: 1px solid var(--error-text);
+        @media (max-width: 600px) {
+            h1 { font-size: 2.2rem; }
+            .prompt-text { font-size: 1.1rem; }
+            .puzzle-box { padding: 30px 25px; }
+            .input-group { flex-direction: column; align-items: center; }
+            #key-input { width: 100%; max-width: 280px; }
+            #submit-btn { width: 100%; max-width: 280px; }
         }
     </style>
 </head>
 <body>
+    <div id="loader">
+        <div class="snowflake-loader">❄️</div>
+        <p id="loader-status-text"></p>
+    </div>
+    
+    <div id="particles-js"></div>
 
-    <!-- 加载动画 -->
-    <div id="loader-wrapper">
-        <!-- 新的几何加载器 -->
-        <div class="stylized-loader"></div>
-        <!-- 增加的状态文本 -->
-        <p id="loader-status" style="color: var(--secondary-text); font-size: 0.9rem;">正在判断账户进度...</p>
+    <div class="puzzle-container">
+        <div class="puzzle-box">
+            <h1>节点 三</h1>
+            <p class="prompt-text">万物归于沉寂，等待着正确的唤醒...</p>
+            <div class="input-group">
+                <input type="text" id="key-input" placeholder="在此输入密钥" autocomplete="off">
+                <button type="button" id="submit-btn">验证</button>
+            </div>
+        </div>
     </div>
 
-    <!-- 落雪背景 -->
-    <div class="snow-container">
-        <!-- 统一使用圆点作为雪粒子 -->
-        <div class="snowflake">•</div>
-        <div class="snowflake">•</div>
-        <div class="snowflake">•</div>
-        <div class="snowflake">•</div>
-        <div class="snowflake">•</div>
-        <div class="snowflake">•</div>
-        <div class="snowflake">•</div>
-        <div class="snowflake">•</div>
-        <div class="snowflake">•</div>
-        <div class="snowflake">•</div>
-    </div>
-
-    <!-- 主谜题容器 -->
-    <main class="puzzle-container">
-        <h1>雪的形态</h1>
-        <p class="puzzle-text">
-            世人赞我纯白，诗人咏我无瑕。我从云端飘落，以亿万种姿态覆盖大地，却遵循着一个亘古不变的几何法则。我的每一个分身，都是一个微缩的宇宙，拥有六个方向的对称之美。
-        </p>
-        
-        <img src="https://images.unsplash.com/photo-1549491221-f09453a25b8d?q=80&w=1974&auto=format&fit=crop" 
-             alt="雪花的微观结构" 
-             class="puzzle-image">
-        
-        <p class="puzzle-text">
-            这张显微镜下的照片揭示了我的核心秘密。物理学家开普勒最早在他的著作《六角的雪花》中思考为何我总是如此。这不仅是水的结晶，更是一种数学和自然的和谐共鸣。我的基础形态，这个代表着完美、稳定与和谐的图形，它的英文名即是通往下一阶段的密钥。
-        </p>
-
-        <form id="puzzle-form">
-            <input type="text" id="key-input" placeholder="在此输入密钥" autocomplete="off">
-            <button type="submit" id="submit-btn">提 交</button>
-        </form>
-
-        <div id="message-area"></div>
-    </main>
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.9.3/tsparticles.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
-        // 全局变量，用于在验证后存储用户名，以便后续接口调用
-        let currentUsername = '';
-
-        // 帮助函数：从 document.cookie 中获取指定名称的 cookie 值
-        function getCookie(name) {
-            const value = `; ${document.cookie}`;
-            const parts = value.split(`; ${name}=`);
-            if (parts.length === 2) return parts.pop().split(';').shift();
-        }
-
         document.addEventListener('DOMContentLoaded', () => {
-            const loaderWrapper = document.getElementById('loader-wrapper');
-            const loaderStatus = document.getElementById('loader-status');
-            const puzzleForm = document.getElementById('puzzle-form');
+            const API_BASE_URL = 'http://111.170.11.168:15114/proxy/3000';
+            let currentUsername = '';
+
+            // --- 1. 加载时身份验证与智能进度检查 ---
+            (async () => {
+                const loader = document.getElementById('loader');
+                const statusText = document.getElementById('loader-status-text');
+                const getCookie = name => { const v = `; ${document.cookie}`; const p = v.split(`; ${name}=`); if (p.length === 2) return p.pop().split(';').shift(); return null; };
+                const redirectTo = (url, message) => {
+                    console.log(message); // 使用log代替error，因为这是正常逻辑跳转
+                    window.location.href = url;
+                };
+
+                try {
+                    statusText.textContent = '正在判断账户进度...';
+                    const username = getCookie('username');
+                    const password = getCookie('password');
+
+                    if (!username || !password) {
+                        return redirectTo('../index.html', 'Auth Error: Cookies not found.');
+                    }
+                    currentUsername = username;
+
+                    const response = await fetch(`${API_BASE_URL}/acc_check_password`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) });
+                    const data = await response.json();
+
+                    if (!response.ok || !data.success) {
+                        return redirectTo('../index.html', `Auth Error: ${data.message}`);
+                    }
+                    
+                    // --- VITAL CHANGE: New conditional progress check ---
+                    const userProgress = String(data.user_data.progress);
+                    
+                    if (userProgress === '4') {
+                        // Case 1: User has already completed this puzzle. Fast-forward them.
+                        return redirectTo('../storyline/insight/node3.html', `Progress is '4'. Redirecting to next node.`);
+                    
+                    } else if (userProgress === '3') {
+                        // Case 2: User is at the correct stage for this puzzle. Continue loading this page.
+                        console.log('Authentication and progress check successful. User is at the correct node (3).');
+
+                    } else {
+                        // Case 3: User is at a different, unexpected stage. Redirect to main.
+                        return redirectTo('../main.html', `Progress Error: Expected '3' or '4', but got '${userProgress}'. Redirecting to main page.`);
+                    }
+
+                    // This code will only run if progress was '3'
+                    statusText.textContent = '验证成功，正在加载场景...';
+                    setTimeout(() => loader.classList.add('hidden'), 500);
+
+                } catch (error) {
+                    console.error('Network Error during auth:', error);
+                    statusText.textContent = '验证时发生网络错误...';
+                    // In case of network error, it's safer to send back to the main login/index page
+                    setTimeout(() => {
+                        window.location.href = '../index.html';
+                    }, 1500);
+                }
+            })();
+
+            // --- 2. 粒子效果初始化 ---
+            tsParticles.load("particles-js", {
+                fpsLimit: 60,
+                particles: {
+                    number: { value: 120, density: { enable: true, value_area: 800 } },
+                    color: { value: "#ffffff" },
+                    shape: { type: "circle" },
+                    opacity: { value: { min: 0.3, max: 0.8 }, animation: { enable: true, speed: 1, sync: false } },
+                    size: { value: { min: 1, max: 4 } },
+                    move: { enable: true, speed: 2, direction: "bottom", straight: false, out_mode: "out" }
+                },
+                interactivity: {
+                    events: { onhover: { enable: true, mode: "repulse" }, resize: true },
+                    modes: { repulse: { distance: 100, duration: 0.4 } }
+                },
+                detectRetina: true
+            });
+
+            // --- 3. 谜题提交与进度更新逻辑 ---
             const keyInput = document.getElementById('key-input');
             const submitBtn = document.getElementById('submit-btn');
-            const messageArea = document.getElementById('message-area');
+            const nodeId = 'node3'; 
 
-            // 页面加载时执行的核心验证函数
-            async function verifyUserAndProgress() {
-                const username = getCookie('username');
-                const password = getCookie('password');
+            const swalOptions = {
+                background: '#0c142b',
+                color: '#f0f8ff',
+                success: { confirmButtonColor: '#89b4fa' },
+                error: { confirmButtonColor: '#fab387' },
+                info: { confirmButtonColor: '#89b4fa' }
+            };
 
-                // 1. 检查Cookie是否存在
-                if (!username || !password) {
-                    window.location.href = '../index.html';
-                    return; // 终止执行
-                }
-                
-                // 存储用户名，供后续更新进度时使用
-                currentUsername = username;
-
-                try {
-                    // 2. 调用API验证账户密码
-                    const response = await fetch('/acc_check_password', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ username, password }),
-                    });
-
-                    // 如果响应状态码不是200 OK (例如401, 404)，说明验证失败，返回登录页
-                    if (!response.ok) {
-                        window.location.href = '../index.html';
-                        return;
-                    }
-
-                    const data = await response.json();
-
-                    // 如果API返回的success标志为false，也返回登录页
-                    if (!data.success) {
-                        window.location.href = '../index.html';
-                        return;
-                    }
-
-                    // 3. 检查用户进度是否符合当前页面要求 (progress必须为'3')
-                    if (data.user_data.progress !== '3') {
-                        window.location.href = '../main.html';
-                        return;
-                    }
-
-                    // 所有检查通过，隐藏加载动画
-                    loaderWrapper.classList.add('hidden');
-
-                } catch (error) {
-                    console.error('Verification Error:', error);
-                    loaderStatus.textContent = '验证失败，网络连接错误。';
-                    // 网络错误时，2秒后也返回登录页
-                    setTimeout(() => { window.location.href = '../index.html'; }, 2000);
-                }
-            }
-            
-            // 立即开始验证流程
-            verifyUserAndProgress();
-            
-            // 谜题表单提交事件监听
-            puzzleForm.addEventListener('submit', (event) => {
-                event.preventDefault();
-                
-                const userKey = keyInput.value.trim().toLowerCase();
-                if (!userKey) {
-                    showMessage('请输入密钥。', 'error');
-                    keyInput.classList.add('shake');
-                    setTimeout(() => keyInput.classList.remove('shake'), 500);
+            const handleCheckKey = async () => {
+                const key = keyInput.value.trim();
+                if (!key) {
+                    Swal.fire({ icon: 'warning', title: '提示', text: '密钥不能为空。', ...swalOptions.info });
                     return;
                 }
-
-                // 根据谜题提示，正确密钥是 "hexagon"
-                const correctAnswer = 'hexagon';
-
-                setFormDisabled(true, '验证中...');
-                
-                // 模拟网络延迟并检查答案
-                setTimeout(() => {
-                    if (userKey === correctAnswer) {
-                        // 答案正确，调用成功处理函数
-                        handleSuccess('密钥正确！正在更新您的进度...');
-                    } else {
-                        // 答案错误，调用失败处理函数
-                        handleError('密钥错误。');
-                    }
-                }, 300);
-            });
-            
-            function setFormDisabled(disabled, buttonText = '提 交') {
-                keyInput.disabled = disabled;
-                submitBtn.disabled = disabled;
-                submitBtn.textContent = buttonText;
-            }
-
-            function showMessage(text, type) {
-                messageArea.textContent = text;
-                messageArea.className = 'message-area';
-                if (type) {
-                    messageArea.classList.add(type, 'visible');
-                }
-            }
-
-            // 成功解谜后的处理函数
-            async function handleSuccess(message) {
-                showMessage(message, 'success');
-                setFormDisabled(true, '已解锁');
-                keyInput.style.borderColor = 'var(--success-text)';
-
+                submitBtn.disabled = true;
+                submitBtn.textContent = '验证中...';
                 try {
-                    // 新增步骤：调用API将进度更新为 "4"
-                    const response = await fetch('/set_user_data', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            username: currentUsername,
-                            option: 'progress',
-                            value: '4' 
-                        })
-                    });
-
+                    const response = await fetch(`${API_BASE_URL}/check-key`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nodeId, key }) });
                     const data = await response.json();
-
-                    if (data.success) {
-                        showMessage('进度已成功更新！', 'success');
-                        // 更新成功后，2秒后跳转回主流程页面
-                        setTimeout(() => {
-                            window.location.href = '../storyline/insight/node3.html';
-                        }, 2000);
+                    if (response.ok && data.success) {
+                        await handleApiSuccess(data);
                     } else {
-                        // 如果进度更新失败，向用户显示错误信息
-                        handleError(`进度更新失败: ${data.message || '未知错误'}`);
+                        handleApiError(data);
                     }
-
                 } catch (error) {
-                    console.error('Progress Update Error:', error);
-                    handleError('更新进度时发生网络错误，请稍后重试。');
+                    console.error('Fetch Error on /check-key:', error);
+                    Swal.fire({ icon: 'error', title: '网络错误', text: '无法连接到验证服务器。', ...swalOptions.error });
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = '验证';
                 }
-            }
+            };
+            
+            const handleApiSuccess = async (data) => {
+                await Swal.fire({ icon: 'success', title: '验证成功!', text: data.message + '\n即将保存进度...', timer: 1500, timerProgressBar: true, ...swalOptions.success });
+                
+                // This logic correctly updates progress to '4' after solving node3
+                const progressUpdated = await updateUserProgress(currentUsername, '4');
+                
+                if (progressUpdated) {
+                    window.location.href = '../storyline/insight/node3.html';
+                } else {
+                    await Swal.fire({ icon: 'error', title: '严重错误', text: '进度保存失败！请刷新页面重试或联系管理员。', ...swalOptions.error });
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = '验证';
+                }
+            };
 
-            // 失败处理函数
-            function handleError(message) {
-                showMessage(message, 'error');
-                keyInput.classList.add('shake');
-                setTimeout(() => keyInput.classList.remove('shake'), 500);
-                setFormDisabled(false); // 出错后允许用户重试
-            }
+            const updateUserProgress = async (username, newProgress) => {
+                if (!username) {
+                    console.error("Cannot update progress: username is missing.");
+                    return false;
+                }
+                try {
+                    console.log(`Attempting to set progress to '${newProgress}' for user '${username}'`);
+                    const response = await fetch(`${API_BASE_URL}/set_user_data`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: username, option: 'progress', value: String(newProgress) }) });
+                    const data = await response.json();
+                    if (response.ok && data.success) {
+                        console.log('Progress update successful:', data);
+                        return true;
+                    } else {
+                        console.error('Failed to update progress:', data.message);
+                        return false;
+                    }
+                } catch (error) {
+                    console.error('Network error while updating progress:', error);
+                    return false;
+                }
+            };
+            
+            const handleApiError = (data) => {
+                Swal.fire({ icon: 'error', title: '验证失败', text: data.message, ...swalOptions.error });
+                if (data.cooldown) {
+                    startCooldown(data.cooldown);
+                } else {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = '验证';
+                }
+            };
+            
+            const startCooldown = (seconds) => {
+                let remaining = Math.ceil(seconds);
+                submitBtn.disabled = true;
+                submitBtn.textContent = `冷却中 (${remaining}s)`;
+                const interval = setInterval(() => {
+                    remaining--;
+                    if (remaining > 0) {
+                        submitBtn.textContent = `冷却中 (${remaining}s)`;
+                    } else {
+                        clearInterval(interval);
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = '验证';
+                    }
+                }, 1000);
+            };
+
+            submitBtn.addEventListener('click', handleCheckKey);
+            keyInput.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    handleCheckKey();
+                }
+            });
         });
     </script>
-
 </body>
 </html>

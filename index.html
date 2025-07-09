@@ -178,8 +178,8 @@
                     if (response.status === 200 && data.success) {
                         showMessage('登录成功！即将进入...', true);
                         
-                        //setCookie('username', username, 7);
-                        //setCookie('password', password, 7);
+                        setCookie('username', username, 7);
+                        setCookie('password', password, 7);
                         
                         console.log('登录成功，用户信息:', data.user_data);
                         
