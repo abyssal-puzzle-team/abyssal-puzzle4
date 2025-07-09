@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>谜题节点 4 - 星体仪</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --glow-color: #00ffff;
+            --secondary-glow-color: #7a00ff;
+            --bg-color: #050810;
+            --dark-core-bg: rgba(8, 12, 28, 0.85);
+            --error-color: #ff4d4d;
+            --success-color: #4dff88;
+        }
+
+        html, body {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            overflow: hidden; background: var(--bg-color);
+            font-family: 'Orbitron', sans-serif; color: #e0e6f0;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        /* --- 加载动画 --- */
+        #loader-wrapper {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 9999;
+            transition: opacity 0.8s ease-out;
+        }
+        .loader-text {
+            color: var(--glow-color); margin-bottom: 20px;
+            font-size: 1.2em; letter-spacing: 2px;
+        }
+        #loader-status-text {
+            color: #9ab; font-size: 0.9em; margin-top: 15px;
+            min-height: 1.2em; transition: opacity 0.5s;
+        }
+        .loader {
+            width: 80px; height: 80px; border: 3px solid transparent;
+            border-top-color: var(--glow-color); border-radius: 50%;
+            animation: spin 1.5s linear infinite;
+        }
+        #loader-wrapper.loaded { opacity: 0; pointer-events: none; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* --- 动态星空背景 --- */
+        #stars, #stars2, #stars3 {
+            position: absolute; top: 0; left: 0; width: 1px; height: 1px;
+            background: transparent;
+        }
+        #stars { animation: animStar 50s linear infinite; }
+        #stars2 { animation: animStar 100s linear infinite; }
+        #stars3 { animation: animStar 150s linear infinite; }
+        @keyframes animStar { from { transform: translateY(0px); } to { transform: translateY(-2000px); } }
+
+        /* --- 星体仪 (Orrery) --- */
+        .orrery-container {
+            position: relative; width: 60vmin; height: 60vmin;
+            min-width: 380px; min-height: 380px; max-width: 600px; max-height: 600px;
+            display: flex; justify-content: center; align-items: center;
+            opacity: 0; transition: opacity 1.5s ease-out;
+        }
+        .orrery-container.visible { opacity: 1; }
+        .ring {
+            position: absolute; border-radius: 50%; border: 2px solid transparent;
+            box-sizing: border-box; transition: animation-duration 0.5s ease-in-out;
+        }
+        .ring-1 { width: 100%; height: 100%; border-style: dotted; border-color: rgba(0, 255, 255, 0.3); animation: spin 30s linear infinite; }
+        .ring-2 { width: 85%; height: 85%; border: 1px solid rgba(122, 0, 255, 0.4); border-left-color: var(--secondary-glow-color); border-right-color: var(--secondary-glow-color); animation: spin 45s linear infinite reverse; }
+        .ring-3 { width: 70%; height: 70%; border-top: 2px solid var(--glow-color); border-bottom: 2px solid var(--glow-color); animation: spin 20s linear infinite; }
+        
+        .orrery-core {
+            width: 60%; height: 60%; background: var(--dark-core-bg);
+            border-radius: 50%; border: 1px solid rgba(0, 255, 255, 0.2);
+            box-shadow: inset 0 0 40px rgba(0, 255, 255, 0.1), 0 0 30px rgba(0, 255, 255, 0.2);
+            backdrop-filter: blur(5px); display: flex; flex-direction: column;
+            justify-content: center; align-items: center; padding: 20px;
+            box-sizing: border-box; text-align: center; z-index: 10;
+        }
+
+        h1 { font-size: clamp(1.8rem, 5vmin, 2.5rem); color: var(--glow-color); margin: 0 0 5px; text-shadow: 0 0 10px var(--glow-color); }
+        .flavor-text { font-size: clamp(0.8rem, 2vmin, 1rem); color: #c0c8e0; margin-bottom: 15px; line-height: 1.6; max-width: 80%; }
+        #key-form { width: 90%; display: flex; flex-direction: column; align-items: center; }
+        #key-input {
+            width: 100%; background: transparent; border: none; border-bottom: 2px solid rgba(0, 255, 255, 0.4);
+            color: #fff; font-size: clamp(1rem, 2.5vmin, 1.2rem); font-family: 'Orbitron', sans-serif;
+            outline: none; text-align: center; padding: 10px 0; transition: all 0.3s ease;
+        }
+        #key-input::placeholder { color: rgba(255, 255, 255, 0.4); }
+        #key-input:focus { border-bottom-color: var(--glow-color); text-shadow: 0 0 5px var(--glow-color); }
+        #key-input.error-shake { animation: shake 0.5s ease-in-out; }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); } 10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); } 20%, 40%, 60%, 80% { transform: translateX(8px); }
+        }
+
+        #submit-button {
+            background: transparent; border: 2px solid var(--glow-color); color: var(--glow-color);
+            border-radius: 50%; width: 70px; height: 70px; margin-top: 20px;
+            font-family: 'Orbitron', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer;
+            transition: all 0.3s ease; position: relative; box-shadow: 0 0 10px var(--glow-color);
+        }
+        #submit-button:hover:not(:disabled) { background: var(--glow-color); color: var(--bg-color); box-shadow: 0 0 25px var(--glow-color), 0 0 40px var(--glow-color); transform: scale(1.05); }
+        #submit-button:disabled { border-color: #555; color: #888; cursor: wait; box-shadow: none; }
+
+        #message-area {
+            margin-top: 15px; min-height: 20px; font-size: clamp(0.8rem, 2vmin, 1rem);
+            font-weight: bold; opacity: 0; transition: opacity 0.3s ease;
+            position: absolute; bottom: 5%;
+        }
+        #message-area.visible { opacity: 1; }
+        #message-area.success { color: var(--success-color); text-shadow: 0 0 8px var(--success-color); }
+        #message-area.error { color: var(--error-color); text-shadow: 0 0 8px var(--error-color); }
+    </style>
+</head>
+<body>
+    <div id="loader-wrapper">
+        <div class="loader-text">校准星体坐标...</div>
+        <div class="loader"></div>
+        <p id="loader-status-text"></p>
+    </div>
+
+    <div id="stars"></div>
+    <div id="stars2"></div>
+    <div id="stars3"></div>
+
+    <div class="orrery-container" id="orrery-container">
+        <div class="ring ring-1"></div>
+        <div class="ring ring-2"></div>
+        <div class="ring ring-3"></div>
+        <div class="orrery-core">
+            <h1>节点 IV</h1>
+            <p class="flavor-text">对准星核，输入正确的共鸣序列。</p>
+            <form id="key-form" onsubmit="return false;">
+                <input type="text" id="key-input" name="key" placeholder="在此输入序列" autocomplete="off" required>
+                <button type="submit" id="submit-button">激活</button>
+            </form>
+        </div>
+    </div>
+    
+    <div id="message-area"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const API_BASE_URL = 'http://111.170.11.168:15114/proxy/3000';
+
+            // --- Element Cache ---
+            const elements = {
+                loaderWrapper: document.getElementById('loader-wrapper'),
+                loaderStatusText: document.getElementById('loader-status-text'),
+                orreryContainer: document.getElementById('orrery-container'),
+                form: document.getElementById('key-form'),
+                keyInput: document.getElementById('key-input'),
+                submitButton: document.getElementById('submit-button'),
+                messageArea: document.getElementById('message-area'),
+                orreryRings: document.querySelectorAll('.ring')
+            };
+
+            // --- Helper Functions ---
+            const getCookie = (name) => {
+                const value = `; ${document.cookie}`;
+                const parts = value.split(`; ${name}=`);
+                if (parts.length === 2) return parts.pop().split(';').shift();
+            };
+
+            const setLoaderStatus = (text) => {
+                elements.loaderStatusText.textContent = text;
+            };
+
+            const showMessage = (text, type = 'error') => {
+                elements.messageArea.textContent = text;
+                elements.messageArea.className = 'visible';
+                elements.messageArea.classList.add(type);
+                elements.keyInput.classList.remove('error-shake');
+                if (type === 'error') {
+                    setTimeout(() => elements.keyInput.classList.add('error-shake'), 0);
+                }
+            };
+            
+            const setRingsState = (state) => {
+                const duration = state === 'validating' ? '5s' : '30s';
+                elements.orreryRings.forEach(ring => { ring.style.animationDuration = duration; });
+            };
+
+            const generateStarLayer = (id, count) => {
+                const element = document.getElementById(id);
+                if (!element) return;
+                let boxShadow = '';
+                for (let i = 0; i < count; i++) {
+                    boxShadow += `${Math.floor(Math.random() * 2000)}px ${Math.floor(Math.random() * 2000)}px #FFF, `;
+                }
+                element.style.boxShadow = boxShadow.slice(0, -2);
+            };
+
+            // --- Main Logic ---
+
+            async function initializePage() {
+                generateStarLayer('stars', 700);
+                generateStarLayer('stars2', 200);
+                generateStarLayer('stars3', 100);
+
+                const username = getCookie('username');
+                const password = getCookie('password');
+
+                if (!username || !password) {
+                    setLoaderStatus("未找到身份凭证，正在返回...");
+                    setTimeout(() => window.location.href = '../index.html', 1500);
+                    return;
+                }
+
+                setLoaderStatus("正在判断账户进度...");
+                try {
+                    const response = await fetch(`${API_BASE_URL}/acc_check_password`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username, password })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('账户验证失败');
+                    }
+                    
+                    const data = await response.json();
+                    const progress = data.user_data.progress;
+
+                    setLoaderStatus("进度校验...");
+
+                    if (progress === "4") {
+                        setLoaderStatus("校验通过，加载谜题...");
+                        setTimeout(() => {
+                            elements.loaderWrapper.classList.add('loaded');
+                            elements.orreryContainer.classList.add('visible');
+                        }, 1000);
+                    } else if (progress === "5") {
+                        setLoaderStatus("进度已完成，正在跳转...");
+                        setTimeout(() => window.location.href = '../storyline/insight/node4.html', 1500);
+                    } else {
+                        setLoaderStatus("进度不匹配，正在返回主页...");
+                        setTimeout(() => window.location.href = '../main.html', 1500);
+                    }
+                } catch (error) {
+                    console.error('Initialization Error:', error);
+                    setLoaderStatus(error.message + "，正在返回登录页...");
+                    setTimeout(() => window.location.href = '../index.html', 2000);
+                }
+            }
+
+            elements.form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const key = elements.keyInput.value.trim();
+                if (!key) {
+                    showMessage('序列不能为空！', 'error');
+                    return;
+                }
+
+                elements.submitButton.disabled = true;
+                elements.submitButton.textContent = '...';
+                elements.keyInput.disabled = true;
+                elements.messageArea.classList.remove('visible');
+                setRingsState('validating');
+
+                try {
+                    const checkKeyResponse = await fetch(`${API_BASE_URL}/check-key`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ nodeId: "node4", key: key })
+                    });
+                    
+                    const keyData = await checkKeyResponse.json();
+
+                    if (checkKeyResponse.ok && keyData.success) {
+                        // Correct key for a normal node
+                        if (!keyData.metaStarted && keyData.remainingSeconds === undefined) {
+                            showMessage("序列正确！正在保存进度...", 'success');
+                            
+                            // --- NEW STEP: Update progress ---
+                            const username = getCookie('username');
+                            try {
+                                const setProgressResponse = await fetch(`${API_BASE_URL}/set_user_data`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ username: username, option: "progress", value: "5" })
+                                });
+                                if (!setProgressResponse.ok) throw new Error('进度保存失败');
+                                
+                                console.log('Progress updated successfully.');
+                                // Proceed to redirect after progress is saved
+                                setTimeout(() => {
+                                    window.location.href = '../storyline/insight/node4.html';
+                                }, 1500);
+
+                            } catch (updateError) {
+                                console.error('Progress Update Error:', updateError);
+                                showMessage("序列正确，但保存进度失败！请联系管理员。仍将为您跳转...", 'error');
+                                setTimeout(() => {
+                                    window.location.href = '../storyline/insight/node4.html';
+                                }, 2500);
+                            }
+                        } else {
+                            // Handle other successful responses (like Meta)
+                            showMessage(keyData.message, 'success');
+                            resetForm();
+                        }
+                    } else {
+                        // Handle incorrect key or other errors
+                        let errorMessage = keyData.message || "未知错误";
+                        if (keyData.cooldown) errorMessage += ` 冷却: ${keyData.cooldown}s`;
+                        showMessage(errorMessage, 'error');
+                        resetForm();
+                    }
+                } catch (error) {
+                    console.error('Puzzle Submission Error:', error);
+                    showMessage('连接星体仪失败，请检查网络。', 'error');
+                    resetForm();
+                }
+            });
+
+            function resetForm() {
+                setTimeout(() => {
+                    elements.submitButton.disabled = false;
+                    elements.submitButton.textContent = '激活';
+                    elements.keyInput.disabled = false;
+                    setRingsState('idle');
+                }, 1000);
+            }
+
+            // Start the initialization process
+            initializePage();
+        });
+    </script>
+</body>
+</html>

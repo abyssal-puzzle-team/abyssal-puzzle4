@@ -3,1147 +3,373 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Abyssal Puzzle - Node5</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <title>谜题节点 5 :: 地球 [HUD INTERFACE]</title>
+    <!-- 引入字体 -->
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=Roboto:wght@300&display=swap" rel="stylesheet">
+
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&family=Electrolize:wght@400&display=swap');
-        
+        :root {
+            --primary-color: #00ddff;
+            --glow-color: rgba(0, 221, 255, 0.7);
+            --secondary-color: #e0e0e0;
+            --error-color: #ff4747;
+            --success-color: #5eff8d;
+            --dark-bg: #01020a;
+            --font-main: 'Chakra Petch', sans-serif;
+            --font-body: 'Roboto', sans-serif;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        :root {
-            --dark-bg-primary: #0a0a0a;
-            --dark-bg-secondary: #111111;
-            --dark-bg-tertiary: #1a1a1a;
-            --neon-cyan: #00ffff;
-            --neon-green: #00ff88;
-            --neon-blue: #88ffff;
-            --neon-purple: #aa88ff;
-            --neon-pink: #ff88aa;
-            --dark-gold: #ffd700;
-            --space-purple: #2d1b69;
-            --deep-purple: #4c1d95;
-            --glass-dark: rgba(255, 255, 255, 0.05);
-            --glass-border: rgba(0, 255, 255, 0.2);
-        }
-
         body {
-            font-family: 'Rajdhani', sans-serif;
-            background: var(--dark-bg-primary);
-            color: #ffffff;
-            overflow-x: hidden;
-            min-height: 100vh;
-            position: relative;
+            font-family: var(--font-body);
+            background-color: var(--dark-bg);
+            color: var(--secondary-color);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
 
-        /* 深空背景动画 */
-        .deep-space-bg {
+        /* --- 加载动画 (已添加状态文本) --- */
+        #loader-wrapper {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: 
-                radial-gradient(circle at 20% 30%, var(--space-purple) 0%, transparent 50%),
-                radial-gradient(circle at 80% 70%, var(--deep-purple) 0%, transparent 50%),
-                radial-gradient(circle at 40% 80%, #1a0033 0%, transparent 50%),
-                linear-gradient(135deg, var(--dark-bg-primary) 0%, var(--dark-bg-secondary) 50%, var(--dark-bg-tertiary) 100%);
-            animation: spaceShift 20s ease-in-out infinite;
-            z-index: -3;
-        }
-
-        @keyframes spaceShift {
-            0%, 100% { transform: scale(1) rotate(0deg); }
-            50% { transform: scale(1.1) rotate(1deg); }
-        }
-
-        /* 星空粒子系统 */
-        .star-field {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -2;
-        }
-
-        .star {
-            position: absolute;
-            width: 2px;
-            height: 2px;
-            background: var(--neon-cyan);
-            border-radius: 50%;
-            animation: starTwinkle 3s ease-in-out infinite;
-        }
-
-        @keyframes starTwinkle {
-            0%, 100% { opacity: 0.3; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.5); }
-        }
-
-        /* 全息网格背景 */
-        .hologram-grid {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: 
-                linear-gradient(rgba(0, 255, 255, 0.1) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 255, 255, 0.1) 1px, transparent 1px);
-            background-size: 50px 50px;
-            animation: gridPulse 4s ease-in-out infinite;
-            z-index: -1;
-        }
-
-        @keyframes gridPulse {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 0.6; }
-        }
-
-        /* 主容器 */
-        .main-container {
-            position: relative;
-            z-index: 10;
-            min-height: 100vh;
-            padding: 2rem;
-        }
-
-        /* 全息标题 */
-        .holographic-title {
-            text-align: center;
-            margin: 2rem 0 4rem 0;
-            position: relative;
-        }
-
-        .title-text {
-            font-family: 'Orbitron', monospace;
-            font-size: 4rem;
-            font-weight: 900;
-            background: linear-gradient(45deg, var(--neon-cyan), var(--neon-green), var(--neon-blue));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-shadow: 0 0 30px var(--neon-cyan);
-            animation: titleGlow 3s ease-in-out infinite;
-            position: relative;
-        }
-
-        .title-text::before {
-            content: attr(data-text);
-            position: absolute;
-            top: 0;
-            left: 0;
-            color: var(--neon-cyan);
-            opacity: 0.3;
-            animation: hologramFlicker 0.1s linear infinite;
-        }
-
-        @keyframes titleGlow {
-            0%, 100% { filter: brightness(1); }
-            50% { filter: brightness(1.3); }
-        }
-
-        @keyframes hologramFlicker {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(1px); }
-            75% { transform: translateX(-1px); }
-        }
-
-        /* 时空隧道新闻容器 */
-        .news-tunnel {
-            perspective: 1000px;
-            position: relative;
-            min-height: 80vh;
+            background: var(--dark-bg);
             display: flex;
             flex-direction: column;
+            justify-content: center;
             align-items: center;
-            gap: 3rem;
+            z-index: 1000;
+            transition: opacity 0.5s ease-out, visibility 0.5s;
         }
-
-        /* 新闻全息投影卡片 */
-        .news-hologram {
-            background: var(--glass-dark);
-            backdrop-filter: blur(20px);
-            border: 2px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 2rem;
-            max-width: 800px;
-            width: 100%;
-            position: relative;
-            transform-style: preserve-3d;
-            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 
-                0 10px 40px rgba(0, 255, 255, 0.2),
-                inset 0 1px 0 rgba(255, 255, 255, 0.1);
-        }
-
-        .news-hologram::before {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            background: linear-gradient(45deg, var(--neon-cyan), var(--neon-green), var(--neon-purple), var(--neon-pink));
-            border-radius: 20px;
-            z-index: -1;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .news-hologram:hover {
-            transform: translateY(-10px) rotateX(5deg) rotateY(2deg);
-            box-shadow: 
-                0 20px 60px rgba(0, 255, 255, 0.4),
-                inset 0 1px 0 rgba(255, 255, 255, 0.2);
-        }
-
-        .news-hologram:hover::before {
-            opacity: 1;
-        }
-
-        /* 全息扫描线 */
-        .scan-line {
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--neon-cyan), transparent);
-            animation: scanMove 3s linear infinite;
-        }
-
-        @keyframes scanMove {
-            0% { left: -100%; }
-            100% { left: 100%; }
-        }
-
-        /* 新闻标题 */
-        .news-title {
-            font-family: 'Orbitron', monospace;
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--neon-cyan);
-            margin-bottom: 1.5rem;
-            text-shadow: 0 0 10px var(--neon-cyan);
-            position: relative;
-        }
-
-        .news-title::after {
-            content: '';
-            position: absolute;
-            bottom: -5px;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background: var(--neon-green);
-            transition: width 0.5s ease;
-        }
-
-        .news-hologram:hover .news-title::after {
-            width: 100%;
-        }
-
-        /* 新闻内容 */
-        .news-content {
-            line-height: 1.8;
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 1.1rem;
-        }
-
-        .news-content p {
-            margin-bottom: 1rem;
-        }
-
-        /* 数据流参赛选手展示 */
-        .contestants-matrix {
-            background: var(--glass-dark);
-            backdrop-filter: blur(15px);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 2rem;
-            margin: 2rem 0;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .contestants-matrix::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                repeating-linear-gradient(
-                    90deg,
-                    transparent,
-                    transparent 98px,
-                    rgba(0, 255, 255, 0.1) 100px
-                );
-            animation: matrixFlow 2s linear infinite;
-        }
-
-        @keyframes matrixFlow {
-            0% { transform: translateX(-100px); }
-            100% { transform: translateX(0); }
-        }
-
-        .contestant-item {
-            background: rgba(0, 255, 255, 0.05);
-            border: 1px solid rgba(0, 255, 255, 0.3);
-            border-radius: 15px;
-            padding: 1.5rem;
-            margin: 1rem 0;
-            position: relative;
-            transition: all 0.3s ease;
-            overflow: hidden;
-        }
-
-        .contestant-item::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.2), transparent);
-            transition: left 0.5s ease;
-        }
-
-        .contestant-item:hover::before {
-            left: 100%;
-        }
-
-        .contestant-item:hover {
-            transform: translateX(10px);
-            border-color: var(--neon-cyan);
-            box-shadow: 0 5px 20px rgba(0, 255, 255, 0.3);
-        }
-
-        .contestant-message {
+        .loader-text {
+            font-family: var(--font-main);
             font-size: 1.2rem;
-            color: #ffffff;
-            margin-bottom: 0.8rem;
-            font-family: 'Electrolize', monospace;
+            color: var(--primary-color);
+            letter-spacing: 4px;
+            margin-bottom: 20px;
+            text-shadow: 0 0 8px var(--glow-color);
         }
+        #loader-status-text {
+            font-family: var(--font-body);
+            font-size: 0.9rem;
+            color: var(--secondary-color);
+            opacity: 0.8;
+            margin-bottom: 30px;
+            min-height: 1.2em; /* 预留空间防止跳动 */
+            transition: opacity 0.3s;
+        }
+        .loader-ring { display: inline-block; position: relative; width: 80px; height: 80px; }
+        .loader-ring div { box-sizing: border-box; display: block; position: absolute; width: 64px; height: 64px; margin: 8px; border: 4px solid var(--primary-color); border-radius: 50%; animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite; border-color: var(--primary-color) transparent transparent transparent; }
+        .loader-ring div:nth-child(1) { animation-delay: -0.45s; }
+        .loader-ring div:nth-child(2) { animation-delay: -0.3s; }
+        .loader-ring div:nth-child(3) { animation-delay: -0.15s; }
+        @keyframes lds-ring { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        .contestant-stats {
-            display: flex;
-            justify-content: space-between;
-            font-size: 1rem;
-            font-weight: 600;
-        }
+        /* --- 3D 背景 --- */
+        #globe-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
 
-        .stat-boost {
-            color: var(--neon-green);
-            text-shadow: 0 0 5px var(--neon-green);
-        }
+        /* --- 主内容 (HUD) --- */
+        #main-content { position: relative; z-index: 10; width: 100%; height: 100%; display: flex; align-items: center; padding-left: 5vw; visibility: hidden; }
+        .puzzle-container { width: 90%; max-width: 420px; background: linear-gradient(rgba(10, 25, 40, 0.1), rgba(10, 25, 40, 0.1)), repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0, 221, 255, 0.05) 1px, rgba(0, 221, 255, 0.05) 2px); padding: 30px 40px; border: 1px solid rgba(0, 221, 255, 0.2); position: relative; opacity: 0; transform: translateX(-30px); }
+        #main-content.visible .puzzle-container { animation: fadeInSlide 0.7s 0.2s ease-out forwards; }
+        .puzzle-container::before, .puzzle-container::after { content: ''; position: absolute; width: 30px; height: 30px; border-color: var(--primary-color); border-style: solid; animation: draw-corners 0.7s ease-out forwards; }
+        .puzzle-container::before { top: -6px; left: -6px; border-width: 2px 0 0 2px; }
+        .puzzle-container::after { bottom: -6px; right: -6px; border-width: 0 2px 2px 0; }
+        @keyframes draw-corners { 0% { width: 0; height: 0; } 100% { width: 30px; height: 30px; } }
+        @keyframes fadeInSlide { to { opacity: 1; transform: translateX(0); } }
 
-        .stat-acc {
-            color: var(--neon-blue);
-            text-shadow: 0 0 5px var(--neon-blue);
-        }
+        header { margin-bottom: 35px; opacity: 0; }
+        #main-content.visible header { animation: fadeInSlide 0.7s 0.4s ease-out forwards; }
+        header h1 { font-family: var(--font-main); font-size: 2.2rem; color: var(--primary-color); text-shadow: 0 0 10px var(--glow-color); position: relative; margin-bottom: 10px; }
+        header h1::after, header h1::before { content: attr(data-text); position: absolute; top: 0; left: 0; width: 100%; background: var(--dark-bg); clip: rect(0, 0, 0, 0); }
+        header h1::before { left: 2px; text-shadow: -2px 0 var(--error-color); animation: glitch-anim-1 2.5s infinite linear alternate-reverse; }
+        header h1::after { left: -2px; text-shadow: -2px 0 var(--glow-color), 2px 2px var(--error-color); animation: glitch-anim-2 3s infinite linear alternate-reverse; }
+        @keyframes glitch-anim-1 { 0% { clip: rect(42px, 9999px, 44px, 0); } 100% { clip: rect(2px, 9999px, 92px, 0); } }
+        @keyframes glitch-anim-2 { 0% { clip: rect(15px, 9999px, 99px, 0); } 100% { clip: rect(85px, 9999px, 50px, 0); } }
 
-        /* 全息代码块 */
-        .hologram-code {
-            background: rgba(0, 0, 0, 0.7);
-            border: 2px solid var(--neon-green);
-            border-radius: 15px;
-            padding: 2rem;
-            margin: 2rem 0;
-            font-family: 'Orbitron', monospace;
-            position: relative;
-            overflow: hidden;
-        }
+        .subtitle { font-size: 1rem; color: var(--secondary-color); opacity: 0.8; height: 1.2em; }
+        .subtitle::after { content: '▋'; animation: blink-caret 0.75s step-end infinite; color: var(--primary-color); margin-left: 0.2em; }
+        @keyframes blink-caret { from, to { opacity: 0 } 50% { opacity: 1 } }
+        
+        #key-form { opacity: 0; }
+        #main-content.visible #key-form { animation: fadeInSlide 0.7s 0.6s ease-out forwards; }
+        .input-group { position: relative; margin-bottom: 25px; }
+        #key-input { width: 100%; background: rgba(0, 221, 255, 0.05); border: 1px solid rgba(0, 221, 255, 0.3); color: var(--secondary-color); font-size: 1.1rem; font-family: var(--font-body); padding: 12px 15px; outline: none; transition: all 0.3s ease; border-radius: 4px; }
+        #key-input::placeholder { color: rgba(224, 224, 224, 0.5); }
+        #key-input:focus { border-color: var(--primary-color); box-shadow: 0 0 15px var(--glow-color); background: rgba(0, 221, 255, 0.1); }
+        
+        #submit-btn { font-family: var(--font-main); background: transparent; border: 2px solid var(--primary-color); color: var(--primary-color); padding: 12px 20px; font-size: 1.1rem; cursor: pointer; border-radius: 4px; transition: all 0.3s ease; position: relative; overflow: hidden; width: 100%; text-transform: uppercase; }
+        #submit-btn:hover:not(:disabled) { color: var(--dark-bg); box-shadow: 0 0 20px var(--glow-color); }
+        #submit-btn::before { content: ''; position: absolute; top: 50%; left: 50%; width: 0; height: 0; background: var(--primary-color); border-radius: 50%; transform: translate(-50%, -50%); transition: width 0.4s ease, height 0.4s ease; z-index: -1; }
+        #submit-btn:hover:not(:disabled)::before { width: 225%; height: 500%; }
+        
+        #submit-btn:disabled { cursor: not-allowed; border-color: #555; color: #555; background: transparent; box-shadow: none; }
+        .spinner { border: 2px solid rgba(255, 255, 255, 0.3); border-left-color: var(--secondary-color); border-radius: 50%; width: 18px; height: 18px; animation: spin 1s linear infinite; display: inline-block; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .hidden { display: none !important; }
 
-        .hologram-code::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                repeating-linear-gradient(
-                    0deg,
-                    transparent,
-                    transparent 2px,
-                    rgba(0, 255, 0, 0.1) 4px
-                );
-            animation: codeMatrix 1s linear infinite;
-        }
+        #message-container { margin-top: 20px; min-height: 24px; font-size: 0.9rem; font-weight: 600; transition: all 0.3s; font-family: var(--font-main); text-align: center; }
+        #message-container.error { color: var(--error-color); text-shadow: 0 0 5px var(--error-color); }
+        #message-container.success { color: var(--success-color); text-shadow: 0 0 5px var(--success-color); }
 
-        @keyframes codeMatrix {
-            0% { transform: translateY(0); }
-            100% { transform: translateY(4px); }
-        }
-
-        .code-text {
-            color: var(--neon-green);
-            line-height: 2;
-            text-shadow: 0 0 10px var(--neon-green);
-            position: relative;
-            z-index: 1;
-        }
-
-        /* 量子输入终端 */
-        .quantum-terminal {
-            position: fixed;
-            bottom: 2rem;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--glass-dark);
-            backdrop-filter: blur(25px);
-            border: 2px solid var(--neon-purple);
-            border-radius: 25px;
-            padding: 2rem;
-            min-width: 500px;
-            box-shadow: 
-                0 15px 50px rgba(170, 136, 255, 0.3),
-                inset 0 1px 0 rgba(255, 255, 255, 0.1);
-            z-index: 100;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .quantum-terminal::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: conic-gradient(from 0deg, transparent, var(--neon-purple), transparent);
-            animation: quantumRotate 4s linear infinite;
-            z-index: -1;
-        }
-
-        @keyframes quantumRotate {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .terminal-header {
-            text-align: center;
-            margin-bottom: 1.5rem;
-        }
-
-        .terminal-title {
-            font-family: 'Orbitron', monospace;
-            font-size: 1.3rem;
-            color: var(--neon-purple);
-            text-shadow: 0 0 15px var(--neon-purple);
-            letter-spacing: 2px;
-        }
-
-        .cooldown-display {
-            text-align: center;
-            margin: 1rem 0;
-            color: var(--neon-pink);
-            font-weight: 600;
-            text-shadow: 0 0 10px var(--neon-pink);
-        }
-
-        .input-group {
-            display: flex;
-            gap: 1rem;
-            align-items: center;
-        }
-
-        .quantum-input {
-            flex: 1;
-            background: rgba(0, 0, 0, 0.5);
-            border: 2px solid var(--neon-cyan);
-            border-radius: 15px;
-            padding: 1rem 1.5rem;
-            color: var(--neon-cyan);
-            font-family: 'Orbitron', monospace;
-            font-size: 1rem;
-            outline: none;
-            transition: all 0.3s ease;
-            text-shadow: 0 0 5px var(--neon-cyan);
-        }
-
-        .quantum-input:focus {
-            border-color: var(--neon-green);
-            color: var(--neon-green);
-            text-shadow: 0 0 10px var(--neon-green);
-            box-shadow: 0 0 20px rgba(0, 255, 136, 0.4);
-        }
-
-        .quantum-button {
-            background: linear-gradient(45deg, var(--neon-purple), var(--neon-pink));
-            border: none;
-            border-radius: 15px;
-            padding: 1rem 2rem;
-            color: #ffffff;
-            font-family: 'Orbitron', monospace;
-            font-weight: 700;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(170, 136, 255, 0.4);
-            text-shadow: 0 0 5px #ffffff;
-        }
-
-        .quantum-button:hover:not(:disabled) {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(170, 136, 255, 0.6);
-            filter: brightness(1.2);
-        }
-
-        .quantum-button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .message-display {
-            margin-top: 1.5rem;
-            padding: 1rem;
-            border-radius: 10px;
-            text-align: center;
-            min-height: 20px;
-            transition: all 0.3s ease;
-            font-weight: 600;
-        }
-
-        .message-success {
-            background: rgba(0, 255, 136, 0.2);
-            border: 1px solid var(--neon-green);
-            color: var(--neon-green);
-            text-shadow: 0 0 10px var(--neon-green);
-        }
-
-        .message-error {
-            background: rgba(255, 136, 170, 0.2);
-            border: 1px solid var(--neon-pink);
-            color: var(--neon-pink);
-            text-shadow: 0 0 10px var(--neon-pink);
-        }
-
-        /* 响应式设计 */
-        @media (max-width: 768px) {
-            .title-text {
-                font-size: 2.5rem;
-            }
-            
-            .quantum-terminal {
-                min-width: 90%;
-                left: 5%;
-                transform: none;
-            }
-            
-            .input-group {
-                flex-direction: column;
-            }
-            
-            .quantum-input {
-                width: 100%;
-            }
-            
-            .news-hologram {
-                margin: 1rem;
-                padding: 1.5rem;
-            }
-        }
-
-        /* 加载动画 */
-        .quantum-spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(170, 136, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: var(--neon-purple);
-            animation: quantumSpin 1s ease-in-out infinite;
-        }
-
-        @keyframes quantumSpin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* 数据可视化元素 */
-        .data-orb {
-            position: absolute;
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: radial-gradient(circle, var(--neon-cyan), transparent);
-            animation: orbFloat 6s ease-in-out infinite;
-            opacity: 0.6;
-        }
-
-        @keyframes orbFloat {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-30px) rotate(180deg); }
-        }
-
-        /* 全息干扰效果 */
-        .hologram-interference {
-            position: relative;
-        }
-
-        .hologram-interference::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: 
-                repeating-linear-gradient(
-                    90deg,
-                    transparent,
-                    transparent 2px,
-                    rgba(0, 255, 255, 0.1) 3px,
-                    rgba(0, 255, 255, 0.1) 4px,
-                    transparent 5px
-                );
-            animation: interference 0.1s linear infinite;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .hologram-interference:hover::after {
-            opacity: 1;
-        }
-
-        @keyframes interference {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(5px); }
-        }
+        @media (max-width: 768px) { #main-content { justify-content: center; padding-left: 0; } .puzzle-container { padding: 25px; } header h1 { font-size: 1.8rem; } }
     </style>
 </head>
 <body>
-    <!-- 深空背景 -->
-    <div class="deep-space-bg"></div>
-    
-    <!-- 星空粒子 -->
-    <div class="star-field" id="starField"></div>
-    
-    <!-- 全息网格 -->
-    <div class="hologram-grid"></div>
 
-    <!-- 主容器 -->
-    <div class="main-container">
-        <!-- 全息标题 -->
-        <div class="holographic-title">
-            <h1 class="title-text hologram-interference" data-text="今日新闻速览">今日新闻速览</h1>
-        </div>
-
-        <!-- 时空隧道新闻容器 -->
-        <div class="news-tunnel">
-            <!-- 赛事公告全息投影 -->
-            <div class="news-hologram hologram-interference">
-                <div class="scan-line"></div>
-                <h2 class="news-title">赛事公告</h2>
-                <div class="news-content">
-                    <p>• 第X(被黑笔涂抹)届电子音乐马拉松今日正式开赛!比赛地点为"World of Memories"</p>
-                    <p>• 三天后小镇扫墓踏青活动将举办</p>
-                    <p>• 各镇镇长共同出席马拉松并致词——"音游健儿展风采,甲辰之年启新篇"</p>
-                </div>
-            </div>
-
-            <!-- 决赛专栏全息投影 -->
-            <div class="news-hologram hologram-interference">
-                <div class="scan-line"></div>
-                <h2 class="news-title">马拉松决赛专栏</h2>
-                <div class="news-content">
-                    <p>来自世界各地的选手经过角逐剩余五位选手进行决赛,名单如下:</p>
-                    <p><strong>第X(被黑笔涂抹)届音乐电子马拉松决赛参赛名单</strong></p>
-                    <p>序号 留言 加成🔼 ACC▶️</p>
-                    
-                    <div class="contestants-matrix">
-                        <div class="contestant-item">
-                            <div class="contestant-message">• ? 片側だけの正義,橫切る影に立ち,不自由選び続けてた.</div>
-                            <div class="contestant-stats">
-                                <span class="stat-boost">加成: -1.83%</span>
-                                <span class="stat-acc">ACC: 78.18%</span>
-                            </div>
-                        </div>
-                        <div class="contestant-item">
-                            <div class="contestant-message">• ? Under pressure I've been going off the deep end.</div>
-                            <div class="contestant-stats">
-                                <span class="stat-boost">加成: -3.47%</span>
-                                <span class="stat-acc">ACC: 62.22%</span>
-                            </div>
-                        </div>
-                        <div class="contestant-item">
-                            <div class="contestant-message">• ? Hey yo one for the blood two for the life.</div>
-                            <div class="contestant-stats">
-                                <span class="stat-boost">加成: 64.2%</span>
-                                <span class="stat-acc">ACC: 149.49%</span>
-                            </div>
-                        </div>
-                        <div class="contestant-item">
-                            <div class="contestant-message">• ? 她并没有留言,同时全曲结束.</div>
-                            <div class="contestant-stats">
-                                <span class="stat-boost">加成: -9.19%</span>
-                                <span class="stat-acc">ACC: 75.02%</span>
-                            </div>
-                        </div>
-                        <div class="contestant-item">
-                            <div class="contestant-message">• ? 全て壊して.</div>
-                            <div class="contestant-stats">
-                                <span class="stat-boost">加成: 56.13%</span>
-                                <span class="stat-acc">ACC: 106.35%</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 观众留言全息投影 -->
-            <div class="news-hologram hologram-interference">
-                <div class="scan-line"></div>
-                <h2 class="news-title">观众留言</h2>
-                <div class="news-content">
-                    <p>"第X(被黑笔涂抹)届连结成的主题元素是什么呢?"</p>
-                    <p>"听说这次决赛隐藏大奖将会是???新品首秀,到底会是什么呢?好期待啊..."</p>
-                </div>
-            </div>
-
-            <!-- 现场活动A全息投影 -->
-            <div class="news-hologram hologram-interference">
-                <div class="scan-line"></div>
-                <h2 class="news-title">现场活动A</h2>
-                <div class="news-content">
-                    <p>神秘评委即将登场!主题元素搜寻寻找评委身份活动现在开始!</p>
-                    <p>评委当时所在时空区域:①??.1+1-1+1-1…:/②55.6/③2.4</p>
-                    <p>比赛检查点全经过时的计算公式:</p>
-                    <div class="hologram-code">
-                        <div class="code-text">
-...(模糊不清)<br>
-cout<<"请输入各个检查点数量";<br>
-cin>>①>>②>>③;<br>
-…(模糊不清)<br>
-int P = 4 * floor(sqrt(①)) + 4 * floor(sqrt(②)) + 2 * floor(sqrt(③)) ;<br>
-P--;<br>
-...(模糊不清)
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 现场活动B全息投影 -->
-            <div class="news-hologram hologram-interference">
-                <div class="scan-line"></div>
-                <h2 class="news-title">现场活动B</h2>
-                <div class="news-content">
-                    <p>决赛隐藏大奖"P"谱面创作者藏匿在观众中,第一个找到其"笔名"的观众将会获得神秘礼品!</p>
-                </div>
-            </div>
-        </div>
+    <div id="loader-wrapper">
+        <div class="loader-text">ESTABLISHING GEO-LINK...</div>
+        <div id="loader-status-text"></div>
+        <div class="loader-ring"><div></div><div></div><div></div><div></div></div>
     </div>
 
-    <!-- 量子输入终端 -->
-    <div class="quantum-terminal">
-        <div class="terminal-header">
-            <div class="terminal-title">QUANTUM ACCESS TERMINAL</div>
-        </div>
-        <div class="cooldown-display" id="cooldownDisplay"></div>
-        <div class="input-group">
-            <input type="text" class="quantum-input" id="keyInput" placeholder="输入量子密钥..." maxlength="50">
-            <button class="quantum-button" id="submitBtn">传输</button>
-        </div>
-        <div class="message-display" id="messageDisplay"></div>
-    </div>
+    <div id="globe-container"></div>
 
+    <main id="main-content">
+        <div class="puzzle-container">
+            <header>
+                <h1 data-text="NODE_05: TERRA">NODE_05: TERRA</h1>
+                <p class="subtitle" id="subtitle-text"></p>
+            </header>
+            <form id="key-form" novalidate>
+                <div class="input-group">
+                    <input type="text" id="key-input" name="key" placeholder="Awaiting Encryption Key..." autocomplete="off" required>
+                </div>
+                <button type="submit" id="submit-btn">
+                    <span class="btn-text">Initiate Verification</span>
+                    <div class="spinner hidden"></div>
+                </button>
+            </form>
+            <div id="message-container"></div>
+        </div>
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
     <script>
-        // 全局变量
-        let isSubmitting = false;
-        let cooldownTimer = null;
-        let cooldownRemaining = 0;
-        
-        // API配置
-        const API_BASE = 'http://http://111.170.11.168:15114/proxy/3000';
-        const NODE_ID = 'node5';
-        
-        // DOM元素
-        const keyInput = document.getElementById('keyInput');
-        const submitBtn = document.getElementById('submitBtn');
-        const messageDisplay = document.getElementById('messageDisplay');
-        const cooldownDisplay = document.getElementById('cooldownDisplay');
-        
-        // 初始化
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeStarField();
-            initializeAnimations();
-            checkCooldownStatus();
-            setupEventListeners();
-            createDataOrbs();
-        });
-        
-        // 星空初始化
-        function initializeStarField() {
-            const starField = document.getElementById('starField');
-            
-            for (let i = 0; i < 200; i++) {
-                const star = document.createElement('div');
-                star.className = 'star';
-                star.style.left = Math.random() * 100 + '%';
-                star.style.top = Math.random() * 100 + '%';
-                star.style.animationDelay = Math.random() * 3 + 's';
-                star.style.animationDuration = (Math.random() * 2 + 2) + 's';
-                starField.appendChild(star);
+        document.addEventListener('DOMContentLoaded', async () => {
+            // --- 全局变量 ---
+            const nodeId = 'node5';
+            const apiBaseUrl = 'http://111.170.11.168:15114/proxy/3000';
+            const loaderWrapper = document.getElementById('loader-wrapper');
+            const loaderStatusText = document.getElementById('loader-status-text');
+            const mainContent = document.getElementById('main-content');
+            const subtitleEl = document.getElementById('subtitle-text');
+            const form = document.getElementById('key-form');
+            const keyInput = document.getElementById('key-input');
+            const submitBtn = document.getElementById('submit-btn');
+            const btnText = submitBtn.querySelector('.btn-text');
+            const btnSpinner = submitBtn.querySelector('.spinner');
+            const messageContainer = document.getElementById('message-container');
+            let cooldownInterval;
+            let currentUsername = ''; // 用于存储已验证的用户名
+
+            // --- 辅助函数：获取Cookie ---
+            function getCookie(name) {
+                const value = `; ${document.cookie}`;
+                const parts = value.split(`; ${name}=`);
+                if (parts.length === 2) return parts.pop().split(';').shift();
+                return null;
             }
-        }
-        
-        // 数据球体
-        function createDataOrbs() {
-            const container = document.querySelector('.main-container');
-            const orbCount = 8;
-            
-            for (let i = 0; i < orbCount; i++) {
-                const orb = document.createElement('div');
-                orb.className = 'data-orb';
-                orb.style.left = Math.random() * 90 + 5 + '%';
-                orb.style.top = Math.random() * 80 + 10 + '%';
-                orb.style.animationDelay = i * 0.8 + 's';
-                orb.style.animationDuration = (Math.random() * 4 + 4) + 's';
-                container.appendChild(orb);
-            }
-        }
-        
-        // 动画初始化
-        function initializeAnimations() {
-            // 全息投影入场动画
-            anime({
-                targets: '.news-hologram',
-                translateY: [100, 0],
-                opacity: [0, 1],
-                rotateX: [15, 0],
-                duration: 1200,
-                delay: anime.stagger(300),
-                easing: 'easeOutQuart'
-            });
-            
-            // 标题全息效果
-            anime({
-                targets: '.title-text',
-                scale: [0.8, 1],
-                opacity: [0, 1],
-                duration: 2000,
-                easing: 'easeOutElastic(1, .6)'
-            });
-            
-            // 量子终端入场
-            anime({
-                targets: '.quantum-terminal',
-                translateY: [150, 0],
-                opacity: [0, 1],
-                duration: 1500,
-                delay: 1500,
-                easing: 'easeOutQuart'
-            });
-            
-            // 参赛选手数据流动画
-            anime({
-                targets: '.contestant-item',
-                translateX: [-50, 0],
-                opacity: [0, 1],
-                duration: 800,
-                delay: anime.stagger(150, {start: 2000}),
-                easing: 'easeOutQuart'
-            });
-            
-            // 数据球体动画
-            anime({
-                targets: '.data-orb',
-                scale: [0, 1],
-                opacity: [0, 0.6],
-                duration: 1000,
-                delay: anime.stagger(200, {start: 1000}),
-                easing: 'easeOutBack'
-            });
-        }
-        
-        // 事件监听器
-        function setupEventListeners() {
-            submitBtn.addEventListener('click', handleSubmit);
-            keyInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter' && !submitBtn.disabled) {
-                    handleSubmit();
+
+            // --- 页面初始化和账户验证 ---
+            async function initializePage() {
+                const username = getCookie('username');
+                const password = getCookie('password');
+
+                if (!username || !password) {
+                    window.location.href = '../index.html';
+                    return; // 立即停止执行
                 }
-            });
-            
-            // 输入框量子效果
-            keyInput.addEventListener('focus', function() {
-                createQuantumEffect();
-            });
-            
-            // 全息卡片交互
-            document.querySelectorAll('.news-hologram').forEach(card => {
-                card.addEventListener('mouseenter', function() {
-                    createHologramEffect(this);
-                });
-            });
-        }
-        
-        // 量子效果
-        function createQuantumEffect() {
-            anime({
-                targets: '.quantum-terminal',
-                scale: [1, 1.05, 1],
-                boxShadow: [
-                    '0 15px 50px rgba(170, 136, 255, 0.3)',
-                    '0 25px 70px rgba(170, 136, 255, 0.6)',
-                    '0 15px 50px rgba(170, 136, 255, 0.3)'
-                ],
-                duration: 800,
-                easing: 'easeInOutSine'
-            });
-        }
-        
-        // 全息效果
-        function createHologramEffect(element) {
-            anime({
-                targets: element,
-                borderColor: ['rgba(0, 255, 255, 0.2)', 'rgba(0, 255, 255, 0.8)', 'rgba(0, 255, 255, 0.2)'],
-                duration: 1000,
-                easing: 'easeInOutSine'
-            });
-        }
-        
-        // 检查冷却状态
-        async function checkCooldownStatus() {
-            try {
-                const response = await fetch(`${API_BASE}/cooldown-status`);
-                const data = await response.json();
-                
-                if (data.cooldownRemaining > 0) {
-                    startCooldown(data.cooldownRemaining);
-                } else {
-                    updateCooldownDisplay(0);
-                }
-            } catch (error) {
-                console.error('检查冷却状态失败:', error);
-                updateCooldownDisplay(0);
-            }
-        }
-        
-        // 处理提交
-        async function handleSubmit() {
-            if (isSubmitting || cooldownRemaining > 0) return;
-            
-            const key = keyInput.value.trim();
-            if (!key) {
-                showMessage('请输入量子密钥', 'error');
-                return;
-            }
-            
-            isSubmitting = true;
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="quantum-spinner"></span> 传输中...';
-            
-            // 提交动画
-            createSubmitEffect();
-            
-            try {
-                const response = await fetch(`${API_BASE}/check-key`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        nodeId: NODE_ID,
-                        key: key
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (response.ok) {
-                    showMessage(data.message, 'success');
-                    keyInput.value = '';
-                    
-                    // 成功效果
-                    createSuccessEffect();
-                    
-                    if (data.metaStarted) {
-                        createMetaStartEffect();
+                currentUsername = username; // 保存用户名
+                loaderStatusText.textContent = '正在验证账户信息...';
+
+                try {
+                    const response = await fetch(`${apiBaseUrl}/acc_check_password`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username, password })
+                    });
+
+                    if (!response.ok) {
+                        // 密码错误或账号不存在，都视为验证失败
+                        window.location.href = '../index.html';
+                        return;
+                    }
+
+                    const data = await response.json();
+                    if (!data.success) {
+                        window.location.href = '../index.html';
+                        return;
                     }
                     
-                    if (data.remainingSeconds) {
-                        showMessage(`${data.message} 剩余时间: ${data.remainingSeconds}秒`, 'success');
+                    // 验证成功，检查进度
+                    loaderStatusText.textContent = '正在判断账户进度...';
+                    const progress = data.user_data.progress;
+
+                    if (progress === '6') {
+                        // 已完成此节点，直接跳转到剧情页
+                        window.location.href = '../storyline/insight/node5.html';
+                    } else if (progress === '5') {
+                        // 进度正确，可以开始解谜，结束加载动画
+                        finishLoading();
+                    } else {
+                        // 进度不符，返回主界面
+                        window.location.href = '../main.html';
                     }
-                } else {
-                    showMessage(data.message, 'error');
+
+                } catch (error) {
+                    console.error('Account verification failed:', error);
+                    loaderStatusText.textContent = '账户验证失败，请检查网络并刷新。';
+                    // 停止加载动画，让用户看到错误
+                    document.querySelector('.loader-ring').style.display = 'none';
+                }
+            }
+
+            function finishLoading() {
+                if (loaderWrapper) {
+                    loaderWrapper.style.opacity = '0';
+                    loaderWrapper.style.visibility = 'hidden';
+                    mainContent.style.visibility = 'visible';
+                    mainContent.classList.add('visible');
                     
-                    if (data.cooldown) {
-                        startCooldown(data.cooldown);
-                        createCooldownEffect();
-                    }
-                }
-            } catch (error) {
-                console.error('提交失败:', error);
-                showMessage('量子传输失败，请重试', 'error');
-            } finally {
-                isSubmitting = false;
-                if (cooldownRemaining === 0) {
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = '传输';
+                    const subtitleText = "万物之源，文明摇篮";
+                    setTimeout(() => typewriter(subtitleEl, subtitleText), 800);
+                    loaderWrapper.addEventListener('transitionend', () => loaderWrapper.remove());
                 }
             }
-        }
-        
-        // 开始冷却
-        function startCooldown(seconds) {
-            cooldownRemaining = seconds;
-            submitBtn.disabled = true;
             
-            if (cooldownTimer) {
-                clearInterval(cooldownTimer);
-            }
+            // --- 启动页面初始化流程 ---
+            await initializePage();
             
-            cooldownTimer = setInterval(() => {
-                cooldownRemaining--;
-                updateCooldownDisplay(cooldownRemaining);
+            // --- Three.js 3D 地球 (代码已折叠，未改动) ---
+            const scene = new THREE.Scene(); const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000); const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true }); const container = document.getElementById('globe-container'); renderer.setSize(window.innerWidth, window.innerHeight); renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); container.appendChild(renderer.domElement); const starGeometry = new THREE.BufferGeometry(); const starMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.7, transparent: true, opacity: 0.5 }); const starVertices = Array.from({ length: 15000 }, () => (Math.random() - 0.5) * 2000); starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3)); const stars = new THREE.Points(starGeometry, starMaterial); scene.add(stars); const textureLoader = new THREE.TextureLoader(); const earthGeometry = new THREE.SphereGeometry(15, 64, 64); const earthMaterial = new THREE.MeshStandardMaterial({ map: textureLoader.load('https://raw.githubusercontent.com/joshuabradley/dat-globe/master/src/images/world.jpg'), metalness: 0.2, roughness: 0.8 }); const earth = new THREE.Mesh(earthGeometry, earthMaterial); scene.add(earth); const atmosphereGeometry = new THREE.SphereGeometry(15.5, 64, 64); const atmosphereMaterial = new THREE.MeshBasicMaterial({ color: new THREE.Color(0x00ddff), transparent: true, opacity: 0.1, side: THREE.BackSide }); const atmosphere = new THREE.Mesh(atmosphereGeometry, atmosphereMaterial); scene.add(atmosphere); const cloudGeometry = new THREE.SphereGeometry(15.15, 64, 64); const cloudMaterial = new THREE.MeshStandardMaterial({ map: textureLoader.load('https://raw.githubusercontent.com/joshuabradley/dat-globe/master/src/images/clouds.png'), transparent: true, opacity: 0.25 }); const clouds = new THREE.Mesh(cloudGeometry, cloudMaterial); scene.add(clouds); const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); scene.add(ambientLight); const directionalLight = new THREE.DirectionalLight(0xffffff, 1.5); directionalLight.position.set(40, 5, 20); scene.add(directionalLight); camera.position.set(5, 5, 35); camera.lookAt(scene.position); function animate() { requestAnimationFrame(animate); earth.rotation.y += 0.0005; clouds.rotation.y += 0.0006; stars.rotation.y += 0.0001; renderer.render(scene, camera); } animate(); window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); });
+            function typewriter(element, text, speed = 75) { let i = 0; element.innerHTML = ""; function type() { if (i < text.length) { element.innerHTML += text.charAt(i); i++; setTimeout(type, speed); } } type(); }
+
+            // --- 表单提交逻辑 ---
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const key = keyInput.value.trim();
+                if (!key || submitBtn.disabled) return;
                 
-                if (cooldownRemaining <= 0) {
-                    clearInterval(cooldownTimer);
-                    cooldownTimer = null;
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = '传输';
-                }
-            }, 1000);
-        }
-        
-        // 更新冷却显示
-        function updateCooldownDisplay(seconds) {
-            if (seconds > 0) {
-                cooldownDisplay.textContent = `量子冷却中: ${seconds}秒`;
-                cooldownDisplay.style.display = 'block';
-            } else {
-                cooldownDisplay.textContent = '';
-                cooldownDisplay.style.display = 'none';
-            }
-        }
-        
-        // 显示消息
-        function showMessage(message, type) {
-            messageDisplay.textContent = message;
-            messageDisplay.className = `message-display message-${type}`;
-            
-            anime({
-                targets: messageDisplay,
-                scale: [0.8, 1],
-                opacity: [0, 1],
-                duration: 400,
-                easing: 'easeOutBack'
-            });
-        }
-        
-        // 提交效果
-        function createSubmitEffect() {
-            // 全息干扰效果
-            document.querySelectorAll('.news-hologram').forEach(card => {
-                anime({
-                    targets: card,
-                    rotateY: [0, 5, 0],
-                    duration: 1000,
-                    easing: 'easeInOutSine'
-                });
-            });
-        }
-        
-        // 成功效果
-        function createSuccessEffect() {
-            // 量子爆发效果
-            const burst = document.createElement('div');
-            burst.style.position = 'fixed';
-            burst.style.top = '50%';
-            burst.style.left = '50%';
-            burst.style.width = '100px';
-            burst.style.height = '100px';
-            burst.style.background = 'radial-gradient(circle, rgba(0, 255, 136, 0.8), transparent)';
-            burst.style.borderRadius = '50%';
-            burst.style.transform = 'translate(-50%, -50%)';
-            burst.style.pointerEvents = 'none';
-            burst.style.zIndex = '9999';
-            document.body.appendChild(burst);
-            
-            anime({
-                targets: burst,
-                scale: [0, 20],
-                opacity: [1, 0],
-                duration: 2000,
-                easing: 'easeOutQuart',
-                complete: function() {
-                    if (burst.parentNode) {
-                        burst.parentNode.removeChild(burst);
+                setLoading(true);
+                displayMessage('', '');
+
+                try {
+                    const response = await fetch(`${apiBaseUrl}/check-key`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ nodeId: nodeId, key: key })
+                    });
+                    
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        await handleSuccess(data);
+                    } else {
+                        handleError(data);
                     }
+
+                } catch (error) {
+                    console.error('Key check failed:', error);
+                    displayMessage('通讯链路中断...无法连接至验证服务器。', 'error');
+                    setLoading(false);
                 }
             });
-            
-            // 全息卡片发光
-            anime({
-                targets: '.news-hologram',
-                borderColor: ['rgba(0, 255, 255, 0.2)', 'rgba(0, 255, 136, 1)', 'rgba(0, 255, 255, 0.2)'],
-                duration: 2000,
-                easing: 'easeInOutSine'
-            });
-        }
-        
-        // 冷却效果
-        function createCooldownEffect() {
-            anime({
-                targets: '.quantum-terminal',
-                borderColor: ['rgba(170, 136, 255, 1)', 'rgba(255, 136, 170, 1)', 'rgba(170, 136, 255, 1)'],
-                duration: 1500,
-                easing: 'easeInOutSine'
-            });
-        }
-        
-        // Meta启动效果
-        function createMetaStartEffect() {
-            // 创建量子波
-            for (let i = 0; i < 8; i++) {
-                const wave = document.createElement('div');
-                wave.style.position = 'fixed';
-                wave.style.top = '50%';
-                wave.style.left = '50%';
-                wave.style.width = '50px';
-                wave.style.height = '50px';
-                wave.style.border = '3px solid rgba(170, 136, 255, 0.8)';
-                wave.style.borderRadius = '50%';
-                wave.style.transform = 'translate(-50%, -50%)';
-                wave.style.pointerEvents = 'none';
-                wave.style.zIndex = '9998';
-                document.body.appendChild(wave);
-                
-                anime({
-                    targets: wave,
-                    scale: [0, 15],
-                    opacity: [1, 0],
-                    duration: 3000,
-                    delay: i * 300,
-                    easing: 'easeOutQuart',
-                    complete: function() {
-                        if (wave.parentNode) {
-                            wave.parentNode.removeChild(wave);
+
+            // --- 辅助函数：处理流程 ---
+            async function handleSuccess(data) {
+                if (data.success) {
+                    displayMessage(data.message, 'success');
+                    setFormDisabled(true);
+                    keyInput.style.borderColor = "var(--success-color)";
+                    keyInput.style.boxShadow = "0 0 15px var(--success-color)";
+
+                    // 成功解谜后，更新用户进度
+                    displayMessage('密钥正确！正在更新您的进度...', 'success');
+                    try {
+                        const updateResponse = await fetch(`${apiBaseUrl}/set_user_data`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ username: currentUsername, option: 'progress', value: '6' })
+                        });
+                        const updateData = await updateResponse.json();
+
+                        if (!updateResponse.ok || !updateData.success) {
+                            throw new Error(updateData.message || '进度更新失败');
                         }
+                        
+                        // 进度更新成功后，跳转到剧情页
+                        displayMessage('进度更新成功！即将进入下一阶段...', 'success');
+                        setTimeout(() => {
+                            window.location.href = '../storyline/insight/node5.html';
+                        }, 2000);
+
+                    } catch(updateError) {
+                        console.error('Progress update failed:', updateError);
+                        displayMessage(`错误: ${updateError.message}。请联系管理员解决。`, 'error');
+                        // 此时不解锁UI，防止用户重复尝试导致数据错乱
                     }
-                });
+
+                } else {
+                    displayMessage(data.message || '未知错误', 'error');
+                    setLoading(false);
+                }
             }
-        }
-        
-        // 窗口调整
-        window.addEventListener('resize', function() {
-            // 重新计算数据球体位置
-            const orbs = document.querySelectorAll('.data-orb');
-            orbs.forEach(orb => {
-                orb.style.left = Math.random() * 90 + 5 + '%';
-                orb.style.top = Math.random() * 80 + 10 + '%';
-            });
+
+            function handleError(data) {
+                displayMessage(data.message, 'error');
+                keyInput.value = '';
+                if (data.cooldown) {
+                    startCooldown(data.cooldown);
+                } else {
+                    setLoading(false);
+                }
+            }
+
+            function startCooldown(seconds) {
+                setFormDisabled(true);
+                let remaining = seconds;
+                const updateMessage = () => { displayMessage(`系统冷却中... ${remaining}s 后重置`, 'error'); };
+                updateMessage();
+                clearInterval(cooldownInterval);
+                cooldownInterval = setInterval(() => {
+                    remaining--;
+                    if (remaining > 0) {
+                        updateMessage();
+                    } else {
+                        clearInterval(cooldownInterval);
+                        setFormDisabled(false);
+                        setLoading(false);
+                        displayMessage('系统已重置，可以再次尝试。', 'success');
+                    }
+                }, 1000);
+            }
+            
+            function setFormDisabled(isDisabled) { keyInput.disabled = isDisabled; submitBtn.disabled = isDisabled; }
+            function setLoading(isLoading) {
+                if (isLoading) {
+                    submitBtn.disabled = true;
+                    btnText.classList.add('hidden');
+                    btnSpinner.classList.remove('hidden');
+                } else {
+                    if (!keyInput.disabled) { submitBtn.disabled = false; }
+                    btnText.classList.remove('hidden');
+                    btnSpinner.classList.add('hidden');
+                }
+            }
+            function displayMessage(text, type) { messageContainer.textContent = text; messageContainer.className = type; }
         });
     </script>
 </body>
 </html>
-
