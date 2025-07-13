@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAlSE_META</title>
+    <!-- 引入符合主题的字体 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital@0;1&family=Uncial+Antiqua&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- 全局与主题设定 --- */
+        :root {
+            --parchment-bg: #f5eeda; /* 羊皮纸背景色 */
+            --ink-color: #4a2c2a; /* 墨迹颜色 */
+            --highlight-color: #a47b36; /* 符号/高光颜色 */
+            --error-color: #9d3e3e; /* 错误信息颜色 */
+            --success-color: #4a6c4b; /* 成功信息颜色 */
+            --font-title: 'Uncial Antiqua', cursive; /* 标题字体 */
+            --font-body: 'EB Garamond', serif; /* 正文字体 */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #3d342a;
+            background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"%3E%3Cg fill-rule="evenodd"%3E%3Cg fill="%23473b2d" fill-opacity="0.4"%3E%3Cpath opacity=".5" d="M96 95h4v1h-4v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9zm-1 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');
+            font-family: var(--font-body);
+            color: var(--ink-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- 加载动画 --- */
+        #loader-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--parchment-bg);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 1s ease-in-out;
+        }
+
+        .loader-symbol {
+            font-size: 80px;
+            color: var(--highlight-color);
+            animation: pulse 2.5s infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 0.7;
+                text-shadow: 0 0 5px rgba(164, 123, 54, 0.3);
+            }
+            50% {
+                transform: scale(1.1);
+                opacity: 1;
+                text-shadow: 0 0 15px rgba(164, 123, 54, 0.7);
+            }
+        }
+
+        .loader-text {
+            font-family: var(--font-title);
+            font-size: 1.5rem;
+            letter-spacing: 2px;
+        }
+
+        #loader-status {
+            margin-top: 20px;
+            font-size: 1rem;
+            font-style: italic;
+            color: #7a5c4a;
+            letter-spacing: 1px;
+        }
+
+        /* --- 谜题主容器 --- */
+        #puzzle-container {
+            width: 90%;
+            max-width: 700px;
+            padding: 50px 60px;
+            background-color: var(--parchment-bg);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid #d4c3a2;
+            border-radius: 2px;
+            position: relative;
+            animation: fadeInScroll 1s ease-out;
+        }
+        
+        @keyframes fadeInScroll {
+            from { opacity: 0; transform: translateY(30px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* 卷轴边缘的阴影效果 */
+        #puzzle-container::before,
+        #puzzle-container::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 20px;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.15), transparent);
+            z-index: -1;
+        }
+        #puzzle-container::before { top: -20px; }
+        #puzzle-container::after { bottom: -20px; background: linear-gradient(to top, rgba(0,0,0,0.15), transparent); }
+
+
+        /* --- 谜题内容样式 --- */
+        .title {
+            font-family: var(--font-title);
+            font-size: 3rem;
+            text-align: center;
+            color: var(--highlight-color);
+            margin-bottom: 30px;
+        }
+
+        .prompt-text {
+            margin-bottom: 15px;
+            line-height: 1.8;
+            font-size: 1.1rem;
+            text-align: center;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 40px;
+        }
+
+        #key-input {
+            width: 100%;
+            max-width: 400px;
+            background-color: transparent;
+            border: none;
+            border-bottom: 2px solid rgba(74, 44, 42, 0.3);
+            color: var(--ink-color);
+            padding: 10px 5px;
+            font-family: var(--font-body);
+            font-style: italic;
+            font-size: 1.4rem;
+            text-align: center;
+            transition: all 0.4s ease;
+        }
+
+        #key-input:focus {
+            outline: none;
+            border-bottom-color: var(--ink-color);
+            box-shadow: 0 5px 15px -10px rgba(74, 44, 42, 0.5);
+        }
+
+        #key-input::placeholder {
+            color: rgba(74, 44, 42, 0.4);
+            font-style: italic;
+        }
+
+        #submit-key {
+            margin-top: 30px;
+            padding: 10px 30px;
+            background-color: transparent;
+            border: none;
+            color: var(--highlight-color);
+            font-family: var(--font-title);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+        }
+
+        #submit-key:hover, #submit-key:focus {
+            color: var(--ink-color);
+            transform: translateY(-2px);
+        }
+        #submit-key:disabled {
+            color: #9e8a70;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .message {
+            margin-top: 25px;
+            min-height: 24px;
+            text-align: center;
+            font-size: 1rem;
+            font-style: italic;
+            transition: color 0.5s;
+        }
+
+        .message.success { color: var(--success-color); }
+        .message.error { color: var(--error-color); }
+    </style>
+</head>
+<body>
+
+    <!-- 加载动画 -->
+    <div id="loader-wrapper">
+        <div class="loader-symbol">✧</div>
+        <p class="loader-text">解读中...</p>
+        <p id="loader-status">正在确认你的身份印记...</p>
+    </div>
+
+    <!-- 谜题主内容 (默认隐藏) -->
+    <main id="puzzle-container" style="display: none;">
+        <h1 class="title">False Meta</h1>
+        <p class="prompt-text">卷轴上的文字在此处中断，一道古老的封印阻挡了去路。</p>
+        <p class="prompt-text">只有念出正确的符文密语，才能揭示后续的秘密。</p>
+        
+        <div class="input-group">
+            <input type="text" id="key-input" name="key" placeholder="在此处铭刻密语..." autocomplete="off">
+            <button id="submit-key">咏唱</button>
+        </div>
+        
+        <div id="message-area" class="message">
+            <!-- API响应消息将显示在这里 -->
+        </div>
+    </main>
+
+    <script>
+        // ===================================================================
+        // ===================    API 接口配置区   =======================
+        // ===================================================================
+        //
+        //  在这里修改你的后端API服务器的基础地址。
+        //
+        //  - 开发环境 (前端在localhost:5500, 后端在localhost:3000):
+        //    const API_BASE_URL = 'http://localhost:3000';
+        //
+        //  - 生产环境 (前端和后端在同一域名下):
+        //    const API_BASE_URL = ''; // 留空即可
+        //
+        const API_BASE_URL = 'http://111.170.11.168:15114/proxy/3000'; // <-- 修改这里来指定你的API服务器地址
+
+        // 各个接口的具体路径
+        const API_PATHS = {
+            accCheck: '/acc_check_password',
+            checkKey: '/check-key',
+            setUserData: '/set_user_data'
+        };
+        
+        // ===================================================================
+        // ===================      脚本主逻辑      =======================
+        // ===================================================================
+
+        document.addEventListener('DOMContentLoaded', () => {
+
+            const loaderWrapper = document.getElementById('loader-wrapper');
+            const loaderStatus = document.getElementById('loader-status');
+            const puzzleContainer = document.getElementById('puzzle-container');
+            const keyInput = document.getElementById('key-input');
+            const submitKeyBtn = document.getElementById('submit-key');
+            const messageArea = document.getElementById('message-area');
+
+            // 辅助函数，用于构建完整的API URL
+            function getApiUrl(pathKey) {
+                return `${API_BASE_URL}${API_PATHS[pathKey]}`;
+            }
+
+            function getCookie(name) {
+                const value = `; ${document.cookie}`;
+                const parts = value.split(`; ${name}=`);
+                if (parts.length === 2) return parts.pop().split(';').shift();
+                return null;
+            }
+
+            async function handlePageLoad() {
+                const username = getCookie('username');
+                const password = getCookie('password');
+
+                if (!username || !password) {
+                    window.location.href = '../index.html';
+                    return;
+                }
+
+                loaderStatus.textContent = '正在判断账户进度...';
+
+                try {
+                    // 重要提示: 如果API_BASE_URL指向不同的源(如localhost:3000), 
+                    // 你的后端服务器必须配置CORS(跨源资源共享)来允许来自前端页面的请求。
+                    const response = await fetch(getApiUrl('accCheck'), {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username, password })
+                    });
+                    
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({ message: '账户验证失败，请重新登录。' }));
+                        alert(errorData.message);
+                        window.location.href = '../index.html';
+                        return;
+                    }
+                    
+                    const data = await response.json();
+
+                    if (data.success) {
+                        const progress = data.user_data.progress;
+                        if (progress === '8') { 
+                            window.location.href = '../storyline/insight/false_meta.html';
+                        } else if (progress === '7') {
+                            showPuzzle();
+                        } else {
+                            window.location.href = '../main.html';
+                        }
+                    } else {
+                        alert(data.message || '账户验证失败，请重新登录。');
+                        window.location.href = '../index.html';
+                    }
+                } catch (error) {
+                    console.error('验证API请求失败:', error);
+                    loaderStatus.textContent = '错误：与上古服务器的连接中断。';
+                    alert('网络异常，无法验证你的身份。请检查浏览器控制台(F12)的错误信息，这很可能是CORS跨域问题。');
+                    setTimeout(() => window.location.href = '../index.html', 3000);
+                }
+            }
+
+            function showPuzzle() {
+                loaderWrapper.style.opacity = '0';
+                setTimeout(() => {
+                    loaderWrapper.style.display = 'none';
+                    puzzleContainer.style.display = 'block';
+                }, 1000);
+            }
+            
+            async function handleKeySubmission() {
+                const key = keyInput.value.trim();
+                const username = getCookie('username');
+                
+                if (!key) {
+                    showMessage('密语不可为空。', 'error');
+                    return;
+                }
+                
+                if (!username) {
+                    alert('身份印记已模糊，请重新登录。');
+                    window.location.href = '../index.html';
+                    return;
+                }
+
+                showMessage('密语在空气中回响...', '');
+                submitKeyBtn.disabled = true;
+
+                try {
+                    const response = await fetch(getApiUrl('checkKey'), {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ nodeId: 'false_meta', key: key })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (response.ok && data.success) {
+                        showMessage('封印解开！正在记录你的功绩...', 'success');
+                        await updateUserProgressAndRedirect(username);
+                    } else {
+                        const userFriendlyMessage = data.message
+                            .replace("密钥错误，已触发冷却。", "密语错误，你感到一阵精神疲劳。")
+                            .replace("请求过于频繁，请稍后再试。", "咏唱过于频繁，你需要休息片刻。");
+                        showMessage(userFriendlyMessage, 'error');
+                        if (data.cooldown) {
+                            startCooldownTimer(data.cooldown);
+                        } else {
+                             submitKeyBtn.disabled = false;
+                        }
+                    }
+
+                } catch(error) {
+                    console.error('密钥检查API请求失败:', error);
+                    showMessage('错误：虚空干扰了你的咏唱。', 'error');
+                    submitKeyBtn.disabled = false;
+                }
+            }
+
+            async function updateUserProgressAndRedirect(username) {
+                try {
+                    const response = await fetch(getApiUrl('setUserData'), {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username: username, option: 'progress', value: '8' })
+                    });
+                    
+                    const data = await response.json();
+
+                    if (response.ok && data.success) {
+                        showMessage('历史已被铭记，新的篇章即将展开...', 'success');
+                        setTimeout(() => {
+                            window.location.href = '../storyline/insight/false_meta.html';
+                        }, 2000);
+                    } else {
+                        showMessage(`记录失败: ${data.message}`, 'error');
+                        submitKeyBtn.disabled = false;
+                    }
+
+                } catch (error) {
+                    console.error('设置用户数据API请求失败:', error);
+                    showMessage('错误：无法将你的事迹载入史册。', 'error');
+                    submitKeyBtn.disabled = false;
+                }
+            }
+
+            function showMessage(msg, type) {
+                messageArea.textContent = `— ${msg} —`;
+                messageArea.className = `message ${type}`;
+            }
+
+            function startCooldownTimer(seconds) {
+                let remaining = seconds;
+                keyInput.disabled = true;
+                const originalButtonText = submitKeyBtn.textContent;
+
+                const interval = setInterval(() => {
+                    if (remaining > 0) {
+                        submitKeyBtn.textContent = `休息中 (${remaining}s)`;
+                        remaining--;
+                    } else {
+                        clearInterval(interval);
+                        showMessage('你可以再次尝试咏唱了。', '');
+                        submitKeyBtn.disabled = false;
+                        keyInput.disabled = false;
+                        submitKeyBtn.textContent = originalButtonText;
+                    }
+                }, 1000);
+            }
+            
+            submitKeyBtn.addEventListener('click', handleKeySubmission);
+            keyInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    handleKeySubmission();
+                }
+            });
+
+            handlePageLoad();
+        });
+    </script>
+</body>
+</html>
