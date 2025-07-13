@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Front_Meta | 节点验证</title>
+    
+    <!-- 引入第三方库：SweetAlert2 美化弹窗 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- 引入字体 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono:wght@300;400&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- CSS变量定义 --- */
+        :root {
+            --primary-color: #00ffff; /* 主色调 - 青色 */
+            --secondary-color: #ff00ff; /* 辅色调 - 品红 */
+            --background-color: #0a0a14; /* 深邃的背景色 */
+            --text-color: #e0e0e0;
+            --glow-color: rgba(0, 255, 255, 0.7);
+            --error-color: #ff4d4d;
+        }
+
+        /* --- 基础与重置样式 --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden; /* 防止滚动 */
+        }
+
+        body {
+            font-family: 'Roboto Mono', monospace;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* 动态背景 */
+            background: linear-gradient(-45deg, #0a0a14, #1a001a, #001a1a, #141428);
+            background-size: 400% 400%;
+            animation: gradientBG 20s ease infinite;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* --- 加载动画 --- */
+        .loader-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 20, 0.95); /* 稍微加深背景 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .loader-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .loader {
+            width: 80px;
+            height: 80px;
+            border: 3px solid transparent;
+            border-top-color: var(--primary-color);
+            border-right-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            position: relative;
+        }
+
+        .loader::before {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            right: 8px;
+            bottom: 8px;
+            border: 3px solid transparent;
+            border-top-color: var(--secondary-color);
+            border-right-color: var(--secondary-color);
+            border-radius: 50%;
+            animation: spin 1.5s linear infinite reverse;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loader-text {
+            margin-top: 20px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2em;
+            color: var(--primary-color);
+            text-shadow: 0 0 10px var(--glow-color);
+            letter-spacing: 2px;
+        }
+
+        /* 新增：加载动画下方的小字提示样式 */
+        .loader-subtext {
+            font-size: 0.8em;
+            color: #ccc;
+            margin-top: 10px;
+            font-family: 'Roboto Mono', monospace;
+            letter-spacing: 1px;
+        }
+
+        /* --- 主体容器 --- */
+        .puzzle-container {
+            width: 90%;
+            max-width: 500px;
+            padding: 40px;
+            background: rgba(20, 20, 35, 0.6);
+            border: 1px solid var(--primary-color);
+            border-radius: 10px;
+            box-shadow: 0 0 25px var(--glow-color), inset 0 0 15px rgba(0, 255, 255, 0.2);
+            text-align: center;
+            backdrop-filter: blur(10px);
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIn 1s ease forwards;
+            animation-delay: 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .puzzle-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5em;
+            color: var(--primary-color);
+            text-shadow: 0 0 15px var(--glow-color);
+            margin-bottom: 15px;
+            letter-spacing: 3px;
+        }
+
+        .puzzle-subtitle {
+            font-size: 1em;
+            margin-bottom: 30px;
+            color: #ccc;
+            line-height: 1.6;
+        }
+        
+        /* --- 表单样式 --- */
+        .input-group {
+            position: relative;
+        }
+        
+        #key-input {
+            width: 100%;
+            padding: 15px 20px;
+            background: transparent;
+            border: 1px solid var(--primary-color);
+            border-radius: 5px;
+            color: var(--text-color);
+            font-family: 'Roboto Mono', monospace;
+            font-size: 1.2em;
+            outline: none;
+            transition: all 0.3s ease;
+            caret-color: var(--primary-color);
+        }
+
+        #key-input:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 15px rgba(255, 0, 255, 0.5);
+        }
+
+        #submit-button {
+            width: 100%;
+            padding: 15px 20px;
+            margin-top: 20px;
+            background: var(--primary-color);
+            color: var(--background-color);
+            border: none;
+            border-radius: 5px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2em;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        #submit-button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.4s ease, height 0.4s ease;
+        }
+
+        #submit-button:hover:not(:disabled) {
+            background: var(--secondary-color);
+            box-shadow: 0 0 20px rgba(255, 0, 255, 0.7);
+        }
+        
+        #submit-button:active:not(:disabled)::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        #submit-button:disabled {
+            background: #555;
+            color: #888;
+            cursor: not-allowed;
+            box-shadow: none;
+            animation: cooldown-pulse 1s infinite;
+        }
+        
+        @keyframes cooldown-pulse {
+            0% { background-color: #555; }
+            50% { background-color: #777; }
+            100% { background-color: #555; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 加载动画 -->
+    <div id="loader-overlay" class="loader-overlay">
+        <div class="loader"></div>
+        <p class="loader-text" id="loader-main-text">正在验证节点...</p>
+        <!-- JS会在这里动态添加小字提示 -->
+    </div>
+
+    <!-- 谜题主内容 -->
+    <main class="puzzle-container">
+        <h1 class="puzzle-title">FRONT_META</h1>
+        <p class="puzzle-subtitle">元数据前端接口已暴露，输入访问密钥以继续。</p>
+        
+        <form id="puzzle-form">
+            <div class="input-group">
+                <input type="text" id="key-input" placeholder="在此处输入密钥" autocomplete="off" required>
+            </div>
+            <button type="submit" id="submit-button">验证</button>
+        </form>
+    </main>
+
+    <script>
+        // --- 配置区域 ---
+        const API_BASE_URL = 'http://111.170.11.168:15114/proxy/3000';
+        const NODE_ID = 'front_meta'; // 当前节点的ID
+        const SUCCESS_REDIRECT_URL = '../storyline/insight/front_meta.html';
+        
+        // --- DOM元素获取 ---
+        const form = document.getElementById('puzzle-form');
+        const keyInput = document.getElementById('key-input');
+        const submitButton = document.getElementById('submit-button');
+        const loaderOverlay = document.getElementById('loader-overlay');
+        const loaderMainText = document.getElementById('loader-main-text');
+
+        let cooldownInterval = null;
+
+        // --- 核心功能函数 ---
+
+        /**
+         * 获取指定名称的 Cookie 值
+         * @param {string} name - Cookie的名称
+         * @returns {string|null} - Cookie的值，如果不存在则返回null
+         */
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        }
+
+        /**
+         * 显示加载动画
+         */
+        function showLoader() {
+            loaderOverlay.classList.add('show');
+        }
+
+        /**
+         * 隐藏加载动画
+         */
+        function hideLoader() {
+            loaderOverlay.classList.remove('show');
+        }
+        
+        /**
+         * 页面初始化：验证用户身份和进度
+         */
+        async function initializePage() {
+            showLoader(); // 立即显示加载动画
+
+            // 动态创建并添加“正在判断账户进度”的小字提示
+            const subTextElement = document.createElement('p');
+            subTextElement.id = 'loader-subtext';
+            subTextElement.className = 'loader-subtext';
+            subTextElement.textContent = '正在判断账户进度...';
+            loaderMainText.after(subTextElement); // 将小字插入到主提示文字下方
+
+            // 从Cookie中获取用户名和密码
+            const username = getCookie('username');
+            const password = getCookie('password');
+
+            // 检查Cookie是否存在，不存在则直接跳转到登录页
+            if (!username || !password) {
+                window.location.href = '../index.html';
+                return; // 停止后续代码执行
+            }
+
+            try {
+                // 发送请求到后端验证账户信息
+                const response = await fetch(`${API_BASE_URL}/acc_check_password`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password }),
+                });
+
+                // 如果响应状态不是成功（例如401, 404），说明验证失败，跳转到登录页
+                if (!response.ok) {
+                    window.location.href = '../index.html';
+                    return;
+                }
+
+                const data = await response.json();
+
+                // 如果后端返回 success: true
+                if (data.success) {
+                    const progress = data.user_data.progress;
+
+                    // 根据进度值决定下一步操作
+                    if (progress === '7') {
+                        // 如果进度为7，说明已经解开谜题，直接跳转到剧情页
+                        window.location.href = SUCCESS_REDIRECT_URL;
+                    } else if (progress === '6') {
+                        // 如果进度为6，是当前谜题的正确进度，隐藏加载动画，留在本页
+                        hideLoader();
+                    } else {
+                        // 如果是其他进度，说明不应该在此页面，跳转到主地图
+                        window.location.href = '../main.html';
+                    }
+                } else {
+                    // 如果后端返回 success: false，也视为验证失败，跳转到登录页
+                    window.location.href = '../index.html';
+                }
+
+            } catch (error) {
+                // 如果发生网络错误等异常
+                console.error('Account Check Error:', error);
+                // 弹出错误提示，然后跳转到登录页
+                Swal.fire({
+                    icon: 'error',
+                    title: '初始化失败',
+                    text: '无法连接服务器验证您的身份，请重新登录。',
+                    background: 'var(--background-color)',
+                    color: 'var(--text-color)',
+                    confirmButtonColor: 'var(--error-color)'
+                }).then(() => {
+                    window.location.href = '../index.html';
+                });
+            }
+        }
+
+        /**
+         * 启动按钮冷却计时器
+         * @param {number} seconds 冷却时间（秒）
+         */
+        function startCooldown(seconds) {
+            let remaining = seconds;
+            if (cooldownInterval) clearInterval(cooldownInterval);
+            submitButton.disabled = true;
+            
+            const updateButtonText = () => {
+                submitButton.textContent = `冷却中 (${remaining}s)`;
+            };
+            updateButtonText();
+
+            cooldownInterval = setInterval(() => {
+                remaining--;
+                if (remaining > 0) {
+                    updateButtonText();
+                } else {
+                    clearInterval(cooldownInterval);
+                    cooldownInterval = null;
+                    submitButton.disabled = false;
+                    submitButton.textContent = '验证';
+                }
+            }, 1000);
+        }
+
+        /**
+         * 处理谜题表单提交
+         * @param {Event} event
+         */
+        async function handleSubmit(event) {
+            event.preventDefault();
+            
+            const key = keyInput.value.trim();
+            if (!key) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: '输入为空',
+                    text: '请输入密钥！',
+                    background: 'var(--background-color)',
+                    color: 'var(--text-color)',
+                    confirmButtonColor: 'var(--primary-color)'
+                });
+                return;
+            }
+
+            showLoader();
+            loaderMainText.textContent = "正在验证密钥...";
+            // 提交时，先移除旧的小字提示
+            const subtext = document.getElementById('loader-subtext');
+            if (subtext) subtext.remove();
+
+            submitButton.disabled = true;
+
+            try {
+                // 步骤 1: 验证用户输入的密钥是否正确 (此处的 /check-key 是一个示例接口)
+                const keyCheckResponse = await fetch(`${API_BASE_URL}/check-key`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nodeId: NODE_ID, key: key }),
+                });
+                
+                const keyCheckData = await keyCheckResponse.json();
+
+                if (keyCheckResponse.ok && keyCheckData.success) {
+                    // 密钥正确，进入下一步：更新用户进度
+                    loaderMainText.textContent = "密钥正确，正在更新进度...";
+                    
+                    const username = getCookie('username');
+                    if (!username) {
+                        // 这是一个安全检查，正常情况下不应触发
+                        throw new Error("用户身份信息丢失，无法更新进度。");
+                    }
+
+                    // 步骤 2: 调用接口将用户进度设置为7
+                    const setProgressResponse = await fetch(`${API_BASE_URL}/set_user_data`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            username: username,
+                            option: "progress",
+                            value: "7"
+                        }),
+                    });
+
+                    const setProgressData = await setProgressResponse.json();
+
+                    if (setProgressResponse.ok && setProgressData.success) {
+                        // 进度更新成功，隐藏加载动画，显示成功提示并准备跳转
+                        hideLoader();
+                        await Swal.fire({
+                            icon: 'success',
+                            title: '验证成功!',
+                            text: '节点已激活，正在跳转至新的数据流...',
+                            background: 'var(--background-color)',
+                            color: 'var(--text-color)',
+                            confirmButtonColor: 'var(--primary-color)'
+                        });
+                        // 弹窗关闭后跳转
+                        window.location.href = SUCCESS_REDIRECT_URL;
+                    } else {
+                        // 进度更新失败
+                        throw new Error(setProgressData.message || "更新用户进度时发生未知错误。");
+                    }
+                } else {
+                    // 密钥错误或请求频繁处理
+                    hideLoader();
+                    Swal.fire({
+                        icon: 'error',
+                        title: '验证失败',
+                        text: keyCheckData.message,
+                        background: 'var(--background-color)',
+                        color: 'var(--text-color)',
+                        confirmButtonColor: 'var(--error-color)'
+                    });
+                    if (keyCheckData.cooldown) {
+                        startCooldown(keyCheckData.cooldown);
+                    } else {
+                        startCooldown(2);
+                    }
+                }
+
+            } catch (error) {
+                // 捕获所有流程中的异常（网络错误、代码错误等）
+                hideLoader();
+                console.error('Submit Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: '操作失败',
+                    text: error.message || '与服务器的通信中断，请稍后重试。',
+                    background: 'var(--background-color)',
+                    color: 'var(--text-color)',
+                    confirmButtonColor: 'var(--error-color)'
+                });
+                startCooldown(5);
+            }
+        }
+
+        // --- 事件监听与页面初始化 ---
+        form.addEventListener('submit', handleSubmit);
+        
+        // 当DOM加载完成后，立即开始执行页面初始化（账户验证）
+        document.addEventListener('DOMContentLoaded', initializePage);
+
+    </script>
+</body>
+</html>
