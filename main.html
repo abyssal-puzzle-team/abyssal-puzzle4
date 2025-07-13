@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>进度地图 - 宁静版</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <style>
+        /* --- 页面基础样式 --- */
+        body {
+            background-color: #121212;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            margin: 0;
+            color: #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        #welcome-message {
+            text-align: center;
+            font-weight: 300;
+            font-size: 2em;
+            margin-bottom: 30px;
+        }
+
+        #loading-message {
+            text-align: center;
+            font-size: 1.2em;
+            color: #aaa;
+        }
+
+        /* --- SVG 地图样式 --- */
+        #progress-map {
+            width: 100%;
+            max-width: 900px;
+            height: auto;
+            visibility: hidden;
+        }
+        
+        .node-name {
+            font-size: 16px;
+            fill: #aaa;
+            text-anchor: middle;
+            font-weight: 500;
+        }
+
+        .node {
+            stroke-width: 2px;
+            stroke: #555;
+            fill: url(#unlocked-grad);
+            transition: fill 0.3s ease, stroke 0.3s ease;
+        }
+        
+        .path {
+            stroke-width: 4px;
+            stroke: #333;
+            fill: none;
+        }
+
+        /* --- 动态状态样式 (颜色更新) --- */
+        
+        .clickable {
+            cursor: pointer;
+        }
+        
+        /* 已完成的节点和路径 (宁静淡蓝色) */
+        .completed .node, .completed-instant .node {
+            fill: url(#completed-grad-blue); /* 使用新的蓝色渐变 */
+            stroke: #4DD0E1; /* 描边颜色 */
+            filter: url(#glow);
+        }
+        .completed-instant-path {
+            stroke: #4DD0E1; /* 路径颜色 */
+        }
+
+        /* Meta解锁的节点 (保持原样以作区分) */
+        .meta-unlocked .node {
+            fill: url(#meta-grad);
+            stroke: #8be9fd;
+            filter: url(#glow);
+        }
+    </style>
+</head>
+<body>
+
+    <h1 id="welcome-message"></h1>
+    <div id="loading-message">正在加载进度...</div>
+    
+    <svg id="progress-map" viewBox="0 0 900 450">
+        <!-- 定义可复用的SVG效果和渐变 (颜色已更新) -->
+        <defs>
+            <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="5" result="coloredBlur"/>
+                <feMerge>
+                    <feMergeNode in="coloredBlur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+            </filter>
+
+            <!-- 渐变填充 (颜色更新) -->
+            <radialGradient id="unlocked-grad">
+                <stop offset="0%" stop-color="#4a4a4a" />
+                <stop offset="100%" stop-color="#2c2c2e" />
+            </radialGradient>
+            <radialGradient id="completed-grad-blue"> <!-- 新的宁静淡蓝色渐变 -->
+                <stop offset="0%" stop-color="#80DEEA" />
+                <stop offset="100%" stop-color="#00BCD4" />
+            </radialGradient>
+            <radialGradient id="meta-grad">
+                <stop offset="0%" stop-color="#9aedff" />
+                <stop offset="100%" stop-color="#50fa7b" />
+            </radialGradient>
+        </defs>
+
+        <!-- SVG 布局与上一版相同 -->
+        <path id="start-arc" d="M 50 175 A 50 50 0 0 1 50 275" stroke="#aaa" stroke-width="2" fill="none"/>
+        <g id="node-abyss" class="node-group">
+            <rect class="node" x="80" y="105" width="40" height="40" transform="rotate(45 100 125)" />
+            <text class="node-name" x="100" y="165">Abyss</text>
+        </g>
+        <path id="path-start-a" class="path" d="M67,187 Q 80 155, 100 135" />
+        <g id="node-1-a" class="node-group">
+            <rect class="node" x="180" y="105" width="40" height="40" transform="rotate(45 200 125)" />
+        </g>
+        <path id="path-a-merge" class="path" d="M120 125 H 180" />
+        <g id="node-cryst" class="node-group">
+            <rect class="node" x="80" y="305" width="40" height="40" transform="rotate(45 100 325)" />
+            <text class="node-name" x="100" y="365">Cryst</text>
+        </g>
+        <path id="path-start-c" class="path" d="M67,263 Q 80 295, 100 315" />
+        <g id="node-1-c" class="node-group">
+            <rect class="node" x="180" y="305" width="40" height="40" transform="rotate(45 200 325)" />
+        </g>
+        <path id="path-c-merge" class="path" d="M120 325 H 180" />
+        <g id="node-1-3" class="node-group">
+            <rect class="node" x="280" y="205" width="40" height="40" transform="rotate(45 300 225)" />
+        </g>
+        <path id="path-merge-3" class="path" d="M220 125 L 280 225 M220 325 L 280 225" />
+        <g id="node-1-4" class="node-group">
+            <rect class="node" x="380" y="205" width="40" height="40" transform="rotate(45 400 225)" />
+        </g>
+        <path id="path-3-4" class="path" d="M320 225 H 380" />
+        <g id="node-1-5" class="node-group">
+            <rect class="node" x="480" y="105" width="40" height="40" transform="rotate(45 500 125)" />
+        </g>
+        <path id="path-4-5" class="path" d="M420 225 L 480 125" />
+        <g id="node-q1" class="node-group">
+            <rect class="node" x="580" y="205" width="40" height="40" transform="rotate(45 600 225)" />
+        </g>
+        <path id="path-5-q1" class="path" d="M520 125 L 580 225" />
+        <path id="path-4-q1" class="path" d="M420 225 H 580" />
+        <g id="node-meta-key" class="node-group">
+            <rect class="node" x="680" y="205" width="40" height="40" transform="rotate(45 700 225)" />
+        </g>
+        <path id="path-q1-meta-key" class="path" d="M620 225 H 680" />
+        <g id="node-meta-lock" class="node-group">
+            <rect class="node" x="730" y="305" width="40" height="40" transform="rotate(45 750 325)" />
+        </g>
+        <path id="path-key-lock" class="path" d="M720 245 L 730 305" />
+        <g id="node-q2" class="node-group">
+            <rect class="node" x="830" y="205" width="40" height="40" transform="rotate(45 850 225)" />
+        </g>
+        <path id="path-lock-q2" class="path" d="M770 305 L 830 245" />
+    </svg>
+
+    <script>
+        // --- 1. 配置区域 ---
+        const API_BASE_URL = 'http://111.170.11.168:15114/proxy/3000';
+        const nodeUrlMap = {
+            'node-abyss': './main.html', 'node-cryst': './main.html',
+            'node-1-a': './puzzle/node1&2.html', 'node-1-c': './puzzle/node1&2.html',
+            'node-1-3': './puzzle/node3.html', 'node-1-4': './puzzle/node4.html',
+            'node-1-5': './puzzle/node5.html', 'node-q1': './puzzle/front_meta.html',
+            'node-meta-key': './puzzle/false_meta.html', 'node-meta-lock': './meta/index.html',
+            'node-q2': './puzzle/end.html'
+        };
+        const progressMap = {
+            1: { nodes: ['node-abyss', 'node-cryst'], paths: ['path-start-a', 'path-start-c'] },
+            3: { nodes: ['node-1-a', 'node-1-c', 'node-1-3'], paths: ['path-a-merge', 'path-c-merge', 'path-merge-3'] },
+            4: { nodes: ['node-1-4'], paths: ['path-3-4'] },
+            5: { nodes: ['node-1-5'], paths: ['path-4-5'] },
+            6: { nodes: ['node-q1'], paths: ['path-4-q1', 'path-5-q1'] },
+            7: { nodes: ['node-meta-key'], paths: ['path-q1-meta-key'] },
+            8: { nodes: ['node-meta-lock'], paths: ['path-key-lock'] },
+            9: { nodes: ['node-q2'], paths: ['path-lock-q2'] },
+        };
+        const metaNodeMap = { "1,7": "node-q1", "4,6": "node-meta-key", "5,8": "node-q2" };
+
+        // --- 2. 页面元素获取 ---
+        const welcomeMessageEl = document.getElementById('welcome-message');
+        const loadingMessageEl = document.getElementById('loading-message');
+        const mapEl = document.getElementById('progress-map');
+
+        // --- 3. 辅助函数 ---
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        }
+        function activateNode(nodeId) {
+            const nodeElement = document.getElementById(nodeId);
+            if (!nodeElement) return;
+            nodeElement.classList.add('clickable');
+            nodeElement.addEventListener('click', () => {
+                const url = nodeUrlMap[nodeId];
+                if (url) window.location.href = url;
+            });
+        }
+
+        // --- 4. 核心逻辑 ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const username = getCookie('username');
+            const password = getCookie('password');
+            if (!username || !password) { window.location.href = 'index.html'; return; }
+            welcomeMessageEl.textContent = `欢迎, ${username}!`;
+            authenticateAndLoad(username, password);
+        });
+        async function authenticateAndLoad(username, password) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/acc_check_password`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }),
+                });
+                if (!response.ok) throw new Error('身份验证失败');
+                const data = await response.json();
+                if (data.success) {
+                    loadingMessageEl.style.display = 'none';
+                    mapEl.style.visibility = 'visible';
+                    displayProgress(data.user_data);
+                } else { throw new Error('后端返回验证失败'); }
+            } catch (error) {
+                console.error('加载过程中发生错误:', error);
+                window.location.href = 'index.html';
+            }
+        }
+        
+        // --- 5. 动画和显示逻辑 (已移除节点跳动动画) ---
+        function displayProgress(userData) {
+            const userProgress = parseInt(userData.progress, 10);
+            const progressOrder = Object.keys(progressMap).map(Number).sort((a, b) => a - b);
+            const timeline = anime.timeline({ easing: 'easeInOutSine', duration: 500 });
+
+            for (const step of progressOrder) {
+                if (step <= userProgress) {
+                    const { nodes, paths } = progressMap[step];
+                    const pathElements = paths.map(id => document.getElementById(id)).filter(el => el);
+                    if (pathElements.length > 0) {
+                        timeline.add({
+                            targets: pathElements,
+                            strokeDashoffset: [anime.setDashoffset, 0],
+                            begin: () => pathElements.forEach(p => p.style.stroke = '#888'),
+                            complete: () => {
+                                paths.forEach(id => document.getElementById(id)?.classList.add('completed-instant-path'));
+                                nodes.forEach(id => {
+                                    const nodeEl = document.getElementById(id);
+                                    if(nodeEl) {
+                                        nodeEl.classList.add('completed');
+                                        activateNode(id);
+                                        // 【修改】此处的节点跳动/缩放动画已被移除
+                                    }
+                                });
+                            }
+                        }, '-=200');
+                    }
+                }
+            }
+            timeline.finished.then(() => {
+                if(userData.meta_progress) { applyMetaProgress(userData.meta_progress); }
+            });
+        }
+        
+        function applyMetaProgress(metaProgressString) {
+            try {
+                const metaKeys = metaProgressString.replace(/\[|\]/g, '').split(',').reduce((acc, val, i, arr) => {
+                    if (i % 2 === 0) { acc.push(`${val},${arr[i + 1]}`); }
+                    return acc;
+                }, []);
+                metaKeys.forEach(key => {
+                    const nodeId = metaNodeMap[key];
+                    if (nodeId) {
+                        const nodeElement = document.getElementById(nodeId);
+                        if (nodeElement && !nodeElement.classList.contains('meta-unlocked')) {
+                            nodeElement.classList.add('meta-unlocked');
+                            activateNode(nodeId);
+                            // 【修改】此处的Meta节点跳动/缩放动画已被移除
+                        }
+                    }
+                });
+            } catch(e) { console.error("解析 meta_progress 失败:", e); }
+        }
+    </script>
+</body>
+</html>
