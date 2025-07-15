@@ -592,6 +592,9 @@
                             if (gameState.solvedTraps.has('C3')) {
                                 gameState.clues.push(allClues[4], allClues[5]);
                             }
+                            
+                            // 立即更新显示
+                            setTimeout(() => updateDisplay(), 100);
                         } catch (e) {
                             console.warn('解析已解决陷阱失败:', e);
                         }
@@ -952,8 +955,8 @@
                     return;
                 }
                 
-                // 显示守门员谜题模态框
-                showGoalkeeperModal(trapId, x, y);
+                // 跳转到对应的守门员谜题页面
+                window.location.href = `${trapId}.html`;
             }
         }
 
