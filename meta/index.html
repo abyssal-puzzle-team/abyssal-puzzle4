@@ -505,8 +505,14 @@
             // 开始时间监控
             startTimeMonitoring();
             
-            // 更新显示
+            // 立即更新显示，确保线索正确显示
             updateDisplay();
+            
+            // 再次确保线索显示（防止异步问题）
+            setTimeout(() => {
+                updateDisplay();
+                console.log('延迟更新显示完成，当前线索:', gameState.clues);
+            }, 500);
         }
 
         // 加载用户数据
@@ -593,8 +599,7 @@
                                 gameState.clues.push(allClues[4], allClues[5]);
                             }
                             
-                            // 立即更新显示
-                            updateDisplay();
+                            console.log('已恢复线索:', gameState.clues);
                         } catch (e) {
                             console.warn('解析已解决陷阱失败:', e);
                         }

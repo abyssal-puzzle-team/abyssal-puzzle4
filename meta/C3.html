@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>守门员C3 - 文字谜题挑战</title>
+    <title>守门员C3 - 文字推理挑战</title>
     <style>
         * {
             margin: 0;
@@ -23,93 +23,69 @@
         }
 
         .puzzle-container {
-            max-width: 800px;
+            max-width: 600px;
             width: 100%;
             background: rgba(0, 0, 0, 0.8);
-            border: 2px solid #9900ff;
+            border: 2px solid #ff00ff;
             border-radius: 15px;
-            padding: 40px;
-            box-shadow: 0 0 30px rgba(153, 0, 255, 0.3);
+            padding: 30px;
+            box-shadow: 0 0 30px rgba(255, 0, 255, 0.3);
         }
 
         .puzzle-title {
-            font-size: 2.5em;
+            font-size: 2em;
             font-weight: bold;
-            color: #9900ff;
+            color: #ff00ff;
             text-align: center;
-            margin-bottom: 10px;
-            text-shadow: 0 0 15px rgba(153, 0, 255, 0.6);
+            margin-bottom: 20px;
+            text-shadow: 0 0 15px rgba(255, 0, 255, 0.6);
         }
 
-        .puzzle-subtitle {
-            font-size: 1.2em;
-            color: #cc66ff;
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .story-section {
-            background: rgba(153, 0, 255, 0.1);
-            border-left: 4px solid #9900ff;
+        .puzzle-description {
+            background: rgba(255, 0, 255, 0.1);
+            border-left: 4px solid #ff00ff;
             padding: 20px;
             margin: 20px 0;
             border-radius: 5px;
-        }
-
-        .story-title {
-            font-size: 1.4em;
-            color: #9900ff;
-            margin-bottom: 15px;
-            font-weight: bold;
-        }
-
-        .story-text {
             font-size: 1.1em;
             line-height: 1.6;
-            color: #cccccc;
-            margin-bottom: 15px;
         }
 
         .riddle-display {
             background: rgba(255, 255, 255, 0.1);
             border: 2px solid #00ffff;
             border-radius: 10px;
-            padding: 30px;
+            padding: 20px;
             margin: 20px 0;
             text-align: center;
-        }
-
-        .riddle-text {
-            font-size: 1.4em;
+            font-size: 1.2em;
             color: #00ffff;
             font-style: italic;
-            line-height: 1.8;
-            margin: 10px 0;
         }
 
         .question-section {
             background: rgba(0, 255, 255, 0.1);
             border: 2px solid #00ffff;
             border-radius: 10px;
-            padding: 25px;
-            margin: 30px 0;
+            padding: 20px;
+            margin: 20px 0;
             text-align: center;
         }
 
         .question-text {
-            font-size: 1.3em;
+            font-size: 1.2em;
             color: #00ffff;
             font-weight: bold;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .answer-input {
             width: 200px;
-            padding: 12px;
-            font-size: 1.2em;
+            padding: 10px;
+            font-size: 1.1em;
             background: rgba(0, 0, 0, 0.5);
             border: 2px solid #00ffff;
-            border-radius: 8px;
+            border-radius: 5px;
             color: #ffffff;
             text-align: center;
             margin: 10px;
@@ -118,28 +94,28 @@
         .answer-input:focus {
             outline: none;
             border-color: #00ff00;
-            box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
         }
 
-        .submit-btn {
+        .btn {
             background: linear-gradient(45deg, #00ffff, #0080ff);
             border: none;
-            padding: 15px 30px;
-            border-radius: 8px;
+            padding: 12px 20px;
+            border-radius: 5px;
             color: #000;
-            font-size: 1.2em;
+            font-size: 1em;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s ease;
-            margin: 10px;
+            margin: 5px;
         }
 
-        .submit-btn:hover {
+        .btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0, 255, 255, 0.3);
+            box-shadow: 0 5px 15px rgba(0, 255, 255, 0.3);
         }
 
-        .submit-btn:disabled {
+        .btn:disabled {
             background: #666;
             cursor: not-allowed;
             transform: none;
@@ -148,47 +124,19 @@
 
         .back-btn {
             background: linear-gradient(45deg, #666666, #444444);
-            border: none;
-            padding: 12px 25px;
-            border-radius: 8px;
             color: #fff;
-            font-size: 1em;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin: 10px;
         }
 
         .back-btn:hover {
-            transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(102, 102, 102, 0.3);
-        }
-
-        .hint-section {
-            background: rgba(255, 255, 0, 0.1);
-            border: 1px solid #ffff00;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 20px 0;
-        }
-
-        .hint-title {
-            color: #ffff00;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-
-        .hint-text {
-            color: #ffffaa;
-            font-style: italic;
         }
 
         .cooldown-notice {
             background: rgba(255, 0, 0, 0.2);
             border: 1px solid #ff0000;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 20px 0;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
             text-align: center;
             color: #ff6666;
             display: none;
@@ -197,34 +145,14 @@
         .success-message {
             background: rgba(0, 255, 0, 0.2);
             border: 1px solid #00ff00;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 20px 0;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
             text-align: center;
             color: #66ff66;
             display: none;
         }
 
-        .analysis-section {
-            background: rgba(128, 128, 128, 0.1);
-            border: 1px solid #888;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 20px 0;
-        }
-
-        .analysis-title {
-            color: #888;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-
-        .analysis-text {
-            color: #aaa;
-            line-height: 1.5;
-        }
-
-        /* 响应式设计 */
         @media (max-width: 768px) {
             .puzzle-container {
                 padding: 20px;
@@ -232,16 +160,12 @@
             }
             
             .puzzle-title {
-                font-size: 2em;
-            }
-            
-            .riddle-text {
-                font-size: 1.2em;
+                font-size: 1.5em;
             }
             
             .answer-input {
                 width: 100%;
-                max-width: 300px;
+                max-width: 250px;
             }
         }
     </style>
@@ -249,78 +173,44 @@
 <body>
     <div class="puzzle-container">
         <div class="puzzle-title">📝 守门员C3</div>
-        <div class="puzzle-subtitle">文字谜题挑战</div>
 
-        <div class="story-section">
-            <div class="story-title">📜 古老的谜语</div>
-            <div class="story-text">
-                在深渊迷宫的智慧殿堂中，墙壁上刻着一个古老的谜语。
-                这个谜语流传了千年，只有真正理解其含义的人才能获得通行的权利。
-                仔细思考每一个词语的含义，答案就在其中...
-            </div>
+        <div class="puzzle-description">
+            <strong>古老谜语的智慧</strong><br><br>
+            在深渊迷宫的智慧殿堂中，流传着一个古老的谜语。这个谜语考验的不是计算能力，而是对语言和逻辑的理解。只有真正理解其含义的人，才能给出正确的答案...
         </div>
 
         <div class="riddle-display">
-            <div class="story-title">🧩 千年谜语</div>
-            <div class="riddle-text">
-                "我有城市，但没有房屋；<br>
-                我有山脉，但没有树木；<br>
-                我有水域，但没有鱼类。<br>
-                我是什么？"
-            </div>
-        </div>
-
-        <div class="hint-section">
-            <div class="hint-title">💡 解题提示</div>
-            <div class="hint-text">
-                这是一个经典的谜语。思考一下什么东西能够"拥有"这些地理特征，
-                但又不包含其中的具体事物。答案是一个我们日常生活中经常使用的物品。
-            </div>
-        </div>
-
-        <div class="analysis-section">
-            <div class="analysis-title">🔍 分析思路</div>
-            <div class="analysis-text">
-                让我们分析一下这个谜语的关键信息：<br>
-                • 有城市，但没有房屋<br>
-                • 有山脉，但没有树木<br>
-                • 有水域，但没有鱼类<br>
-                <br>
-                这说明答案是某种能够"显示"或"表示"这些地理特征，
-                但本身并不包含真实物体的东西。
-            </div>
+            "什么东西越洗越脏？"
         </div>
 
         <div class="question-section">
             <div class="question-text">
-                🤔 请回答这个古老的谜语
+                🤔 请仔细思考并给出答案：
             </div>
-            <input type="text" id="answerInput" class="answer-input" placeholder="请输入答案" maxlength="10">
+            <input type="text" id="answerInput" class="answer-input" placeholder="请输入答案" maxlength="20">
             <br>
-            <button class="submit-btn" onclick="submitAnswer()" id="submitBtn">提交答案</button>
+            <button class="btn" onclick="submitAnswer()" id="submitBtn">提交答案</button>
         </div>
 
         <div id="cooldownNotice" class="cooldown-notice">
             <h3>⏰ 答案错误！</h3>
             <p>请等待 <span id="cooldownTime">0</span> 秒后重试</p>
-            <p>提示：思考什么东西能显示地理特征但不包含真实物体</p>
         </div>
 
         <div id="successMessage" class="success-message">
             <h3>🎉 恭喜！答案正确！</h3>
             <p>您成功破解了守门员C3的文字谜题！</p>
-            <p>现在您可以通过这个陷阱，并获得宝贵的线索。</p>
+            <p>正在返回迷宫...</p>
         </div>
 
-        <div style="text-align: center; margin-top: 30px;">
-            <button class="back-btn" onclick="goBack()">返回迷宫</button>
+        <div style="text-align: center; margin-top: 20px;">
+            <button class="btn back-btn" onclick="goBack()">返回迷宫</button>
         </div>
     </div>
 
     <script>
         const API_BASE = 'http://111.170.11.168:15114/proxy/3000';
         let username = '';
-        let password = '';
 
         // 获取Cookie
         function getCookie(name) {
@@ -331,41 +221,11 @@
         }
 
         // 初始化
-        async function init() {
+        function init() {
             username = getCookie('username');
-            password = getCookie('password');
-
-            if (!username || !password) {
+            if (!username) {
                 alert('请先登录或注册账号以保存游戏进度！');
-                // 这里可以重定向到登录页面，或者显示登录/注册的模态框
-                return; // 不加载数据，使用默认初始状态
-            }
-
-            try {
-                const response = await fetch(`${API_BASE}/acc_check_password`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
-                    body: JSON.stringify({
-                        username: username,
-                        password: password
-                    })
-                });
-                const data = await response.json();
-
-                if (data.success) {
-                    console.log('用户身份验证成功:', data.user_data);
-                    // 可以在这里根据需要更新页面状态，但对于守门员页面，主要关注冷却状态
-                } else {
-                    console.error('用户身份验证失败:', data.message);
-                    alert('登录失败：' + data.message + '。请检查您的账号和密码。');
-                    // 如果验证失败，可以考虑重定向到登录页或显示错误
-                    return; // 不加载数据，使用默认初始状态
-                }
-            } catch (error) {
-                console.error('验证用户身份失败:', error);
-                alert('网络错误或API服务不可用，无法加载用户数据。');
-                return; // 不加载数据，使用默认初始状态
+                return;
             }
             
             // 检查冷却状态
@@ -435,14 +295,8 @@
                     // 保存已解决的陷阱状态
                     await updateUserData('meta_solved_traps', JSON.stringify(['C3']));
                     
+                    // 3秒后自动返回
                     setTimeout(() => {
-                        // 通知主页面陷阱已解决
-                        if (window.opener) {
-                            window.opener.postMessage({
-                                type: 'trapSolved',
-                                trapId: 'C3'
-                            }, '*');
-                        }
                         window.location.href = 'index.html';
                     }, 3000);
                 } else {
@@ -548,5 +402,4 @@
     </script>
 </body>
 </html>
-
 
