@@ -299,6 +299,14 @@
                     // 保存已解决的陷阱状态
                     await updateUserData('meta_solved_traps', JSON.stringify(['A1']));
                     
+                    // 通知父页面陷阱已解决
+                    if (window.opener) {
+                        window.opener.postMessage({
+                            type: 'trapSolved',
+                            trapId: 'A1'
+                        }, '*');
+                    }
+                    
                     // 3秒后自动返回
                     setTimeout(() => {
                         window.location.href = 'index.html';

@@ -512,7 +512,15 @@
             setTimeout(() => {
                 updateDisplay();
                 console.log('延迟更新显示完成，当前线索:', gameState.clues);
+                console.log('线索面板内容:', document.getElementById('cluesList').innerHTML);
             }, 500);
+            
+            // 第三次确保线索显示（防止DOM渲染延迟）
+            setTimeout(() => {
+                updateDisplay();
+                console.log('第三次更新显示完成，当前线索:', gameState.clues);
+                console.log('线索面板内容:', document.getElementById('cluesList').innerHTML);
+            }, 1000);
         }
 
         // 加载用户数据
@@ -600,6 +608,7 @@
                             }
                             
                             console.log('已恢复线索:', gameState.clues);
+                            console.log('已解决的陷阱:', [...gameState.solvedTraps]);
                         } catch (e) {
                             console.warn('解析已解决陷阱失败:', e);
                         }
@@ -1359,13 +1368,29 @@
                 newClues = [allClues[4], allClues[5]]; // 第5-6条线索
             }
             
-            gameState.clues.push(...newClues);
+            // 避免重复添加线索
+            newClues.forEach(clue => {
+                if (!gameState.clues.includes(clue)) {
+                    gameState.clues.push(clue);
+                }
+            });
+            
             gameState.solvedTraps.add(trapId);
+            
+            console.log(`陷阱 ${trapId} 已解决，添加线索:`, newClues);
+            console.log('当前所有线索:', gameState.clues);
             
             // 保存已解决的陷阱到后端
             updateUserData('meta_solved_traps', JSON.stringify([...gameState.solvedTraps]));
             
+            // 立即更新显示
             updateDisplay();
+            
+            // 再次确保显示更新
+            setTimeout(() => {
+                updateDisplay();
+                console.log('延迟更新线索显示完成');
+            }, 100);
         }
 
         // 显示电力装置线索
@@ -1434,12 +1459,18 @@
             
             // 更新线索
             const cluesList = document.getElementById('cluesList');
-            if (gameState.clues.length > 0) {
-                cluesList.innerHTML = gameState.clues.map(clue => 
+            console.log('updateDisplay被调用，当前线索数量:', gameState.clues.length);
+            console.log('当前线索内容:', gameState.clues);
+            
+            if (gameState.clues && gameState.clues.length > 0) {
+                const cluesHtml = gameState.clues.map(clue => 
                     `<div class="clue-item">${clue}</div>`
                 ).join('');
+                cluesList.innerHTML = cluesHtml;
+                console.log('线索HTML已设置:', cluesHtml);
             } else {
                 cluesList.innerHTML = '<div style="color: #666; font-style: italic;">暂无线索</div>';
+                console.log('设置为暂无线索');
             }
         }
 
