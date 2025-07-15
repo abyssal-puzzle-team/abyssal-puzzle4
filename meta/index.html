@@ -351,6 +351,10 @@
             <div class="status-panel" id="statusPanel">
                 <div class="panel-title">状态信息</div>
                 <div class="status-item">
+                    <span class="status-label">当前位置:</span>
+                    <span class="status-value" id="playerPosition">[0,0]</span>
+                </div>
+                <div class="status-item">
                     <span class="status-label">钥匙数量:</span>
                     <span class="status-value" id="keyCount">0</span>
                 </div>
@@ -525,6 +529,7 @@
                             const coords = JSON.parse(userData.meta_xy);
                             gameState.playerX = coords[0] || 0;
                             gameState.playerY = coords[1] || 0;
+                            console.log('恢复玩家位置:', gameState.playerX, gameState.playerY);
                         } catch (e) {
                             console.warn('解析玩家位置失败:', e);
                             gameState.playerX = 0;
@@ -833,14 +838,28 @@
 
         // 移动玩家
         async function movePlayer(x, y) {
+            const oldX = gameState.playerX;
+            const oldY = gameState.playerY;
+            
             gameState.playerX = x;
             gameState.playerY = y;
             
+            console.log(`玩家移动: [${oldX},${oldY}] -> [${x},${y}]`);
+            
             // 实时保存玩家位置到后端
-            await updatePlayerPosition(x, y);
+            try {
+                await updatePlayerPosition(x, y);
+                console.log('玩家位置已保存到后端');
+            } catch (error) {
+                console.error('保存玩家位置失败:', error);
+            }
             
             // 每移动一步扣除meta时间
-            await diminishMetaTime();
+            try {
+                await diminishMetaTime();
+            } catch (error) {
+                console.error('扣除时间失败:', error);
+            }
             
             // 重新渲染迷宫
             initMaze();
@@ -970,7 +989,12 @@
             gameState.unlockedCells.add(cellKey);
             
             // 更新后端进度
-            await addMetaProgress(x, y);
+            try {
+                await addMetaProgress(x, y);
+                console.log(`格子 [${x},${y}] 已解锁并保存到后端`);
+            } catch (error) {
+                console.error('保存格子解锁状态失败:', error);
+            }
         }
 
         // 显示小谜题模态框
@@ -1231,6 +1255,7 @@
         // 更新显示
         function updateDisplay() {
             // 更新状态信息
+            document.getElementById('playerPosition').textContent = `[${gameState.playerX},${gameState.playerY}]`;
             document.getElementById('keyCount').textContent = gameState.keys;
             document.getElementById('powerCount').textContent = `${gameState.powerDevices}/3`;
             document.getElementById('cardStatus').textContent = gameState.hasCard ? '已获得' : '未获得';
@@ -1354,7 +1379,7 @@
 
         async function updateUserData(option, value) {
             try {
-                await fetch(`${API_BASE}/set_user_data`, {
+                const response = await fetch(`${API_BASE}/set_user_data`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',
@@ -1364,6 +1389,12 @@
                         value: value
                     })
                 });
+                const data = await response.json();
+                if (data.success) {
+                    console.log(`用户数据已更新: ${option} = ${value}`);
+                } else {
+                    console.error('更新用户数据失败:', data.message);
+                }
             } catch (error) {
                 console.error('更新用户数据失败:', error);
             }
@@ -1371,7 +1402,7 @@
 
         async function updatePlayerPosition(x, y) {
             try {
-                await fetch(`${API_BASE}/change_meta_xy`, {
+                const response = await fetch(`${API_BASE}/change_meta_xy`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',
@@ -1380,6 +1411,12 @@
                         new_xy: `[${x},${y}]`
                     })
                 });
+                const data = await response.json();
+                if (data.success) {
+                    console.log(`玩家位置已更新: [${x},${y}]`);
+                } else {
+                    console.error('更新玩家位置失败:', data.message);
+                }
             } catch (error) {
                 console.error('更新玩家位置失败:', error);
             }
@@ -1387,7 +1424,7 @@
 
         async function addMetaProgress(x, y) {
             try {
-                await fetch(`${API_BASE}/add_meta`, {
+                const response = await fetch(`${API_BASE}/add_meta`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',
@@ -1396,6 +1433,12 @@
                         progress: `[${x},${y}]`
                     })
                 });
+                const data = await response.json();
+                if (data.success) {
+                    console.log(`Meta进度已添加: [${x},${y}]`);
+                } else {
+                    console.error('添加Meta进度失败:', data.message);
+                }
             } catch (error) {
                 console.error('添加Meta进度失败:', error);
             }
@@ -1403,11 +1446,17 @@
 
         async function diminishMetaTime() {
             try {
-                await fetch(`${API_BASE}/diminish_meta_time`, {
+                const response = await fetch(`${API_BASE}/diminish_meta_time`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include'
                 });
+                const data = await response.json();
+                if (data.success) {
+                    console.log('Meta时间已扣除');
+                } else {
+                    console.error('扣除Meta时间失败:', data.message);
+                }
             } catch (error) {
                 console.error('减少Meta时间失败:', error);
             }
@@ -1448,5 +1497,4 @@
     </script>
 </body>
 </html>
-
 
