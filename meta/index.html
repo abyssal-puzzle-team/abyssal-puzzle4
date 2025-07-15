@@ -399,6 +399,22 @@
         </div>
     </div>
 
+    <!-- 守门员谜题模态框 -->
+    <div id="goalkeeperModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeGoalkeeperModal()">&times;</span>
+            <h2 id="goalkeeperTitle">守门员谜题</h2>
+            <div id="goalkeeperContent">
+                <p id="goalkeeperDescription">请输入正确的密钥以通过守门员：</p>
+                <input type="text" id="goalkeeperAnswer" class="puzzle-input" placeholder="请输入密钥">
+                <div id="goalkeeperCooldown" class="cooldown-notice" style="display: none;">
+                    <p>密钥错误！请等待 <span id="goalkeeperCooldownTime">0</span> 秒后重试</p>
+                </div>
+                <button class="btn" onclick="submitGoalkeeperAnswer()">提交密钥</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 4x4谜题模态框 -->
     <div id="puzzle4x4Modal" class="modal">
         <div class="modal-content">
@@ -936,8 +952,8 @@
                     return;
                 }
                 
-                // 跳转到对应的守门员谜题页面
-                window.location.href = `${trapId}.html`;
+                // 显示守门员谜题模态框
+                showGoalkeeperModal(trapId, x, y);
             }
         }
 
@@ -1062,17 +1078,115 @@
             }
         }
 
+        // 显示守门员谜题模态框
+        function showGoalkeeperModal(trapId, targetX, targetY) {
+            document.getElementById('goalkeeperTitle').textContent = `守门员谜题 - ${trapId}`;
+            document.getElementById('goalkeeperAnswer').value = '';
+            document.getElementById('goalkeeperModal').style.display = 'block';
+            
+            // 存储目标位置和陷阱ID
+            window.currentGoalkeeperTarget = { x: targetX, y: targetY, trapId: trapId };
+        }
+
+        // 关闭守门员谜题模态框
+        function closeGoalkeeperModal() {
+            document.getElementById('goalkeeperModal').style.display = 'none';
+            window.currentGoalkeeperTarget = null;
+        }
+
+        // 提交守门员答案
+        async function submitGoalkeeperAnswer() {
+            const answer = document.getElementById('goalkeeperAnswer').value.trim();
+            const target = window.currentGoalkeeperTarget;
+            
+            if (!target) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/check_goalkeeper_key`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        username: gameState.username,
+                        id: target.trapId,
+                        key: answer
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // 守门员谜题解决成功
+                    closeGoalkeeperModal();
+                    
+                    // 添加对应的线索
+                    addCluesForTrap(target.trapId);
+                    
+                    // 解锁格子并移动玩家
+                    await unlockCell(target.x, target.y);
+                    movePlayer(target.x, target.y);
+                } else {
+                    // 答案错误，显示冷却
+                    const cooldownStatus = await checkGoalkeeperCooldown();
+                    showGoalkeeperCooldownNotice(cooldownStatus.cooldownRemaining);
+                }
+            } catch (error) {
+                console.error('提交守门员答案失败:', error);
+            }
+        }
+
+        // 显示守门员冷却提示
+        function showGoalkeeperCooldownNotice(seconds) {
+            const notice = document.getElementById('goalkeeperCooldown');
+            const timeSpan = document.getElementById('goalkeeperCooldownTime');
+            timeSpan.textContent = seconds;
+            notice.style.display = 'block';
+            
+            // 倒计时
+            const countdown = setInterval(() => {
+                seconds--;
+                timeSpan.textContent = seconds;
+                if (seconds <= 0) {
+                    clearInterval(countdown);
+                    notice.style.display = 'none';
+                }
+            }, 1000);
+        }
+
         // 显示4x4谜题模态框
         function show4x4Modal() {
-            // 显示剩余的线索
-            const remainingClues = allClues.slice(gameState.clues.length);
-            if (remainingClues.length > 0) {
-                const cluesHtml = remainingClues.map(clue => `<div class="clue-item">${clue}</div>`).join('');
+            // 显示所有已获得的线索
+            const allObtainedClues = gameState.clues;
+            if (allObtainedClues.length > 0) {
+                const cluesHtml = allObtainedClues.map(clue => `<div class="clue-item">${clue}</div>`).join('');
                 document.getElementById('puzzle4x4Content').innerHTML = `
                     <p>请根据所有线索填入正确的数字排列：</p>
                     <div style="margin: 15px 0;">
-                        <h4>剩余线索：</h4>
+                        <h4>已获得的线索：</h4>
                         ${cluesHtml}
+                    </div>
+                    <p style="color: #ffff00; margin: 10px 0;">格式：每行输入4个数字，用空格分隔</p>
+                    
+                    <div class="puzzle-4x4-grid">
+                        <input type="text" class="puzzle-4x4-input" id="row1" placeholder="1 2 3 4">
+                        <input type="text" class="puzzle-4x4-input" id="row2" placeholder="4 3 2 1">
+                        <input type="text" class="puzzle-4x4-input" id="row3" placeholder="2 5 1 4">
+                        <input type="text" class="puzzle-4x4-input" id="row4" placeholder="1 2 3 4">
+                    </div>
+                    
+                    <div id="puzzle4x4Cooldown" class="cooldown-notice" style="display: none;">
+                        <p>答案错误！请等待 <span id="puzzle4x4CooldownTime">0</span> 秒后重试</p>
+                    </div>
+                    
+                    <button class="btn" onclick="submit4x4Answer()">提交答案</button>
+                    <button class="btn escape-btn" onclick="attemptEscape()" id="escapeBtn">逃生</button>
+                `;
+            } else {
+                document.getElementById('puzzle4x4Content').innerHTML = `
+                    <p>请根据线索填入正确的数字排列：</p>
+                    <div style="margin: 15px 0; color: #ff6666;">
+                        <h4>提示：</h4>
+                        <p>您还没有获得任何线索！请先解决守门员谜题来获取线索。</p>
                     </div>
                     <p style="color: #ffff00; margin: 10px 0;">格式：每行输入4个数字，用空格分隔</p>
                     
