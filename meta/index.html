@@ -782,7 +782,14 @@
                     break;
                 case 'power':
                     cell.className += ' cell-power';
-                    cell.textContent = isUnlocked ? '✓' : '电力';
+                    // 检查电力装置是否已激活
+                    const powerDeviceKey = `${x},${y}`;
+                    if (gameState.activatedPowerDevices.has(powerDeviceKey)) {
+                        cell.textContent = '已激活';
+                        cell.style.background = '#004080'; // 更深的蓝色表示已激活
+                    } else {
+                        cell.textContent = isUnlocked ? '✓' : '电力';
+                    }
                     break;
                 case 'card':
                     cell.className += ' cell-card';
@@ -1030,7 +1037,8 @@
             
             // 检查是否已经激活过这个电力装置
             if (gameState.activatedPowerDevices.has(powerDeviceKey)) {
-                // 已激活，直接移动
+                // 已激活，直接移动，不再激活
+                console.log(`电力装置 [${x},${y}] 已经激活过，直接移动`);
                 movePlayer(x, y);
                 return;
             }
@@ -1060,6 +1068,7 @@
                 movePlayer(x, y);
                 
                 console.log(`电力装置 [${x},${y}] 已激活，当前激活数量: ${gameState.powerDevices}`);
+                console.log('已激活的电力装置:', [...gameState.activatedPowerDevices]);
             } else {
                 alert('需要先解决对应的守门员谜题才能激活电力装置！');
             }
@@ -1436,27 +1445,37 @@
                 trapId = 'C3';
             }
             
+            console.log(`电力装置 [${x},${y}] 对应陷阱 ${trapId}`);
+            console.log('已解决的陷阱:', [...gameState.solvedTraps]);
+            
             // 检查对应的陷阱是否已解决
             if (gameState.solvedTraps.has(trapId)) {
                 // 陷阱已解决，显示线索
                 if (clues.length > 0) {
                     // 避免重复添加线索
+                    let addedClues = [];
                     clues.forEach(clue => {
                         if (!gameState.clues.includes(clue)) {
                             gameState.clues.push(clue);
+                            addedClues.push(clue);
                         }
                     });
                     
-                    alert(`电力装置激活！获得线索：\n${clues.join('\n')}`);
+                    if (addedClues.length > 0) {
+                        alert(`电力装置激活！获得线索：\n${addedClues.join('\n')}`);
+                    } else {
+                        alert('电力装置激活成功！（线索已获得过）');
+                    }
                     
                     // 立即更新显示
                     updateDisplay();
                     
-                    console.log(`电力装置 [${x},${y}] 激活，添加线索:`, clues);
+                    console.log(`电力装置 [${x},${y}] 激活，添加线索:`, addedClues);
                     console.log('当前所有线索:', gameState.clues);
                 }
             } else {
                 alert('电力装置激活成功，但需要先解决对应的守门员谜题才能获得线索！');
+                console.log(`陷阱 ${trapId} 尚未解决，无法获得线索`);
             }
         }
 
