@@ -450,6 +450,7 @@
             powerDevices: 0,
             hasCard: false,
             unlockedCells: new Set(['0,0']), // 已解锁的格子
+            activatedPowerDevices: new Set(), // 已激活的电力装置
             clues: [],
             username: '',
             password: '',
@@ -611,6 +612,17 @@
                             console.log('已解决的陷阱:', [...gameState.solvedTraps]);
                         } catch (e) {
                             console.warn('解析已解决陷阱失败:', e);
+                        }
+                    }
+                    
+                    // 恢复已激活的电力装置状态
+                    if (userData.meta_activated_power_devices) {
+                        try {
+                            const activatedDevices = JSON.parse(userData.meta_activated_power_devices);
+                            gameState.activatedPowerDevices = new Set(activatedDevices);
+                            console.log('已恢复激活的电力装置:', [...gameState.activatedPowerDevices]);
+                        } catch (e) {
+                            console.warn('解析已激活电力装置失败:', e);
                         }
                     }
                     
@@ -1014,6 +1026,15 @@
 
         // 处理电力装置格子
         async function handlePowerCell(x, y) {
+            const powerDeviceKey = `${x},${y}`;
+            
+            // 检查是否已经激活过这个电力装置
+            if (gameState.activatedPowerDevices.has(powerDeviceKey)) {
+                // 已激活，直接移动
+                movePlayer(x, y);
+                return;
+            }
+            
             // 检查对应的陷阱是否已解锁
             let requiredTrap;
             if (x === 1 && y === 5) requiredTrap = '2,5'; // A1陷阱
@@ -1023,7 +1044,11 @@
             if (requiredTrap && gameState.unlockedCells.has(requiredTrap)) {
                 // 激活电力装置
                 gameState.powerDevices++;
+                gameState.activatedPowerDevices.add(powerDeviceKey);
+                
+                // 保存状态到后端
                 await updateUserData('meta_power_number', gameState.powerDevices.toString());
+                await updateUserData('meta_activated_power_devices', JSON.stringify([...gameState.activatedPowerDevices]));
                 
                 // 显示线索
                 showPowerDeviceClues(x, y);
@@ -1033,6 +1058,8 @@
                 await diminishMetaTime(); // 解锁格子额外扣除时间
                 
                 movePlayer(x, y);
+                
+                console.log(`电力装置 [${x},${y}] 已激活，当前激活数量: ${gameState.powerDevices}`);
             } else {
                 alert('需要先解决对应的守门员谜题才能激活电力装置！');
             }
@@ -1396,16 +1423,40 @@
         // 显示电力装置线索
         function showPowerDeviceClues(x, y) {
             let clues = [];
+            let trapId = '';
+            
             if (x === 1 && y === 5) {
                 clues = [allClues[0], allClues[1]];
+                trapId = 'A1';
             } else if (x === 14 && y === 5) {
                 clues = [allClues[2], allClues[3]];
+                trapId = 'B2';
             } else if (x === 15 && y === 0) {
                 clues = [allClues[4], allClues[5]];
+                trapId = 'C3';
             }
             
-            if (clues.length > 0) {
-                alert(`电力装置激活！获得线索：\n${clues.join('\n')}`);
+            // 检查对应的陷阱是否已解决
+            if (gameState.solvedTraps.has(trapId)) {
+                // 陷阱已解决，显示线索
+                if (clues.length > 0) {
+                    // 避免重复添加线索
+                    clues.forEach(clue => {
+                        if (!gameState.clues.includes(clue)) {
+                            gameState.clues.push(clue);
+                        }
+                    });
+                    
+                    alert(`电力装置激活！获得线索：\n${clues.join('\n')}`);
+                    
+                    // 立即更新显示
+                    updateDisplay();
+                    
+                    console.log(`电力装置 [${x},${y}] 激活，添加线索:`, clues);
+                    console.log('当前所有线索:', gameState.clues);
+                }
+            } else {
+                alert('电力装置激活成功，但需要先解决对应的守门员谜题才能获得线索！');
             }
         }
 
