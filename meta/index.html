@@ -847,7 +847,13 @@
                     break;
                     
                 case 'power':
-                    if (!gameState.unlockedCells.has(cellKey)) {
+                    // 检查电力装置是否已激活
+                    const powerDeviceKey = `${x},${y}`;
+                    if (gameState.activatedPowerDevices.has(powerDeviceKey)) {
+                        // 已激活，直接移动
+                        console.log(`电力装置 [${x},${y}] 已激活，直接移动`);
+                        movePlayer(x, y);
+                    } else if (!gameState.unlockedCells.has(cellKey)) {
                         await handlePowerCell(x, y);
                     } else {
                         movePlayer(x, y);
