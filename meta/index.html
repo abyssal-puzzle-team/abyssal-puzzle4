@@ -390,6 +390,7 @@
                     <p>答案错误！请等待 <span id="cooldownTime">0</span> 秒后重试</p>
                 </div>
                 <button class="btn" onclick="submitPuzzleAnswer()">提交答案</button>
+                <button class="btn" onclick="skipPuzzle()" style="background: linear-gradient(45deg, #ff6600, #ff0000); color: #fff;">跳过谜题 (扣除时间)</button>
             </div>
         </div>
     </div>
@@ -841,8 +842,11 @@
             gameState.playerX = x;
             gameState.playerY = y;
             
-            // 更新后端坐标
+            // 实时保存玩家位置到后端
             await updatePlayerPosition(x, y);
+            
+            // 每移动一步扣除meta时间
+            await diminishMetaTime();
             
             // 重新渲染迷宫
             initMaze();
@@ -886,8 +890,10 @@
             gameState.keys++;
             await updateUserData('meta_key_number', gameState.keys.toString());
             
-            // 解锁格子
+            // 解锁格子并扣除时间
             await unlockCell(x, y);
+            await diminishMetaTime(); // 解锁格子额外扣除时间
+            
             movePlayer(x, y);
         }
 
@@ -903,11 +909,12 @@
                 // 检查冷却状态
                 const cooldownStatus = await checkGoalkeeperCooldown();
                 if (cooldownStatus.cooldownRemaining > 0) {
-                    showCooldownNotice('goalkeeper', cooldownStatus.cooldownRemaining);
+                    alert(`守门员谜题处于冷却中，请等待 ${cooldownStatus.cooldownRemaining} 秒后重试。`);
                     return;
                 }
                 
-                showGoalkeeperModal(trapId);
+                // 跳转到对应的守门员谜题页面
+                window.location.href = `${trapId}.html`;
             }
         }
 
@@ -927,8 +934,10 @@
                 // 显示线索
                 showPowerDeviceClues(x, y);
                 
-                // 解锁格子
+                // 解锁格子并扣除时间
                 await unlockCell(x, y);
+                await diminishMetaTime(); // 解锁格子额外扣除时间
+                
                 movePlayer(x, y);
             } else {
                 alert('需要先解决对应的守门员谜题才能激活电力装置！');
@@ -939,10 +948,12 @@
         async function handleCardCell(x, y) {
             // 获得门禁卡
             gameState.hasCard = true;
-            await updateUserData('meta_card', true);
+            await updateUserData('meta_card', 'true');
             
-            // 解锁格子
+            // 解锁格子并扣除时间
             await unlockCell(x, y);
+            await diminishMetaTime(); // 解锁格子额外扣除时间
+            
             movePlayer(x, y);
         }
 
@@ -977,6 +988,27 @@
             window.currentPuzzleTarget = null;
         }
 
+        // 跳过小谜题
+        async function skipPuzzle() {
+            const target = window.currentPuzzleTarget;
+            if (!target) return;
+            
+            // 确认跳过
+            if (!confirm('跳过谜题将扣除额外时间，确定要跳过吗？')) {
+                return;
+            }
+            
+            // 关闭模态框
+            closePuzzleModal();
+            
+            // 扣除额外时间（跳过的惩罚）
+            await diminishMetaTime();
+            await diminishMetaTime(); // 额外扣除一次
+            
+            // 不解锁格子，直接返回
+            alert('已跳过谜题，扣除了额外时间。您可以稍后再来挑战。');
+        }
+
         // 提交小谜题答案
         async function submitPuzzleAnswer() {
             const answer = document.getElementById('puzzleAnswer').value.trim();
@@ -988,11 +1020,10 @@
                 // 答案正确
                 closePuzzleModal();
                 
-                // 减少时间
-                await diminishMetaTime();
-                
-                // 解锁格子并移动
+                // 解锁格子并扣除时间
                 await unlockCell(target.x, target.y);
+                await diminishMetaTime(); // 解锁格子额外扣除时间
+                
                 movePlayer(target.x, target.y);
             } else {
                 // 答案错误，触发冷却

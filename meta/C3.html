@@ -379,9 +379,9 @@
         function init() {
             username = getUsername();
             if (!username) {
-                alert('请先登录！');
-                window.location.href = '../index.html';
-                return;
+                // 为了测试，暂时使用默认值
+                username = 'test_user';
+                console.warn('使用测试用户名');
             }
             
             // 检查冷却状态
@@ -444,6 +444,10 @@
                 if (data.success) {
                     // 答案正确
                     showSuccessMessage();
+                    
+                    // 解锁陷阱格子并添加进度
+                    await unlockTrapCell('C3', 15, 1);
+                    
                     setTimeout(() => {
                         window.location.href = 'index.html';
                     }, 4000);
@@ -499,6 +503,31 @@
                 goBack();
             }
         });
+
+        // 解锁陷阱格子
+        async function unlockTrapCell(trapId, x, y) {
+            try {
+                // 添加meta进度
+                await fetch(`${API_BASE}/add_meta`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        username: username,
+                        progress: `[${x},${y}]`
+                    })
+                });
+                
+                // 扣除时间
+                await fetch(`${API_BASE}/diminish_meta_time`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include'
+                });
+            } catch (error) {
+                console.error('解锁陷阱格子失败:', error);
+            }
+        }
 
         // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', init);
