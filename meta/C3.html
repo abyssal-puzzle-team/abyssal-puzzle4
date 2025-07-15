@@ -320,26 +320,53 @@
     <script>
         const API_BASE = 'http://111.170.11.168:15079';
         let username = '';
+        let password = '';
 
-        // 获取用户名
-        function getUsername() {
-            const cookies = document.cookie.split(';');
-            for (let cookie of cookies) {
-                const [name, value] = cookie.trim().split('=');
-                if (name === 'username') {
-                    return value;
-                }
-            }
+        // 获取Cookie
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
             return '';
         }
 
         // 初始化
-        function init() {
-            username = getUsername();
-            if (!username) {
+        async function init() {
+            username = getCookie('username');
+            password = getCookie('password');
+
+            if (!username || !password) {
+                console.warn('Cookie中未找到用户名或密码，请先登录。');
+                // 可以跳转到登录页面或者显示登录提示
                 // 为了测试，暂时使用默认值
                 username = 'test_user';
-                console.warn('使用测试用户名');
+                password = 'test_pass';
+                console.warn('使用测试用户名和密码');
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/acc_check_password`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        username: username,
+                        password: password
+                    })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    console.log('用户身份验证成功:', data.user_data);
+                    // 可以在这里根据需要更新页面状态，但对于守门员页面，主要关注冷却状态
+                } else {
+                    console.error('用户身份验证失败:', data.message);
+                    // 如果验证失败，可以考虑重定向到登录页或显示错误
+                    // 为了不中断测试，这里继续使用当前username，但实际应用中应更严格
+                }
+            } catch (error) {
+                console.error('验证用户身份失败:', error);
+                // 网络错误，继续使用当前username
             }
             
             // 检查冷却状态

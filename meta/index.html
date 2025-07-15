@@ -493,12 +493,27 @@
         async function loadUserData() {
             try {
                 // 从cookie获取用户名和密码
-                gameState.username = getCookie('username') || 'test_user';
-                gameState.password = getCookie('password') || 'test_pass';
+                gameState.username = getCookie('username');
+                gameState.password = getCookie('password');
+
+                if (!gameState.username || !gameState.password) {
+                    console.warn('Cookie中未找到用户名或密码，请先登录。');
+                    // 可以跳转到登录页面或者显示登录提示
+                    // 为了测试，暂时使用默认值
+                    gameState.username = 'test_user';
+                    gameState.password = 'test_pass';
+                    console.warn('使用测试用户名和密码');
+                }
                 
                 // 检查登录状态并获取用户数据
-                const response = await fetch(`${API_BASE}/check_login_status`, {
-                    credentials: 'include'
+                const response = await fetch(`${API_BASE}/acc_check_password`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        username: gameState.username,
+                        password: gameState.password
+                    })
                 });
                 const data = await response.json();
                 
@@ -567,18 +582,26 @@
                     
                     console.log('用户数据加载完成:', gameState);
                 } else {
-                    console.warn('无法获取用户数据，使用默认状态');
+                    console.warn('无法获取用户数据或密码错误/账号不存在:', data.message);
+                    // 可以跳转到登录页面或者显示错误信息
                 }
             } catch (error) {
                 console.error('加载用户数据失败:', error);
+                // 网络错误，使用默认状态
             }
         }
 
         // 检查进度
         async function checkProgress() {
             try {
-                const response = await fetch(`${API_BASE}/check_login_status`, {
-                    credentials: 'include'
+                const response = await fetch(`${API_BASE}/acc_check_password`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        username: gameState.username,
+                        password: gameState.password
+                    })
                 });
                 const data = await response.json();
                 
