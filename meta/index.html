@@ -498,11 +498,10 @@
 
                 if (!gameState.username || !gameState.password) {
                     console.warn('Cookie中未找到用户名或密码，请先登录。');
-                    // 可以跳转到登录页面或者显示登录提示
-                    // 为了测试，暂时使用默认值
-                    gameState.username = 'test_user';
-                    gameState.password = 'test_pass';
-                    console.warn('使用测试用户名和密码');
+                    alert('请先登录或注册账号以保存游戏进度！');
+                    // 这里可以重定向到登录页面，或者显示登录/注册的模态框
+                    // 为了不中断当前流程，暂时不进行重定向，但实际应用中应该处理
+                    return; // 不加载数据，使用默认初始状态
                 }
                 
                 // 检查登录状态并获取用户数据
@@ -583,11 +582,14 @@
                     console.log('用户数据加载完成:', gameState);
                 } else {
                     console.warn('无法获取用户数据或密码错误/账号不存在:', data.message);
-                    // 可以跳转到登录页面或者显示错误信息
+                    alert('登录失败：' + data.message + '。请检查您的账号和密码。');
+                    // 这里可以重定向到登录页面，或者显示登录/注册的模态框
+                    return; // 不加载数据，使用默认初始状态
                 }
             } catch (error) {
                 console.error('加载用户数据失败:', error);
-                // 网络错误，使用默认状态
+                alert('网络错误或API服务不可用，无法加载用户数据。');
+                return; // 不加载数据，使用默认初始状态
             }
         }
 
@@ -1446,4 +1448,5 @@
     </script>
 </body>
 </html>
+
 

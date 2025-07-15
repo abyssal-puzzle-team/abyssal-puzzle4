@@ -336,12 +336,9 @@
             password = getCookie('password');
 
             if (!username || !password) {
-                console.warn('Cookie中未找到用户名或密码，请先登录。');
-                // 可以跳转到登录页面或者显示登录提示
-                // 为了测试，暂时使用默认值
-                username = 'test_user';
-                password = 'test_pass';
-                console.warn('使用测试用户名和密码');
+                alert('请先登录或注册账号以保存游戏进度！');
+                // 这里可以重定向到登录页面，或者显示登录/注册的模态框
+                return; // 不加载数据，使用默认初始状态
             }
 
             try {
@@ -361,12 +358,14 @@
                     // 可以在这里根据需要更新页面状态，但对于守门员页面，主要关注冷却状态
                 } else {
                     console.error('用户身份验证失败:', data.message);
+                    alert('登录失败：' + data.message + '。请检查您的账号和密码。');
                     // 如果验证失败，可以考虑重定向到登录页或显示错误
-                    // 为了不中断测试，这里继续使用当前username，但实际应用中应更严格
+                    return; // 不加载数据，使用默认初始状态
                 }
             } catch (error) {
                 console.error('验证用户身份失败:', error);
-                // 网络错误，继续使用当前username
+                alert('网络错误或API服务不可用，无法加载用户数据。');
+                return; // 不加载数据，使用默认初始状态
             }
             
             // 检查冷却状态
@@ -549,4 +548,5 @@
     </script>
 </body>
 </html>
+
 

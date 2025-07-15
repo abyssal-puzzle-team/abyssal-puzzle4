@@ -293,10 +293,10 @@
         function init() {
             username = getCookie('username');
             if (!username) {
-                // 如果没有从cookie获取到用户名，则尝试从URL参数获取或使用默认值
-                const urlParams = new URLSearchParams(window.location.search);
-                username = urlParams.get('username') || 'test_user';
-                console.warn('使用测试用户名:', username);
+                alert('请先登录或注册账号以保存游戏进度！');
+                // 可以重定向到登录页面或者显示登录提示
+                // 为了不中断当前流程，暂时不进行重定向，但实际应用中应该处理
+                return; // 不加载数据，使用默认初始状态
             }
             
             // 检查冷却状态
@@ -479,4 +479,5 @@
     </script>
 </body>
 </html>
+
 
