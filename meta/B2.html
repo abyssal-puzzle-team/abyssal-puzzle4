@@ -75,68 +75,16 @@
             border: 2px solid #00ffff;
             border-radius: 10px;
             padding: 30px;
-            margin: 30px 0;
+            margin: 20px 0;
             text-align: center;
-        }
-
-        .sequence-title {
-            font-size: 1.3em;
-            color: #00ffff;
-            margin-bottom: 20px;
-            font-weight: bold;
         }
 
         .sequence-numbers {
-            font-size: 2em;
-            color: #ffffff;
+            font-size: 2.5em;
+            color: #00ffff;
             font-weight: bold;
+            margin: 20px 0;
             letter-spacing: 10px;
-            margin: 20px 0;
-            font-family: 'Courier New', monospace;
-        }
-
-        .sequence-pattern {
-            font-size: 1.1em;
-            color: #66ffff;
-            margin-top: 15px;
-        }
-
-        .analysis-section {
-            background: rgba(255, 255, 0, 0.1);
-            border: 1px solid #ffff00;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 20px 0;
-        }
-
-        .analysis-title {
-            color: #ffff00;
-            font-weight: bold;
-            margin-bottom: 15px;
-            font-size: 1.2em;
-        }
-
-        .analysis-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 15px 0;
-        }
-
-        .analysis-table th,
-        .analysis-table td {
-            border: 1px solid #666;
-            padding: 10px;
-            text-align: center;
-        }
-
-        .analysis-table th {
-            background: rgba(255, 255, 0, 0.2);
-            color: #ffff00;
-            font-weight: bold;
-        }
-
-        .analysis-table td {
-            color: #cccccc;
         }
 
         .question-section {
@@ -156,16 +104,15 @@
         }
 
         .answer-input {
-            width: 150px;
+            width: 200px;
             padding: 12px;
-            font-size: 1.5em;
+            font-size: 1.2em;
             background: rgba(0, 0, 0, 0.5);
             border: 2px solid #00ffff;
             border-radius: 8px;
             color: #ffffff;
             text-align: center;
             margin: 10px;
-            font-family: 'Courier New', monospace;
         }
 
         .answer-input:focus {
@@ -258,6 +205,25 @@
             display: none;
         }
 
+        .analysis-section {
+            background: rgba(128, 128, 128, 0.1);
+            border: 1px solid #888;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .analysis-title {
+            color: #888;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .analysis-text {
+            color: #aaa;
+            line-height: 1.5;
+        }
+
         /* 响应式设计 */
         @media (max-width: 768px) {
             .puzzle-container {
@@ -270,12 +236,13 @@
             }
             
             .sequence-numbers {
-                font-size: 1.5em;
+                font-size: 2em;
                 letter-spacing: 5px;
             }
             
-            .analysis-table {
-                font-size: 0.9em;
+            .answer-input {
+                width: 100%;
+                max-width: 300px;
             }
         }
     </style>
@@ -286,86 +253,46 @@
         <div class="puzzle-subtitle">数学计算挑战</div>
 
         <div class="story-section">
-            <div class="story-title">🔮 神秘的数字序列</div>
+            <div class="story-title">🧮 神秘的数字序列</div>
             <div class="story-text">
                 在深渊迷宫的数学殿堂中，古老的石碑上刻着一串神秘的数字序列。
-                传说只有能够理解这个序列规律的人，才能获得通过守门员B2的资格。
-                这些数字蕴含着深奥的数学奥秘，等待着智者来解开...
+                传说只有能够理解其中规律的人，才能获得通往下一层的钥匙。
+                这些数字似乎遵循着某种特殊的数学规律...
             </div>
         </div>
 
         <div class="sequence-display">
-            <div class="sequence-title">📊 神秘数字序列</div>
+            <div class="story-title">📊 数字序列</div>
             <div class="sequence-numbers">2, 6, 12, 20, 30, ?</div>
-            <div class="sequence-pattern">找出规律，填入下一个数字</div>
-        </div>
-
-        <div class="analysis-section">
-            <div class="analysis-title">🔍 序列分析</div>
-            <table class="analysis-table">
-                <thead>
-                    <tr>
-                        <th>位置</th>
-                        <th>数值</th>
-                        <th>与前一项的差</th>
-                        <th>差值的变化</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>1</td>
-                        <td>2</td>
-                        <td>-</td>
-                        <td>-</td>
-                    </tr>
-                    <tr>
-                        <td>2</td>
-                        <td>6</td>
-                        <td>4</td>
-                        <td>-</td>
-                    </tr>
-                    <tr>
-                        <td>3</td>
-                        <td>12</td>
-                        <td>6</td>
-                        <td>+2</td>
-                    </tr>
-                    <tr>
-                        <td>4</td>
-                        <td>20</td>
-                        <td>8</td>
-                        <td>+2</td>
-                    </tr>
-                    <tr>
-                        <td>5</td>
-                        <td>30</td>
-                        <td>10</td>
-                        <td>+2</td>
-                    </tr>
-                    <tr>
-                        <td>6</td>
-                        <td>?</td>
-                        <td>?</td>
-                        <td>+2</td>
-                    </tr>
-                </tbody>
-            </table>
         </div>
 
         <div class="hint-section">
             <div class="hint-title">💡 解题提示</div>
             <div class="hint-text">
-                观察相邻数字的差值：4, 6, 8, 10...
-                这些差值形成了一个等差数列，公差为2。
-                按照这个规律，下一个差值应该是12。
+                观察相邻数字之间的差值，看看它们是否遵循某种规律。
+                有时候，规律隐藏在差值的差值中...
+            </div>
+        </div>
+
+        <div class="analysis-section">
+            <div class="analysis-title">🔍 分析过程</div>
+            <div class="analysis-text">
+                让我们来分析一下这个序列：<br>
+                • 6 - 2 = 4<br>
+                • 12 - 6 = 6<br>
+                • 20 - 12 = 8<br>
+                • 30 - 20 = 10<br>
+                <br>
+                差值序列：4, 6, 8, 10, ?<br>
+                这是一个等差数列，公差为2。
             </div>
         </div>
 
         <div class="question-section">
             <div class="question-text">
-                🤔 根据序列规律，下一个数字是？
+                🤔 请找出规律并填入下一个数字
             </div>
-            <input type="number" id="answerInput" class="answer-input" placeholder="?" min="0" max="999">
+            <input type="number" id="answerInput" class="answer-input" placeholder="请输入数字" min="0">
             <br>
             <button class="submit-btn" onclick="submitAnswer()" id="submitBtn">提交答案</button>
         </div>
@@ -379,7 +306,7 @@
         <div id="successMessage" class="success-message">
             <h3>🎉 恭喜！答案正确！</h3>
             <p>您成功破解了守门员B2的数学谜题！</p>
-            <p>序列的规律是：相邻数字的差值构成等差数列 4, 6, 8, 10, 12...</p>
+            <p>现在您可以通过这个陷阱，并获得宝贵的线索。</p>
         </div>
 
         <div style="text-align: center; margin-top: 30px;">
@@ -450,7 +377,7 @@
 
             // 检查冷却状态
             const cooldownStatus = await checkCooldownStatus();
-            if (cooldownStatus.cooldownRemaining > 0) {
+            if (cooldownStatus && cooldownStatus.cooldownRemaining > 0) {
                 showCooldownNotice(cooldownStatus.cooldownRemaining);
                 return;
             }
@@ -476,13 +403,25 @@
                     // 解锁陷阱格子并添加进度
                     await unlockTrapCell('B2', 13, 4);
                     
+                    // 保存已解决的陷阱状态
+                    await updateUserData('meta_solved_traps', JSON.stringify(['B2']));
+                    
                     setTimeout(() => {
+                        // 通知主页面陷阱已解决
+                        if (window.opener) {
+                            window.opener.postMessage({
+                                type: 'trapSolved',
+                                trapId: 'B2'
+                            }, '*');
+                        }
                         window.location.href = 'index.html';
-                    }, 4000);
+                    }, 3000);
                 } else {
                     // 答案错误，显示冷却
                     const cooldownStatus = await checkCooldownStatus();
-                    showCooldownNotice(cooldownStatus.cooldownRemaining);
+                    if (cooldownStatus) {
+                        showCooldownNotice(cooldownStatus.cooldownRemaining);
+                    }
                 }
             } catch (error) {
                 console.error('提交答案失败:', error);
@@ -554,6 +493,24 @@
                 });
             } catch (error) {
                 console.error('解锁陷阱格子失败:', error);
+            }
+        }
+
+        // 更新用户数据
+        async function updateUserData(option, value) {
+            try {
+                await fetch(`${API_BASE}/set_user_data`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        username: username,
+                        option: option,
+                        value: value
+                    })
+                });
+            } catch (error) {
+                console.error('更新用户数据失败:', error);
             }
         }
 

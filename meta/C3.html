@@ -72,82 +72,24 @@
 
         .riddle-display {
             background: rgba(255, 255, 255, 0.1);
-            border: 2px solid #ff00ff;
-            border-radius: 15px;
-            padding: 40px;
-            margin: 30px 0;
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            padding: 30px;
+            margin: 20px 0;
             text-align: center;
-            position: relative;
-        }
-
-        .riddle-display::before {
-            content: '"';
-            position: absolute;
-            top: 10px;
-            left: 20px;
-            font-size: 4em;
-            color: #ff00ff;
-            opacity: 0.3;
-        }
-
-        .riddle-display::after {
-            content: '"';
-            position: absolute;
-            bottom: 10px;
-            right: 20px;
-            font-size: 4em;
-            color: #ff00ff;
-            opacity: 0.3;
-        }
-
-        .riddle-title {
-            font-size: 1.3em;
-            color: #ff00ff;
-            margin-bottom: 25px;
-            font-weight: bold;
         }
 
         .riddle-text {
             font-size: 1.4em;
-            color: #ffffff;
-            line-height: 1.8;
+            color: #00ffff;
             font-style: italic;
-            margin: 15px 0;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
-        }
-
-        .analysis-section {
-            background: rgba(255, 255, 0, 0.1);
-            border: 1px solid #ffff00;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 20px 0;
-        }
-
-        .analysis-title {
-            color: #ffff00;
-            font-weight: bold;
-            margin-bottom: 15px;
-            font-size: 1.2em;
-        }
-
-        .analysis-list {
-            list-style: none;
-            padding: 0;
-        }
-
-        .analysis-list li {
-            background: rgba(255, 255, 255, 0.05);
-            margin: 8px 0;
-            padding: 12px;
-            border-radius: 5px;
-            border-left: 3px solid #ffff00;
-            color: #ffffaa;
+            line-height: 1.8;
+            margin: 10px 0;
         }
 
         .question-section {
-            background: rgba(255, 0, 255, 0.1);
-            border: 2px solid #ff00ff;
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px solid #00ffff;
             border-radius: 10px;
             padding: 25px;
             margin: 30px 0;
@@ -156,17 +98,17 @@
 
         .question-text {
             font-size: 1.3em;
-            color: #ff00ff;
+            color: #00ffff;
             font-weight: bold;
             margin-bottom: 20px;
         }
 
         .answer-input {
-            width: 250px;
+            width: 200px;
             padding: 12px;
             font-size: 1.2em;
             background: rgba(0, 0, 0, 0.5);
-            border: 2px solid #ff00ff;
+            border: 2px solid #00ffff;
             border-radius: 8px;
             color: #ffffff;
             text-align: center;
@@ -180,11 +122,11 @@
         }
 
         .submit-btn {
-            background: linear-gradient(45deg, #ff00ff, #9900ff);
+            background: linear-gradient(45deg, #00ffff, #0080ff);
             border: none;
             padding: 15px 30px;
             border-radius: 8px;
-            color: #fff;
+            color: #000;
             font-size: 1.2em;
             font-weight: bold;
             cursor: pointer;
@@ -194,7 +136,7 @@
 
         .submit-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(255, 0, 255, 0.3);
+            box-shadow: 0 8px 20px rgba(0, 255, 255, 0.3);
         }
 
         .submit-btn:disabled {
@@ -263,6 +205,25 @@
             display: none;
         }
 
+        .analysis-section {
+            background: rgba(128, 128, 128, 0.1);
+            border: 1px solid #888;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .analysis-title {
+            color: #888;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .analysis-text {
+            color: #aaa;
+            line-height: 1.5;
+        }
+
         /* 响应式设计 */
         @media (max-width: 768px) {
             .puzzle-container {
@@ -287,57 +248,54 @@
 </head>
 <body>
     <div class="puzzle-container">
-        <div class="puzzle-title">📜 守门员C3</div>
+        <div class="puzzle-title">📝 守门员C3</div>
         <div class="puzzle-subtitle">文字谜题挑战</div>
 
         <div class="story-section">
-            <div class="story-title">🏛️ 古老的智慧殿堂</div>
+            <div class="story-title">📜 古老的谜语</div>
             <div class="story-text">
-                在深渊迷宫的最深处，有一座古老的智慧殿堂。殿堂的墙壁上刻着无数古老的谜语，
-                这些谜语承载着先贤的智慧。只有能够解开这些文字谜题的人，
-                才能证明自己拥有足够的智慧通过守门员C3的考验。
+                在深渊迷宫的智慧殿堂中，墙壁上刻着一个古老的谜语。
+                这个谜语流传了千年，只有真正理解其含义的人才能获得通行的权利。
+                仔细思考每一个词语的含义，答案就在其中...
             </div>
         </div>
 
         <div class="riddle-display">
-            <div class="riddle-title">🔮 古老的谜语</div>
+            <div class="story-title">🧩 千年谜语</div>
             <div class="riddle-text">
-                我有城市，但没有房屋；
+                "我有城市，但没有房屋；<br>
+                我有山脉，但没有树木；<br>
+                我有水域，但没有鱼类。<br>
+                我是什么？"
             </div>
-            <div class="riddle-text">
-                我有山脉，但没有树木；
-            </div>
-            <div class="riddle-text">
-                我有水域，但没有鱼类。
-            </div>
-            <div class="riddle-text" style="margin-top: 25px; color: #ff00ff; font-weight: bold;">
-                我是什么？
-            </div>
-        </div>
-
-        <div class="analysis-section">
-            <div class="analysis-title">🔍 谜题分析</div>
-            <ul class="analysis-list">
-                <li><strong>关键词1:</strong> "有城市，但没有房屋" - 表示有城市的概念，但不是真实的建筑</li>
-                <li><strong>关键词2:</strong> "有山脉，但没有树木" - 表示有地形特征，但不是真实的自然环境</li>
-                <li><strong>关键词3:</strong> "有水域，但没有鱼类" - 表示有水的表示，但不是真实的水体</li>
-                <li><strong>共同特点:</strong> 都是"有...但没有..." 的模式，暗示是某种表示或抽象概念</li>
-            </ul>
         </div>
 
         <div class="hint-section">
             <div class="hint-title">💡 解题提示</div>
             <div class="hint-text">
-                这是一个经典的谜语。思考一下什么东西能够显示城市、山脉、水域的位置和形状，
-                但本身并不包含真实的房屋、树木或鱼类？这个东西通常用来指引方向和位置...
+                这是一个经典的谜语。思考一下什么东西能够"拥有"这些地理特征，
+                但又不包含其中的具体事物。答案是一个我们日常生活中经常使用的物品。
+            </div>
+        </div>
+
+        <div class="analysis-section">
+            <div class="analysis-title">🔍 分析思路</div>
+            <div class="analysis-text">
+                让我们分析一下这个谜语的关键信息：<br>
+                • 有城市，但没有房屋<br>
+                • 有山脉，但没有树木<br>
+                • 有水域，但没有鱼类<br>
+                <br>
+                这说明答案是某种能够"显示"或"表示"这些地理特征，
+                但本身并不包含真实物体的东西。
             </div>
         </div>
 
         <div class="question-section">
             <div class="question-text">
-                🤔 根据谜语描述，答案是什么？
+                🤔 请回答这个古老的谜语
             </div>
-            <input type="text" id="answerInput" class="answer-input" placeholder="请输入答案" maxlength="20">
+            <input type="text" id="answerInput" class="answer-input" placeholder="请输入答案" maxlength="10">
             <br>
             <button class="submit-btn" onclick="submitAnswer()" id="submitBtn">提交答案</button>
         </div>
@@ -345,13 +303,13 @@
         <div id="cooldownNotice" class="cooldown-notice">
             <h3>⏰ 答案错误！</h3>
             <p>请等待 <span id="cooldownTime">0</span> 秒后重试</p>
-            <p>提示：思考什么东西能显示地理信息但不包含真实物体</p>
+            <p>提示：思考什么东西能显示地理特征但不包含真实物体</p>
         </div>
 
         <div id="successMessage" class="success-message">
             <h3>🎉 恭喜！答案正确！</h3>
             <p>您成功破解了守门员C3的文字谜题！</p>
-            <p>答案确实是"地图"！地图显示城市、山脉、水域，但本身不包含真实的建筑、植物或动物。</p>
+            <p>现在您可以通过这个陷阱，并获得宝贵的线索。</p>
         </div>
 
         <div style="text-align: center; margin-top: 30px;">
@@ -422,7 +380,7 @@
 
             // 检查冷却状态
             const cooldownStatus = await checkCooldownStatus();
-            if (cooldownStatus.cooldownRemaining > 0) {
+            if (cooldownStatus && cooldownStatus.cooldownRemaining > 0) {
                 showCooldownNotice(cooldownStatus.cooldownRemaining);
                 return;
             }
@@ -448,13 +406,25 @@
                     // 解锁陷阱格子并添加进度
                     await unlockTrapCell('C3', 15, 1);
                     
+                    // 保存已解决的陷阱状态
+                    await updateUserData('meta_solved_traps', JSON.stringify(['C3']));
+                    
                     setTimeout(() => {
+                        // 通知主页面陷阱已解决
+                        if (window.opener) {
+                            window.opener.postMessage({
+                                type: 'trapSolved',
+                                trapId: 'C3'
+                            }, '*');
+                        }
                         window.location.href = 'index.html';
-                    }, 4000);
+                    }, 3000);
                 } else {
                     // 答案错误，显示冷却
                     const cooldownStatus = await checkCooldownStatus();
-                    showCooldownNotice(cooldownStatus.cooldownRemaining);
+                    if (cooldownStatus) {
+                        showCooldownNotice(cooldownStatus.cooldownRemaining);
+                    }
                 }
             } catch (error) {
                 console.error('提交答案失败:', error);
@@ -526,6 +496,24 @@
                 });
             } catch (error) {
                 console.error('解锁陷阱格子失败:', error);
+            }
+        }
+
+        // 更新用户数据
+        async function updateUserData(option, value) {
+            try {
+                await fetch(`${API_BASE}/set_user_data`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        username: username,
+                        option: option,
+                        value: value
+                    })
+                });
+            } catch (error) {
+                console.error('更新用户数据失败:', error);
             }
         }
 

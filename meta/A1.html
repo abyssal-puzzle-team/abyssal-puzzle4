@@ -321,8 +321,11 @@
                 if (data.cooldownRemaining > 0) {
                     showCooldownNotice(data.cooldownRemaining);
                 }
+                
+                return data;
             } catch (error) {
                 console.error('检查冷却状态失败:', error);
+                return { cooldownRemaining: 0 };
             }
         }
 
@@ -363,7 +366,17 @@
                     // 解锁陷阱格子并添加进度
                     await unlockTrapCell('A1', 2, 5);
                     
+                    // 保存已解决的陷阱状态
+                    await updateUserData('meta_solved_traps', JSON.stringify(['A1']));
+                    
                     setTimeout(() => {
+                        // 通知主页面陷阱已解决
+                        if (window.opener) {
+                            window.opener.postMessage({
+                                type: 'trapSolved',
+                                trapId: 'A1'
+                            }, '*');
+                        }
                         window.location.href = 'index.html';
                     }, 3000);
                 } else {
@@ -443,6 +456,24 @@
                 });
             } catch (error) {
                 console.error('解锁陷阱格子失败:', error);
+            }
+        }
+
+        // 更新用户数据
+        async function updateUserData(option, value) {
+            try {
+                await fetch(`${API_BASE}/set_user_data`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        username: username,
+                        option: option,
+                        value: value
+                    })
+                });
+            } catch (error) {
+                console.error('更新用户数据失败:', error);
             }
         }
 

@@ -395,17 +395,6 @@
         </div>
     </div>
 
-    <!-- 守门员谜题模态框 -->
-    <div id="goalkeeperModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeGoalkeeperModal()">&times;</span>
-            <h2 id="goalkeeperTitle">守门员挑战</h2>
-            <div id="goalkeeperContent">
-                <!-- 守门员谜题内容将动态加载 -->
-            </div>
-        </div>
-    </div>
-
     <!-- 4x4谜题模态框 -->
     <div id="puzzle4x4Modal" class="modal">
         <div class="modal-content">
@@ -445,7 +434,8 @@
             username: '',
             password: '',
             metaTimeRemaining: 0,
-            puzzle4x4Solved: false
+            puzzle4x4Solved: false,
+            solvedTraps: new Set() // 已解决的陷阱
         };
 
         // 迷宫地图定义 (6x16)
@@ -476,58 +466,13 @@
             "14与16同列，15在14相邻正下方"
         ];
 
-        // 守门员谜题配置
-        const goalkeeperPuzzles = {
-            'A1': { // (2,5)
-                title: '守门员A1 - 逻辑推理',
-                content: `
-                    <p>在一个古老的图书馆中，有三个书架：A、B、C。</p>
-                    <p>已知：</p>
-                    <ul>
-                        <li>如果A书架有书，那么B书架也有书</li>
-                        <li>如果B书架有书，那么C书架没有书</li>
-                        <li>现在C书架有书</li>
-                    </ul>
-                    <p>请问：A书架有书吗？</p>
-                    <input type="text" id="goalkeeperA1Answer" class="puzzle-input" placeholder="请输入：有 或 没有">
-                    <button class="btn" onclick="submitGoalkeeperAnswer('A1')">提交答案</button>
-                `,
-                answer: '没有'
-            },
-            'B2': { // (13,4)
-                title: '守门员B2 - 数学计算',
-                content: `
-                    <p>一个神秘的数字序列：</p>
-                    <p>2, 6, 12, 20, 30, ?</p>
-                    <p>请找出规律并填入下一个数字。</p>
-                    <p>提示：观察相邻数字的差值</p>
-                    <input type="text" id="goalkeeperB2Answer" class="puzzle-input" placeholder="请输入数字">
-                    <button class="btn" onclick="submitGoalkeeperAnswer('B2')">提交答案</button>
-                `,
-                answer: '42'
-            },
-            'C3': { // (15,1)
-                title: '守门员C3 - 文字谜题',
-                content: `
-                    <p>一个古老的谜语：</p>
-                    <p>"我有城市，但没有房屋；</p>
-                    <p>我有山脉，但没有树木；</p>
-                    <p>我有水域，但没有鱼类。</p>
-                    <p>我是什么？"</p>
-                    <input type="text" id="goalkeeperC3Answer" class="puzzle-input" placeholder="请输入答案">
-                    <button class="btn" onclick="submitGoalkeeperAnswer('C3')">提交答案</button>
-                `,
-                answer: '地图'
-            }
-        };
-
         // API基础URL
         const API_BASE = 'http://111.170.11.168:15079';
 
         // 初始化游戏
         async function initGame() {
-            // 检查登录状态
-            await checkLoginStatus();
+            // 检查登录状态并加载用户数据
+            await loadUserData();
             
             // 检查进度
             if (!await checkProgress()) {
@@ -544,34 +489,48 @@
             updateDisplay();
         }
 
-        // 检查登录状态
-        async function checkLoginStatus() {
+        // 加载用户数据
+        async function loadUserData() {
             try {
+                // 从cookie获取用户名和密码
+                gameState.username = getCookie('username') || 'test_user';
+                gameState.password = getCookie('password') || 'test_pass';
+                
+                // 检查登录状态并获取用户数据
                 const response = await fetch(`${API_BASE}/check_login_status`, {
                     credentials: 'include'
                 });
                 const data = await response.json();
                 
-                if (data.success) {
-                    gameState.username = data.user_data.username || getCookie('username');
-                    gameState.password = data.user_data.password || getCookie('password');
+                if (data.success && data.user_data) {
+                    const userData = data.user_data;
                     
-                    // 更新游戏状态
-                    if (data.user_data.meta_xy) {
-                        const coords = JSON.parse(data.user_data.meta_xy);
-                        gameState.playerX = coords[0];
-                        gameState.playerY = coords[1];
+                    // 恢复玩家位置
+                    if (userData.meta_xy) {
+                        try {
+                            const coords = JSON.parse(userData.meta_xy);
+                            gameState.playerX = coords[0] || 0;
+                            gameState.playerY = coords[1] || 0;
+                        } catch (e) {
+                            console.warn('解析玩家位置失败:', e);
+                            gameState.playerX = 0;
+                            gameState.playerY = 0;
+                        }
                     }
                     
-                    gameState.keys = parseInt(data.user_data.meta_key_number) || 0;
-                    gameState.powerDevices = parseInt(data.user_data.meta_power_number) || 0;
-                    gameState.hasCard = data.user_data.meta_card === true || data.user_data.meta_card === 'true';
+                    // 恢复游戏状态
+                    gameState.keys = parseInt(userData.meta_key_number) || 0;
+                    gameState.powerDevices = parseInt(userData.meta_power_number) || 0;
+                    gameState.hasCard = userData.meta_card === true || userData.meta_card === 'true';
                     
-                    // 解析已解锁的格子
-                    if (data.user_data.meta_progress) {
-                        const progressStr = data.user_data.meta_progress;
+                    // 恢复已解锁的格子
+                    if (userData.meta_progress) {
+                        const progressStr = userData.meta_progress;
+                        // 解析格式如 "[0,0][1,1][2,2]" 的字符串
                         const matches = progressStr.match(/\[(\d+),(\d+)\]/g);
                         if (matches) {
+                            gameState.unlockedCells.clear();
+                            gameState.unlockedCells.add('0,0'); // 确保起点总是解锁的
                             matches.forEach(match => {
                                 const coords = match.match(/\[(\d+),(\d+)\]/);
                                 if (coords) {
@@ -581,27 +540,37 @@
                         }
                     }
                     
-                    return true;
-                } else {
-                    // 尝试从cookie获取
-                    gameState.username = getCookie('username');
-                    gameState.password = getCookie('password');
-                    
-                    if (!gameState.username || !gameState.password) {
-                        // 为了测试，暂时使用默认值
-                        gameState.username = 'test_user';
-                        gameState.password = 'test_pass';
-                        console.warn('使用测试用户名和密码');
+                    // 恢复已解决的陷阱和线索
+                    if (userData.meta_solved_traps) {
+                        try {
+                            const solvedTraps = JSON.parse(userData.meta_solved_traps);
+                            gameState.solvedTraps = new Set(solvedTraps);
+                            
+                            // 根据已解决的陷阱恢复线索
+                            gameState.clues = [];
+                            if (gameState.solvedTraps.has('A1')) {
+                                gameState.clues.push(allClues[0], allClues[1]);
+                            }
+                            if (gameState.solvedTraps.has('B2')) {
+                                gameState.clues.push(allClues[2], allClues[3]);
+                            }
+                            if (gameState.solvedTraps.has('C3')) {
+                                gameState.clues.push(allClues[4], allClues[5]);
+                            }
+                        } catch (e) {
+                            console.warn('解析已解决陷阱失败:', e);
+                        }
                     }
-                    return true;
+                    
+                    // 恢复4x4谜题状态
+                    gameState.puzzle4x4Solved = userData.meta_4x4_solved === true || userData.meta_4x4_solved === 'true';
+                    
+                    console.log('用户数据加载完成:', gameState);
+                } else {
+                    console.warn('无法获取用户数据，使用默认状态');
                 }
             } catch (error) {
-                console.error('检查登录状态失败:', error);
-                // 为了测试，暂时使用默认值
-                gameState.username = 'test_user';
-                gameState.password = 'test_pass';
-                console.warn('网络错误，使用测试用户名和密码');
-                return true;
+                console.error('加载用户数据失败:', error);
             }
         }
 
@@ -613,7 +582,7 @@
                 });
                 const data = await response.json();
                 
-                if (data.success) {
+                if (data.success && data.user_data) {
                     const progress = parseInt(data.user_data.progress);
                     
                     if (progress === 9) {
@@ -906,6 +875,13 @@
             else if (x === 15 && y === 1) trapId = 'C3';
             
             if (trapId) {
+                // 检查是否已经解决过这个陷阱
+                if (gameState.solvedTraps.has(trapId)) {
+                    // 已解决，直接移动
+                    movePlayer(x, y);
+                    return;
+                }
+                
                 // 检查冷却状态
                 const cooldownStatus = await checkGoalkeeperCooldown();
                 if (cooldownStatus.cooldownRemaining > 0) {
@@ -1033,55 +1009,6 @@
             }
         }
 
-        // 显示守门员模态框
-        function showGoalkeeperModal(trapId) {
-            const puzzle = goalkeeperPuzzles[trapId];
-            if (!puzzle) return;
-            
-            document.getElementById('goalkeeperTitle').textContent = puzzle.title;
-            document.getElementById('goalkeeperContent').innerHTML = puzzle.content;
-            document.getElementById('goalkeeperModal').style.display = 'block';
-            
-            window.currentGoalkeeperTrap = trapId;
-        }
-
-        // 关闭守门员模态框
-        function closeGoalkeeperModal() {
-            document.getElementById('goalkeeperModal').style.display = 'none';
-            window.currentGoalkeeperTrap = null;
-        }
-
-        // 提交守门员答案
-        async function submitGoalkeeperAnswer(trapId) {
-            const answer = document.getElementById(`goalkeeper${trapId}Answer`).value.trim();
-            const puzzle = goalkeeperPuzzles[trapId];
-            
-            if (!puzzle) return;
-            
-            if (answer === puzzle.answer) {
-                // 答案正确
-                closeGoalkeeperModal();
-                
-                // 解锁陷阱格子
-                let trapX, trapY;
-                if (trapId === 'A1') { trapX = 2; trapY = 5; }
-                else if (trapId === 'B2') { trapX = 13; trapY = 4; }
-                else if (trapId === 'C3') { trapX = 15; trapY = 1; }
-                
-                await unlockCell(trapX, trapY);
-                
-                // 添加线索
-                addCluesForTrap(trapId);
-                
-                movePlayer(trapX, trapY);
-            } else {
-                // 答案错误，触发冷却
-                await startGoalkeeperCooldown();
-                const cooldownStatus = await checkGoalkeeperCooldown();
-                showCooldownNotice('goalkeeper', cooldownStatus.cooldownRemaining);
-            }
-        }
-
         // 显示4x4谜题模态框
         function show4x4Modal() {
             // 显示剩余的线索
@@ -1152,6 +1079,7 @@
                 if (data.success) {
                     // 4x4谜题解决
                     gameState.puzzle4x4Solved = true;
+                    await updateUserData('meta_4x4_solved', 'true');
                     alert('4x4谜题解决成功！现在可以尝试逃生了。');
                     updateDisplay();
                 } else {
@@ -1211,6 +1139,11 @@
             }
             
             gameState.clues.push(...newClues);
+            gameState.solvedTraps.add(trapId);
+            
+            // 保存已解决的陷阱到后端
+            updateUserData('meta_solved_traps', JSON.stringify([...gameState.solvedTraps]));
+            
             updateDisplay();
         }
 
@@ -1465,6 +1398,25 @@
                 return { remainingSeconds: 0 };
             }
         }
+
+        // 处理从守门员页面返回的情况
+        window.addEventListener('message', function(event) {
+            if (event.data && event.data.type === 'trapSolved') {
+                const trapId = event.data.trapId;
+                addCluesForTrap(trapId);
+                
+                // 解锁对应的陷阱格子
+                let trapX, trapY;
+                if (trapId === 'A1') { trapX = 2; trapY = 5; }
+                else if (trapId === 'B2') { trapX = 13; trapY = 4; }
+                else if (trapId === 'C3') { trapX = 15; trapY = 1; }
+                
+                if (trapX !== undefined && trapY !== undefined) {
+                    unlockCell(trapX, trapY);
+                    movePlayer(trapX, trapY);
+                }
+            }
+        });
 
         // 页面加载完成后初始化游戏
         document.addEventListener('DOMContentLoaded', initGame);
