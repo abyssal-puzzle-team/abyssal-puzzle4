@@ -594,7 +594,7 @@
                             }
                             
                             // 立即更新显示
-                            setTimeout(() => updateDisplay(), 100);
+                            updateDisplay();
                         } catch (e) {
                             console.warn('解析已解决陷阱失败:', e);
                         }
@@ -880,9 +880,47 @@
                 console.error('扣除时间失败:', error);
             }
             
-            // 重新渲染迷宫
-            initMaze();
+            // 优化渲染：只更新必要的格子而不是重新渲染整个迷宫
+            updateMazeDisplay(oldX, oldY, x, y);
             updateDisplay();
+        }
+
+        // 优化的迷宫显示更新函数
+        function updateMazeDisplay(oldX, oldY, newX, newY) {
+            // 更新旧位置的格子
+            const oldCell = document.querySelector(`[data-x="${oldX}"][data-y="${oldY}"]`);
+            if (oldCell) {
+                const cellType = mazeMap[oldY][oldX];
+                const isVisible = isCellVisible(oldX, oldY);
+                const isUnlocked = gameState.unlockedCells.has(`${oldX},${oldY}`);
+                setCellAppearance(oldCell, cellType, oldX, oldY, isVisible, isUnlocked);
+            }
+            
+            // 更新新位置的格子
+            const newCell = document.querySelector(`[data-x="${newX}"][data-y="${newY}"]`);
+            if (newCell) {
+                const cellType = mazeMap[newY][newX];
+                const isVisible = isCellVisible(newX, newY);
+                const isUnlocked = gameState.unlockedCells.has(`${newX},${newY}`);
+                setCellAppearance(newCell, cellType, newX, newY, isVisible, isUnlocked);
+            }
+            
+            // 更新周围格子的可见性
+            for (let dx = -1; dx <= 1; dx++) {
+                for (let dy = -1; dy <= 1; dy++) {
+                    const x = newX + dx;
+                    const y = newY + dy;
+                    if (x >= 0 && x < 16 && y >= 0 && y < 6) {
+                        const cell = document.querySelector(`[data-x="${x}"][data-y="${y}"]`);
+                        if (cell) {
+                            const cellType = mazeMap[y][x];
+                            const isVisible = isCellVisible(x, y);
+                            const isUnlocked = gameState.unlockedCells.has(`${x},${y}`);
+                            setCellAppearance(cell, cellType, x, y, isVisible, isUnlocked);
+                        }
+                    }
+                }
+            }
         }
 
         // 处理空格子
@@ -1016,6 +1054,14 @@
                 console.log(`格子 [${x},${y}] 已解锁并保存到后端`);
             } catch (error) {
                 console.error('保存格子解锁状态失败:', error);
+            }
+            
+            // 只更新这个格子的显示，而不是重新渲染整个迷宫
+            const cell = document.querySelector(`[data-x="${x}"][data-y="${y}"]`);
+            if (cell) {
+                const cellType = mazeMap[y][x];
+                const isVisible = isCellVisible(x, y);
+                setCellAppearance(cell, cellType, x, y, isVisible, true);
             }
         }
 
