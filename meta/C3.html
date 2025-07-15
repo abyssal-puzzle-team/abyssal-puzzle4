@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>守门员C3 - 文字谜题挑战</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a, #1a1a2e, #16213e);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .puzzle-container {
+            max-width: 800px;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #9900ff;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 0 30px rgba(153, 0, 255, 0.3);
+        }
+
+        .puzzle-title {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #9900ff;
+            text-align: center;
+            margin-bottom: 10px;
+            text-shadow: 0 0 15px rgba(153, 0, 255, 0.6);
+        }
+
+        .puzzle-subtitle {
+            font-size: 1.2em;
+            color: #cc66ff;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .story-section {
+            background: rgba(153, 0, 255, 0.1);
+            border-left: 4px solid #9900ff;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+
+        .story-title {
+            font-size: 1.4em;
+            color: #9900ff;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .story-text {
+            font-size: 1.1em;
+            line-height: 1.6;
+            color: #cccccc;
+            margin-bottom: 15px;
+        }
+
+        .riddle-display {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #ff00ff;
+            border-radius: 15px;
+            padding: 40px;
+            margin: 30px 0;
+            text-align: center;
+            position: relative;
+        }
+
+        .riddle-display::before {
+            content: '"';
+            position: absolute;
+            top: 10px;
+            left: 20px;
+            font-size: 4em;
+            color: #ff00ff;
+            opacity: 0.3;
+        }
+
+        .riddle-display::after {
+            content: '"';
+            position: absolute;
+            bottom: 10px;
+            right: 20px;
+            font-size: 4em;
+            color: #ff00ff;
+            opacity: 0.3;
+        }
+
+        .riddle-title {
+            font-size: 1.3em;
+            color: #ff00ff;
+            margin-bottom: 25px;
+            font-weight: bold;
+        }
+
+        .riddle-text {
+            font-size: 1.4em;
+            color: #ffffff;
+            line-height: 1.8;
+            font-style: italic;
+            margin: 15px 0;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+
+        .analysis-section {
+            background: rgba(255, 255, 0, 0.1);
+            border: 1px solid #ffff00;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .analysis-title {
+            color: #ffff00;
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .analysis-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .analysis-list li {
+            background: rgba(255, 255, 255, 0.05);
+            margin: 8px 0;
+            padding: 12px;
+            border-radius: 5px;
+            border-left: 3px solid #ffff00;
+            color: #ffffaa;
+        }
+
+        .question-section {
+            background: rgba(255, 0, 255, 0.1);
+            border: 2px solid #ff00ff;
+            border-radius: 10px;
+            padding: 25px;
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        .question-text {
+            font-size: 1.3em;
+            color: #ff00ff;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .answer-input {
+            width: 250px;
+            padding: 12px;
+            font-size: 1.2em;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #ff00ff;
+            border-radius: 8px;
+            color: #ffffff;
+            text-align: center;
+            margin: 10px;
+        }
+
+        .answer-input:focus {
+            outline: none;
+            border-color: #00ff00;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
+        }
+
+        .submit-btn {
+            background: linear-gradient(45deg, #ff00ff, #9900ff);
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 0, 255, 0.3);
+        }
+
+        .submit-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .back-btn {
+            background: linear-gradient(45deg, #666666, #444444);
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 102, 102, 0.3);
+        }
+
+        .hint-section {
+            background: rgba(255, 255, 0, 0.1);
+            border: 1px solid #ffff00;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .hint-title {
+            color: #ffff00;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .hint-text {
+            color: #ffffaa;
+            font-style: italic;
+        }
+
+        .cooldown-notice {
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid #ff0000;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+            color: #ff6666;
+            display: none;
+        }
+
+        .success-message {
+            background: rgba(0, 255, 0, 0.2);
+            border: 1px solid #00ff00;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+            color: #66ff66;
+            display: none;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .puzzle-container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            .puzzle-title {
+                font-size: 2em;
+            }
+            
+            .riddle-text {
+                font-size: 1.2em;
+            }
+            
+            .answer-input {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="puzzle-container">
+        <div class="puzzle-title">📜 守门员C3</div>
+        <div class="puzzle-subtitle">文字谜题挑战</div>
+
+        <div class="story-section">
+            <div class="story-title">🏛️ 古老的智慧殿堂</div>
+            <div class="story-text">
+                在深渊迷宫的最深处，有一座古老的智慧殿堂。殿堂的墙壁上刻着无数古老的谜语，
+                这些谜语承载着先贤的智慧。只有能够解开这些文字谜题的人，
+                才能证明自己拥有足够的智慧通过守门员C3的考验。
+            </div>
+        </div>
+
+        <div class="riddle-display">
+            <div class="riddle-title">🔮 古老的谜语</div>
+            <div class="riddle-text">
+                我有城市，但没有房屋；
+            </div>
+            <div class="riddle-text">
+                我有山脉，但没有树木；
+            </div>
+            <div class="riddle-text">
+                我有水域，但没有鱼类。
+            </div>
+            <div class="riddle-text" style="margin-top: 25px; color: #ff00ff; font-weight: bold;">
+                我是什么？
+            </div>
+        </div>
+
+        <div class="analysis-section">
+            <div class="analysis-title">🔍 谜题分析</div>
+            <ul class="analysis-list">
+                <li><strong>关键词1:</strong> "有城市，但没有房屋" - 表示有城市的概念，但不是真实的建筑</li>
+                <li><strong>关键词2:</strong> "有山脉，但没有树木" - 表示有地形特征，但不是真实的自然环境</li>
+                <li><strong>关键词3:</strong> "有水域，但没有鱼类" - 表示有水的表示，但不是真实的水体</li>
+                <li><strong>共同特点:</strong> 都是"有...但没有..." 的模式，暗示是某种表示或抽象概念</li>
+            </ul>
+        </div>
+
+        <div class="hint-section">
+            <div class="hint-title">💡 解题提示</div>
+            <div class="hint-text">
+                这是一个经典的谜语。思考一下什么东西能够显示城市、山脉、水域的位置和形状，
+                但本身并不包含真实的房屋、树木或鱼类？这个东西通常用来指引方向和位置...
+            </div>
+        </div>
+
+        <div class="question-section">
+            <div class="question-text">
+                🤔 根据谜语描述，答案是什么？
+            </div>
+            <input type="text" id="answerInput" class="answer-input" placeholder="请输入答案" maxlength="20">
+            <br>
+            <button class="submit-btn" onclick="submitAnswer()" id="submitBtn">提交答案</button>
+        </div>
+
+        <div id="cooldownNotice" class="cooldown-notice">
+            <h3>⏰ 答案错误！</h3>
+            <p>请等待 <span id="cooldownTime">0</span> 秒后重试</p>
+            <p>提示：思考什么东西能显示地理信息但不包含真实物体</p>
+        </div>
+
+        <div id="successMessage" class="success-message">
+            <h3>🎉 恭喜！答案正确！</h3>
+            <p>您成功破解了守门员C3的文字谜题！</p>
+            <p>答案确实是"地图"！地图显示城市、山脉、水域，但本身不包含真实的建筑、植物或动物。</p>
+        </div>
+
+        <div style="text-align: center; margin-top: 30px;">
+            <button class="back-btn" onclick="goBack()">返回迷宫</button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://111.170.11.168:15079';
+        let username = '';
+
+        // 获取用户名
+        function getUsername() {
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                const [name, value] = cookie.trim().split('=');
+                if (name === 'username') {
+                    return value;
+                }
+            }
+            return '';
+        }
+
+        // 初始化
+        function init() {
+            username = getUsername();
+            if (!username) {
+                alert('请先登录！');
+                window.location.href = '../index.html';
+                return;
+            }
+            
+            // 检查冷却状态
+            checkCooldownStatus();
+        }
+
+        // 检查冷却状态
+        async function checkCooldownStatus() {
+            try {
+                const response = await fetch(`${API_BASE}/goalkeeper_cooldown_status`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ username: username })
+                });
+                
+                const data = await response.json();
+                
+                if (data.cooldownRemaining > 0) {
+                    showCooldownNotice(data.cooldownRemaining);
+                }
+                
+                return data;
+            } catch (error) {
+                console.error('检查冷却状态失败:', error);
+                return { cooldownRemaining: 0 };
+            }
+        }
+
+        // 提交答案
+        async function submitAnswer() {
+            const answer = document.getElementById('answerInput').value.trim();
+            
+            if (!answer) {
+                alert('请输入答案！');
+                return;
+            }
+
+            // 检查冷却状态
+            const cooldownStatus = await checkCooldownStatus();
+            if (cooldownStatus.cooldownRemaining > 0) {
+                showCooldownNotice(cooldownStatus.cooldownRemaining);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/check_goalkeeper_key`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        username: username,
+                        id: 'C3',
+                        key: answer
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // 答案正确
+                    showSuccessMessage();
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 4000);
+                } else {
+                    // 答案错误，显示冷却
+                    const cooldownStatus = await checkCooldownStatus();
+                    showCooldownNotice(cooldownStatus.cooldownRemaining);
+                }
+            } catch (error) {
+                console.error('提交答案失败:', error);
+                alert('提交失败，请重试！');
+            }
+        }
+
+        // 显示冷却提示
+        function showCooldownNotice(seconds) {
+            const notice = document.getElementById('cooldownNotice');
+            const timeSpan = document.getElementById('cooldownTime');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            timeSpan.textContent = seconds;
+            notice.style.display = 'block';
+            submitBtn.disabled = true;
+            
+            // 倒计时
+            const countdown = setInterval(() => {
+                seconds--;
+                timeSpan.textContent = seconds;
+                if (seconds <= 0) {
+                    clearInterval(countdown);
+                    notice.style.display = 'none';
+                    submitBtn.disabled = false;
+                }
+            }, 1000);
+        }
+
+        // 显示成功消息
+        function showSuccessMessage() {
+            document.getElementById('successMessage').style.display = 'block';
+            document.getElementById('submitBtn').disabled = true;
+        }
+
+        // 返回迷宫
+        function goBack() {
+            window.location.href = 'index.html';
+        }
+
+        // 键盘事件
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                submitAnswer();
+            } else if (event.key === 'Escape') {
+                goBack();
+            }
+        });
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
+

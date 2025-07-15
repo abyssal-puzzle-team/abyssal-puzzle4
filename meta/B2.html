@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>守门员B2 - 数学计算挑战</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a, #1a1a2e, #16213e);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .puzzle-container {
+            max-width: 800px;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #0080ff;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 0 30px rgba(0, 128, 255, 0.3);
+        }
+
+        .puzzle-title {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #0080ff;
+            text-align: center;
+            margin-bottom: 10px;
+            text-shadow: 0 0 15px rgba(0, 128, 255, 0.6);
+        }
+
+        .puzzle-subtitle {
+            font-size: 1.2em;
+            color: #66aaff;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .story-section {
+            background: rgba(0, 128, 255, 0.1);
+            border-left: 4px solid #0080ff;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+
+        .story-title {
+            font-size: 1.4em;
+            color: #0080ff;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .story-text {
+            font-size: 1.1em;
+            line-height: 1.6;
+            color: #cccccc;
+            margin-bottom: 15px;
+        }
+
+        .sequence-display {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            padding: 30px;
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        .sequence-title {
+            font-size: 1.3em;
+            color: #00ffff;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .sequence-numbers {
+            font-size: 2em;
+            color: #ffffff;
+            font-weight: bold;
+            letter-spacing: 10px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .sequence-pattern {
+            font-size: 1.1em;
+            color: #66ffff;
+            margin-top: 15px;
+        }
+
+        .analysis-section {
+            background: rgba(255, 255, 0, 0.1);
+            border: 1px solid #ffff00;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .analysis-title {
+            color: #ffff00;
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .analysis-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        .analysis-table th,
+        .analysis-table td {
+            border: 1px solid #666;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .analysis-table th {
+            background: rgba(255, 255, 0, 0.2);
+            color: #ffff00;
+            font-weight: bold;
+        }
+
+        .analysis-table td {
+            color: #cccccc;
+        }
+
+        .question-section {
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            padding: 25px;
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        .question-text {
+            font-size: 1.3em;
+            color: #00ffff;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .answer-input {
+            width: 150px;
+            padding: 12px;
+            font-size: 1.5em;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #00ffff;
+            border-radius: 8px;
+            color: #ffffff;
+            text-align: center;
+            margin: 10px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .answer-input:focus {
+            outline: none;
+            border-color: #00ff00;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
+        }
+
+        .submit-btn {
+            background: linear-gradient(45deg, #00ffff, #0080ff);
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            color: #000;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 255, 255, 0.3);
+        }
+
+        .submit-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .back-btn {
+            background: linear-gradient(45deg, #666666, #444444);
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 102, 102, 0.3);
+        }
+
+        .hint-section {
+            background: rgba(255, 255, 0, 0.1);
+            border: 1px solid #ffff00;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .hint-title {
+            color: #ffff00;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .hint-text {
+            color: #ffffaa;
+            font-style: italic;
+        }
+
+        .cooldown-notice {
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid #ff0000;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+            color: #ff6666;
+            display: none;
+        }
+
+        .success-message {
+            background: rgba(0, 255, 0, 0.2);
+            border: 1px solid #00ff00;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+            color: #66ff66;
+            display: none;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .puzzle-container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            .puzzle-title {
+                font-size: 2em;
+            }
+            
+            .sequence-numbers {
+                font-size: 1.5em;
+                letter-spacing: 5px;
+            }
+            
+            .analysis-table {
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="puzzle-container">
+        <div class="puzzle-title">🔢 守门员B2</div>
+        <div class="puzzle-subtitle">数学计算挑战</div>
+
+        <div class="story-section">
+            <div class="story-title">🔮 神秘的数字序列</div>
+            <div class="story-text">
+                在深渊迷宫的数学殿堂中，古老的石碑上刻着一串神秘的数字序列。
+                传说只有能够理解这个序列规律的人，才能获得通过守门员B2的资格。
+                这些数字蕴含着深奥的数学奥秘，等待着智者来解开...
+            </div>
+        </div>
+
+        <div class="sequence-display">
+            <div class="sequence-title">📊 神秘数字序列</div>
+            <div class="sequence-numbers">2, 6, 12, 20, 30, ?</div>
+            <div class="sequence-pattern">找出规律，填入下一个数字</div>
+        </div>
+
+        <div class="analysis-section">
+            <div class="analysis-title">🔍 序列分析</div>
+            <table class="analysis-table">
+                <thead>
+                    <tr>
+                        <th>位置</th>
+                        <th>数值</th>
+                        <th>与前一项的差</th>
+                        <th>差值的变化</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>2</td>
+                        <td>-</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>6</td>
+                        <td>4</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>12</td>
+                        <td>6</td>
+                        <td>+2</td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>20</td>
+                        <td>8</td>
+                        <td>+2</td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td>30</td>
+                        <td>10</td>
+                        <td>+2</td>
+                    </tr>
+                    <tr>
+                        <td>6</td>
+                        <td>?</td>
+                        <td>?</td>
+                        <td>+2</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="hint-section">
+            <div class="hint-title">💡 解题提示</div>
+            <div class="hint-text">
+                观察相邻数字的差值：4, 6, 8, 10...
+                这些差值形成了一个等差数列，公差为2。
+                按照这个规律，下一个差值应该是12。
+            </div>
+        </div>
+
+        <div class="question-section">
+            <div class="question-text">
+                🤔 根据序列规律，下一个数字是？
+            </div>
+            <input type="number" id="answerInput" class="answer-input" placeholder="?" min="0" max="999">
+            <br>
+            <button class="submit-btn" onclick="submitAnswer()" id="submitBtn">提交答案</button>
+        </div>
+
+        <div id="cooldownNotice" class="cooldown-notice">
+            <h3>⏰ 答案错误！</h3>
+            <p>请等待 <span id="cooldownTime">0</span> 秒后重试</p>
+            <p>提示：仔细观察相邻数字的差值规律</p>
+        </div>
+
+        <div id="successMessage" class="success-message">
+            <h3>🎉 恭喜！答案正确！</h3>
+            <p>您成功破解了守门员B2的数学谜题！</p>
+            <p>序列的规律是：相邻数字的差值构成等差数列 4, 6, 8, 10, 12...</p>
+        </div>
+
+        <div style="text-align: center; margin-top: 30px;">
+            <button class="back-btn" onclick="goBack()">返回迷宫</button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://111.170.11.168:15079';
+        let username = '';
+
+        // 获取用户名
+        function getUsername() {
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                const [name, value] = cookie.trim().split('=');
+                if (name === 'username') {
+                    return value;
+                }
+            }
+            return '';
+        }
+
+        // 初始化
+        function init() {
+            username = getUsername();
+            if (!username) {
+                alert('请先登录！');
+                window.location.href = '../index.html';
+                return;
+            }
+            
+            // 检查冷却状态
+            checkCooldownStatus();
+        }
+
+        // 检查冷却状态
+        async function checkCooldownStatus() {
+            try {
+                const response = await fetch(`${API_BASE}/goalkeeper_cooldown_status`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ username: username })
+                });
+                
+                const data = await response.json();
+                
+                if (data.cooldownRemaining > 0) {
+                    showCooldownNotice(data.cooldownRemaining);
+                }
+                
+                return data;
+            } catch (error) {
+                console.error('检查冷却状态失败:', error);
+                return { cooldownRemaining: 0 };
+            }
+        }
+
+        // 提交答案
+        async function submitAnswer() {
+            const answer = document.getElementById('answerInput').value.trim();
+            
+            if (!answer) {
+                alert('请输入答案！');
+                return;
+            }
+
+            // 检查冷却状态
+            const cooldownStatus = await checkCooldownStatus();
+            if (cooldownStatus.cooldownRemaining > 0) {
+                showCooldownNotice(cooldownStatus.cooldownRemaining);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/check_goalkeeper_key`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        username: username,
+                        id: 'B2',
+                        key: answer
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // 答案正确
+                    showSuccessMessage();
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 4000);
+                } else {
+                    // 答案错误，显示冷却
+                    const cooldownStatus = await checkCooldownStatus();
+                    showCooldownNotice(cooldownStatus.cooldownRemaining);
+                }
+            } catch (error) {
+                console.error('提交答案失败:', error);
+                alert('提交失败，请重试！');
+            }
+        }
+
+        // 显示冷却提示
+        function showCooldownNotice(seconds) {
+            const notice = document.getElementById('cooldownNotice');
+            const timeSpan = document.getElementById('cooldownTime');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            timeSpan.textContent = seconds;
+            notice.style.display = 'block';
+            submitBtn.disabled = true;
+            
+            // 倒计时
+            const countdown = setInterval(() => {
+                seconds--;
+                timeSpan.textContent = seconds;
+                if (seconds <= 0) {
+                    clearInterval(countdown);
+                    notice.style.display = 'none';
+                    submitBtn.disabled = false;
+                }
+            }, 1000);
+        }
+
+        // 显示成功消息
+        function showSuccessMessage() {
+            document.getElementById('successMessage').style.display = 'block';
+            document.getElementById('submitBtn').disabled = true;
+        }
+
+        // 返回迷宫
+        function goBack() {
+            window.location.href = 'index.html';
+        }
+
+        // 键盘事件
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                submitAnswer();
+            } else if (event.key === 'Escape') {
+                goBack();
+            }
+        });
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
+
