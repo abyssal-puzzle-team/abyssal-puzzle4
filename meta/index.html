@@ -1053,7 +1053,7 @@
             console.log(`点击的电力装置位置: [${x},${y}]`);
             console.log(`电力装置键: ${powerDeviceKey}`);
             console.log(`已激活的电力装置:`, [...gameState.activatedPowerDevices]);
-            console.log(`已解决的陷阱:`, [...gameState.solvedTraps]);
+            console.log(`已解锁的格子:`, [...gameState.unlockedCells]);
             
             // 首先检查是否已经激活过这个电力装置
             if (gameState.activatedPowerDevices.has(powerDeviceKey)) {
@@ -1063,16 +1063,16 @@
                 return;
             }
             
-            // 检查对应的陷阱是否已解决（而不是已解锁）
-            let requiredTrapId;
-            if (x === 1 && y === 5) requiredTrapId = 'A1'; // A1陷阱
-            else if (x === 14 && y === 5) requiredTrapId = 'B2'; // B2陷阱
-            else if (x === 15 && y === 0) requiredTrapId = 'C3'; // C3陷阱
+            // 检查对应的陷阱格子是否已解锁
+            let requiredTrapCell;
+            if (x === 1 && y === 5) requiredTrapCell = '2,5'; // A1陷阱位置
+            else if (x === 14 && y === 5) requiredTrapCell = '13,4'; // B2陷阱位置
+            else if (x === 15 && y === 0) requiredTrapCell = '15,1'; // C3陷阱位置
             
-            console.log(`需要的陷阱ID: ${requiredTrapId}`);
-            console.log(`陷阱是否已解决: ${gameState.solvedTraps.has(requiredTrapId)}`);
+            console.log(`需要解锁的陷阱格子: ${requiredTrapCell}`);
+            console.log(`陷阱格子是否已解锁: ${gameState.unlockedCells.has(requiredTrapCell)}`);
             
-            if (requiredTrapId && gameState.solvedTraps.has(requiredTrapId)) {
+            if (requiredTrapCell && gameState.unlockedCells.has(requiredTrapCell)) {
                 // 激活电力装置
                 gameState.powerDevices++;
                 gameState.activatedPowerDevices.add(powerDeviceKey);
@@ -1081,7 +1081,7 @@
                 await updateUserData('meta_power_number', gameState.powerDevices.toString());
                 await updateUserData('meta_activated_power_devices', JSON.stringify([...gameState.activatedPowerDevices]));
                 
-                // 显示线索
+                // 显示线索（如果对应的陷阱已解决）
                 showPowerDeviceClues(x, y);
                 
                 // 解锁格子并扣除时间
@@ -1093,8 +1093,8 @@
                 console.log(`电力装置 [${x},${y}] 已激活，当前激活数量: ${gameState.powerDevices}`);
                 console.log('已激活的电力装置:', [...gameState.activatedPowerDevices]);
             } else {
-                console.log(`电力装置激活失败 - 需要的陷阱: ${requiredTrapId}, 已解决的陷阱:`, [...gameState.solvedTraps]);
-                alert('需要先解决对应的守门员谜题才能激活电力装置！');
+                console.log(`电力装置激活失败 - 需要解锁的陷阱格子: ${requiredTrapCell}, 已解锁的格子:`, [...gameState.unlockedCells]);
+                alert('需要先解锁对应的陷阱格子才能激活电力装置！');
             }
         }
 
