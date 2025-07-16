@@ -295,18 +295,8 @@
                     // 保存已解决的陷阱状态 - 需要合并现有状态
                     await updateSolvedTraps('B2');
                     
-                    // 通知父页面陷阱已解决
-                    if (window.opener) {
-                        window.opener.postMessage({
-                            type: 'trapSolved',
-                            trapId: 'B2'
-                        }, '*');
-                    }
-                    
-                    // 3秒后自动返回
-                    setTimeout(() => {
-                        window.location.href = 'index.html';
-                    }, 3000);
+                    // 立即返回迷宫页面
+                    window.location.href = 'index.html';
                 } else {
                     // 答案错误，显示冷却
                     const cooldownStatus = await checkCooldownStatus();

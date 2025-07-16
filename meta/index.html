@@ -1050,13 +1050,13 @@
                 return;
             }
             
-            // 检查对应的陷阱是否已解锁
-            let requiredTrap;
-            if (x === 1 && y === 5) requiredTrap = '2,5'; // A1陷阱
-            else if (x === 14 && y === 5) requiredTrap = '13,4'; // B2陷阱
-            else if (x === 15 && y === 0) requiredTrap = '15,1'; // C3陷阱
+            // 检查对应的陷阱是否已解决（而不是已解锁）
+            let requiredTrapId;
+            if (x === 1 && y === 5) requiredTrapId = 'A1'; // A1陷阱
+            else if (x === 14 && y === 5) requiredTrapId = 'B2'; // B2陷阱
+            else if (x === 15 && y === 0) requiredTrapId = 'C3'; // C3陷阱
             
-            if (requiredTrap && gameState.unlockedCells.has(requiredTrap)) {
+            if (requiredTrapId && gameState.solvedTraps.has(requiredTrapId)) {
                 // 激活电力装置
                 gameState.powerDevices++;
                 gameState.activatedPowerDevices.add(powerDeviceKey);
