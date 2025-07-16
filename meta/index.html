@@ -1084,12 +1084,16 @@
                 await updateUserData('meta_power_number', gameState.powerDevices.toString());
                 await updateUserData('meta_activated_power_devices', JSON.stringify([...gameState.activatedPowerDevices]));
                 
+                // 关键修复：确保电力装置坐标被保存到meta_progress
+                console.log(`准备将电力装置坐标 [${x},${y}] 保存到meta_progress`);
+                await addMetaProgress(x, y);
+                console.log(`电力装置坐标 [${x},${y}] 已保存到meta_progress`);
+                
                 // 显示线索（如果对应的陷阱已解决）
                 showPowerDeviceClues(x, y);
                 
-                // 解锁格子并扣除时间
-                await unlockCell(x, y);
-                await diminishMetaTime(); // 解锁格子额外扣除时间
+                // 扣除时间（激活电力装置的时间成本）
+                await diminishMetaTime();
                 
                 // 移动玩家到电力装置位置
                 movePlayer(x, y);
