@@ -1134,55 +1134,40 @@
             if (clues.length > 0) {
                 // 避免重复添加线索
                 let addedClues = [];
-                clues.forEach(clue => {
-                    if (!gameState.clues.includes(clue)) {
-                        gameState.clues.push(clue);
-                        addedClues.push(clue);
-                    }
-                });
-                
-                console.log('激活后的线索:', gameState.clues);
-                console.log('新添加的线索:', addedClues);
-                
-                if (addedClues.length > 0) {
-                    alert(`电力装置激活！获得线索：\n${addedClues.join('\n')}`);
+                clues.forE                if (addedClues.length > 0) {
                     console.log(`电力装置 [${x},${y}] 激活，添加线索:`, addedClues);
                 } else {
-                    alert('电力装置激活成功！（线索已获得过）');
                     console.log(`电力装置 [${x},${y}] 激活，但线索已存在`);
                 }
                 
                 // 关键修复：只更新线索显示，不调用完整的updateDisplay
-                console.log('更新线索显示');
-                const cluesList = document.getElementById('cluesList');
+                console.log("更新线索显示");
+                const cluesList = document.getElementById("cluesList");
                 if (gameState.clues && gameState.clues.length > 0) {
                     const cluesHtml = gameState.clues.map(clue => 
                         `<div class="clue-item">${clue}</div>`
-                    ).join('');
+                    ).join("");
                     cluesList.innerHTML = cluesHtml;
-                    console.log('线索HTML已设置:', cluesHtml);
+                    console.log("线索HTML已设置:", cluesHtml);
                 } else {
-                    cluesList.innerHTML = '<div style="color: #666; font-style: italic;">暂无线索</div>';
-                    console.log('设置为暂无线索');
+                    cluesList.innerHTML = 
+                        `<div style="color: #666; font-style: italic;">暂无线索</div>`;
+                    console.log("设置为暂无线索");
                 }
                 
                 // 更新电力装置数量显示
-                document.getElementById('powerCount').textContent = `${gameState.powerDevices}/3`;
+                document.getElementById("powerCount").textContent = 
+                    `${gameState.powerDevices}/3`;
                 
-                console.log('当前所有线索:', gameState.clues);
+                console.log("当前所有线索:", gameState.clues);
             } else {
-                alert('电力装置激活成功！');
                 console.log(`电力装置 [${x},${y}] 激活，但没有对应的线索`);
             }
             
             // 6. 扣除时间（激活电力装置的时间成本）
             await diminishMetaTime();
             
-            console.log(`=== 电力装置 [${x},${y}] 激活完成 ===`);
-        }
-
-        // 处理门禁卡格子
-        async function handleCardCell(x, y) {
+            console.log(`=== 电力装置 [${x},${y}] 激活完成 ===`);CardCell(x, y) {
             // 获得门禁卡
             gameState.hasCard = true;
             await updateUserData('meta_card', 'true');
@@ -1571,10 +1556,8 @@
                 console.log('新添加的线索:', addedClues);
                 
                 if (addedClues.length > 0) {
-                    alert(`电力装置激活！获得线索：\n${addedClues.join('\n')}`);
                     console.log(`电力装置 [${x},${y}] 激活，添加线索:`, addedClues);
                 } else {
-                    alert('电力装置激活成功！（线索已获得过）');
                     console.log(`电力装置 [${x},${y}] 激活，但线索已存在`);
                 }
                 
