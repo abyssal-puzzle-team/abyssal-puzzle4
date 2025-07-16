@@ -1073,27 +1073,8 @@
             console.log(`陷阱格子是否已解锁: ${gameState.unlockedCells.has(requiredTrapCell)}`);
             
             if (requiredTrapCell && gameState.unlockedCells.has(requiredTrapCell)) {
-                // 激活电力装置
-                gameState.powerDevices++;
-                gameState.activatedPowerDevices.add(powerDeviceKey);
-                
-                // 重要：将电力装置格子标记为已解锁
-                gameState.unlockedCells.add(powerDeviceKey);
-                
-                // 保存状态到后端
-                await updateUserData('meta_power_number', gameState.powerDevices.toString());
-                await updateUserData('meta_activated_power_devices', JSON.stringify([...gameState.activatedPowerDevices]));
-                
-                // 关键修复：确保电力装置坐标被保存到meta_progress
-                console.log(`准备将电力装置坐标 [${x},${y}] 保存到meta_progress`);
-                await addMetaProgress(x, y);
-                console.log(`电力装置坐标 [${x},${y}] 已保存到meta_progress`);
-                
-                // 显示线索（如果对应的陷阱已解决）
-                showPowerDeviceClues(x, y);
-                
-                // 扣除时间（激活电力装置的时间成本）
-                await diminishMetaTime();
+                // 激活电力装置并处理所有相关逻辑
+                await activatePowerDeviceAndShowClues(x, y);
                 
                 // 移动玩家到电力装置位置
                 movePlayer(x, y);
@@ -1105,6 +1086,92 @@
                 console.log(`电力装置激活失败 - 需要解锁的陷阱格子: ${requiredTrapCell}, 已解锁的格子:`, [...gameState.unlockedCells]);
                 alert('需要先解锁对应的陷阱格子才能激活电力装置！');
             }
+        }
+
+        // 激活电力装置并显示线索（合并函数）
+        async function activatePowerDeviceAndShowClues(x, y) {
+            const powerDeviceKey = `${x},${y}`;
+            
+            console.log(`=== 开始激活电力装置 [${x},${y}] ===`);
+            
+            // 1. 更新游戏状态
+            gameState.powerDevices++;
+            gameState.activatedPowerDevices.add(powerDeviceKey);
+            gameState.unlockedCells.add(powerDeviceKey);
+            
+            console.log(`游戏状态已更新，电力装置数量: ${gameState.powerDevices}`);
+            
+            // 2. 保存状态到后端
+            await updateUserData('meta_power_number', gameState.powerDevices.toString());
+            await updateUserData('meta_activated_power_devices', JSON.stringify([...gameState.activatedPowerDevices]));
+            
+            console.log('后端状态已保存');
+            
+            // 3. 关键：将电力装置坐标保存到meta_progress
+            console.log(`准备将电力装置坐标 [${x},${y}] 保存到meta_progress`);
+            await addMetaProgress(x, y);
+            console.log(`电力装置坐标 [${x},${y}] 已保存到meta_progress`);
+            
+            // 4. 获取并显示线索
+            let clues = [];
+            let trapId = '';
+            
+            if (x === 1 && y === 5) {
+                clues = [allClues[0], allClues[1]];
+                trapId = 'A1';
+            } else if (x === 14 && y === 5) {
+                clues = [allClues[2], allClues[3]];
+                trapId = 'B2';
+            } else if (x === 15 && y === 0) {
+                clues = [allClues[4], allClues[5]];
+                trapId = 'C3';
+            }
+            
+            console.log(`电力装置 [${x},${y}] 对应陷阱 ${trapId}`);
+            console.log('激活前的线索:', gameState.clues);
+            
+            // 5. 处理线索显示
+            if (clues.length > 0) {
+                // 避免重复添加线索
+                let addedClues = [];
+                clues.forEach(clue => {
+                    if (!gameState.clues.includes(clue)) {
+                        gameState.clues.push(clue);
+                        addedClues.push(clue);
+                    }
+                });
+                
+                console.log('激活后的线索:', gameState.clues);
+                console.log('新添加的线索:', addedClues);
+                
+                if (addedClues.length > 0) {
+                    alert(`电力装置激活！获得线索：\n${addedClues.join('\n')}`);
+                    console.log(`电力装置 [${x},${y}] 激活，添加线索:`, addedClues);
+                } else {
+                    alert('电力装置激活成功！（线索已获得过）');
+                    console.log(`电力装置 [${x},${y}] 激活，但线索已存在`);
+                }
+                
+                // 强制更新显示
+                console.log('调用updateDisplay更新线索显示');
+                updateDisplay();
+                
+                // 延迟再次更新，确保DOM更新
+                setTimeout(() => {
+                    updateDisplay();
+                    console.log('延迟更新线索显示完成');
+                }, 100);
+                
+                console.log('当前所有线索:', gameState.clues);
+            } else {
+                alert('电力装置激活成功！');
+                console.log(`电力装置 [${x},${y}] 激活，但没有对应的线索`);
+            }
+            
+            // 6. 扣除时间（激活电力装置的时间成本）
+            await diminishMetaTime();
+            
+            console.log(`=== 电力装置 [${x},${y}] 激活完成 ===`);
         }
 
         // 处理门禁卡格子
