@@ -612,7 +612,12 @@
                             console.log('已解决的陷阱:', [...gameState.solvedTraps]);
                         } catch (e) {
                             console.warn('解析已解决陷阱失败:', e);
+                            gameState.solvedTraps = new Set(); // 确保初始化为空集合
                         }
+                    } else {
+                        // 如果没有已解决的陷阱数据，初始化为空集合
+                        gameState.solvedTraps = new Set();
+                        console.log('没有已解决的陷阱数据，初始化为空集合');
                     }
                     
                     // 恢复已激活的电力装置状态
@@ -1401,7 +1406,7 @@
         }
 
         // 添加陷阱对应的线索
-        function addCluesForTrap(trapId) {
+        async function addCluesForTrap(trapId) {
             let newClues = [];
             if (trapId === 'A1') {
                 newClues = [allClues[0], allClues[1]]; // 前两条线索
@@ -1424,7 +1429,7 @@
             console.log('当前所有线索:', gameState.clues);
             
             // 保存已解决的陷阱到后端
-            updateUserData('meta_solved_traps', JSON.stringify([...gameState.solvedTraps]));
+            await updateUserData('meta_solved_traps', JSON.stringify([...gameState.solvedTraps]));
             
             // 立即更新显示
             updateDisplay();

@@ -401,10 +401,16 @@
                 if (data.success && data.user_data && data.user_data.meta_solved_traps) {
                     try {
                         solvedTraps = JSON.parse(data.user_data.meta_solved_traps);
+                        if (!Array.isArray(solvedTraps)) {
+                            solvedTraps = [];
+                        }
                     } catch (e) {
                         console.warn('解析已解决陷阱失败:', e);
                         solvedTraps = [];
                     }
+                } else {
+                    // 如果没有现有数据，初始化为空数组
+                    solvedTraps = [];
                 }
                 
                 // 添加当前陷阱（如果还没有的话）
