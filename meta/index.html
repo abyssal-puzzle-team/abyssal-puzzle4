@@ -1090,6 +1090,10 @@
                 
                 movePlayer(x, y);
                 
+                // 立即更新显示以反映电力装置的激活状态
+                updateDisplay();
+                initMaze(); // 重新渲染迷宫以显示电力装置为空格子
+                
                 console.log(`电力装置 [${x},${y}] 已激活，当前激活数量: ${gameState.powerDevices}`);
                 console.log('已激活的电力装置:', [...gameState.activatedPowerDevices]);
             } else {
@@ -1472,35 +1476,32 @@
             console.log(`电力装置 [${x},${y}] 对应陷阱 ${trapId}`);
             console.log('已解决的陷阱:', [...gameState.solvedTraps]);
             
-            // 检查对应的陷阱是否已解决
-            if (gameState.solvedTraps.has(trapId)) {
-                // 陷阱已解决，显示线索
-                if (clues.length > 0) {
-                    // 避免重复添加线索
-                    let addedClues = [];
-                    clues.forEach(clue => {
-                        if (!gameState.clues.includes(clue)) {
-                            gameState.clues.push(clue);
-                            addedClues.push(clue);
-                        }
-                    });
-                    
-                    if (addedClues.length > 0) {
-                        alert(`电力装置激活！获得线索：\n${addedClues.join('\n')}`);
-                        console.log(`电力装置 [${x},${y}] 激活，添加线索:`, addedClues);
-                    } else {
-                        alert('电力装置激活成功！（线索已获得过）');
-                        console.log(`电力装置 [${x},${y}] 激活，但线索已存在`);
+            // 电力装置激活后直接显示线索，不需要检查陷阱是否已解决
+            if (clues.length > 0) {
+                // 避免重复添加线索
+                let addedClues = [];
+                clues.forEach(clue => {
+                    if (!gameState.clues.includes(clue)) {
+                        gameState.clues.push(clue);
+                        addedClues.push(clue);
                     }
-                    
-                    // 立即更新显示
-                    updateDisplay();
-                    
-                    console.log('当前所有线索:', gameState.clues);
+                });
+                
+                if (addedClues.length > 0) {
+                    alert(`电力装置激活！获得线索：\n${addedClues.join('\n')}`);
+                    console.log(`电力装置 [${x},${y}] 激活，添加线索:`, addedClues);
+                } else {
+                    alert('电力装置激活成功！（线索已获得过）');
+                    console.log(`电力装置 [${x},${y}] 激活，但线索已存在`);
                 }
+                
+                // 立即更新显示
+                updateDisplay();
+                
+                console.log('当前所有线索:', gameState.clues);
             } else {
-                alert('电力装置激活成功，但需要先解决对应的守门员谜题才能获得线索！');
-                console.log(`陷阱 ${trapId} 尚未解决，无法获得线索`);
+                alert('电力装置激活成功！');
+                console.log(`电力装置 [${x},${y}] 激活，但没有对应的线索`);
             }
         }
 
