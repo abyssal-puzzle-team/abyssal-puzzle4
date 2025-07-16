@@ -1152,15 +1152,22 @@
                     console.log(`电力装置 [${x},${y}] 激活，但线索已存在`);
                 }
                 
-                // 强制更新显示
-                console.log('调用updateDisplay更新线索显示');
-                updateDisplay();
+                // 关键修复：只更新线索显示，不调用完整的updateDisplay
+                console.log('更新线索显示');
+                const cluesList = document.getElementById('cluesList');
+                if (gameState.clues && gameState.clues.length > 0) {
+                    const cluesHtml = gameState.clues.map(clue => 
+                        `<div class="clue-item">${clue}</div>`
+                    ).join('');
+                    cluesList.innerHTML = cluesHtml;
+                    console.log('线索HTML已设置:', cluesHtml);
+                } else {
+                    cluesList.innerHTML = '<div style="color: #666; font-style: italic;">暂无线索</div>';
+                    console.log('设置为暂无线索');
+                }
                 
-                // 延迟再次更新，确保DOM更新
-                setTimeout(() => {
-                    updateDisplay();
-                    console.log('延迟更新线索显示完成');
-                }, 100);
+                // 更新电力装置数量显示
+                document.getElementById('powerCount').textContent = `${gameState.powerDevices}/3`;
                 
                 console.log('当前所有线索:', gameState.clues);
             } else {
