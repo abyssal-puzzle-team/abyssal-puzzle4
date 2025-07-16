@@ -593,7 +593,9 @@
                     // 恢复已解决的陷阱和线索
                     if (userData.meta_solved_traps) {
                         try {
+                            console.log('原始陷阱数据:', userData.meta_solved_traps);
                             const solvedTraps = JSON.parse(userData.meta_solved_traps);
+                            console.log('解析后的陷阱数据:', solvedTraps);
                             gameState.solvedTraps = new Set(solvedTraps);
                             
                             // 根据已解决的陷阱恢复线索
@@ -1047,6 +1049,12 @@
         async function handlePowerCell(x, y) {
             const powerDeviceKey = `${x},${y}`;
             
+            console.log(`=== 电力装置调试信息 ===`);
+            console.log(`点击的电力装置位置: [${x},${y}]`);
+            console.log(`电力装置键: ${powerDeviceKey}`);
+            console.log(`已激活的电力装置:`, [...gameState.activatedPowerDevices]);
+            console.log(`已解决的陷阱:`, [...gameState.solvedTraps]);
+            
             // 首先检查是否已经激活过这个电力装置
             if (gameState.activatedPowerDevices.has(powerDeviceKey)) {
                 // 已激活，直接移动，不再激活
@@ -1060,6 +1068,9 @@
             if (x === 1 && y === 5) requiredTrapId = 'A1'; // A1陷阱
             else if (x === 14 && y === 5) requiredTrapId = 'B2'; // B2陷阱
             else if (x === 15 && y === 0) requiredTrapId = 'C3'; // C3陷阱
+            
+            console.log(`需要的陷阱ID: ${requiredTrapId}`);
+            console.log(`陷阱是否已解决: ${gameState.solvedTraps.has(requiredTrapId)}`);
             
             if (requiredTrapId && gameState.solvedTraps.has(requiredTrapId)) {
                 // 激活电力装置
@@ -1082,6 +1093,7 @@
                 console.log(`电力装置 [${x},${y}] 已激活，当前激活数量: ${gameState.powerDevices}`);
                 console.log('已激活的电力装置:', [...gameState.activatedPowerDevices]);
             } else {
+                console.log(`电力装置激活失败 - 需要的陷阱: ${requiredTrapId}, 已解决的陷阱:`, [...gameState.solvedTraps]);
                 alert('需要先解决对应的守门员谜题才能激活电力装置！');
             }
         }

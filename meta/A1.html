@@ -384,6 +384,9 @@
         // 更新已解决的陷阱状态
         async function updateSolvedTraps(trapId) {
             try {
+                console.log(`=== A1页面 - 更新陷阱状态 ===`);
+                console.log(`要保存的陷阱ID: ${trapId}`);
+                
                 // 先获取当前已解决的陷阱
                 const response = await fetch(`${API_BASE}/acc_check_password`, {
                     method: 'POST',
@@ -398,12 +401,16 @@
                 const data = await response.json();
                 let solvedTraps = [];
                 
+                console.log('获取到的用户数据:', data);
+                
                 if (data.success && data.user_data && data.user_data.meta_solved_traps) {
                     try {
+                        console.log('现有陷阱数据:', data.user_data.meta_solved_traps);
                         solvedTraps = JSON.parse(data.user_data.meta_solved_traps);
                         if (!Array.isArray(solvedTraps)) {
                             solvedTraps = [];
                         }
+                        console.log('解析后的现有陷阱:', solvedTraps);
                     } catch (e) {
                         console.warn('解析已解决陷阱失败:', e);
                         solvedTraps = [];
@@ -411,12 +418,18 @@
                 } else {
                     // 如果没有现有数据，初始化为空数组
                     solvedTraps = [];
+                    console.log('没有现有陷阱数据，初始化为空数组');
                 }
                 
                 // 添加当前陷阱（如果还没有的话）
                 if (!solvedTraps.includes(trapId)) {
                     solvedTraps.push(trapId);
+                    console.log(`添加陷阱 ${trapId} 到列表`);
+                } else {
+                    console.log(`陷阱 ${trapId} 已存在于列表中`);
                 }
+                
+                console.log('最终要保存的陷阱列表:', solvedTraps);
                 
                 // 保存更新后的状态
                 await updateUserData('meta_solved_traps', JSON.stringify(solvedTraps));
