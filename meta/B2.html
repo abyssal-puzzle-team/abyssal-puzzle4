@@ -292,8 +292,8 @@
                     // 解锁陷阱格子并添加进度
                     await unlockTrapCell('B2', 13, 4);
                     
-                    // 保存已解决的陷阱状态
-                    await updateUserData('meta_solved_traps', JSON.stringify(['B2']));
+                    // 保存已解决的陷阱状态 - 需要合并现有状态
+                    await updateSolvedTraps('B2');
                     
                     // 通知父页面陷阱已解决
                     if (window.opener) {
@@ -384,6 +384,45 @@
                 });
             } catch (error) {
                 console.error('解锁陷阱格子失败:', error);
+            }
+        }
+
+        // 更新已解决的陷阱状态
+        async function updateSolvedTraps(trapId) {
+            try {
+                // 先获取当前已解决的陷阱
+                const response = await fetch(`${API_BASE}/acc_check_password`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        username: username,
+                        password: getCookie('password')
+                    })
+                });
+                
+                const data = await response.json();
+                let solvedTraps = [];
+                
+                if (data.success && data.user_data && data.user_data.meta_solved_traps) {
+                    try {
+                        solvedTraps = JSON.parse(data.user_data.meta_solved_traps);
+                    } catch (e) {
+                        console.warn('解析已解决陷阱失败:', e);
+                        solvedTraps = [];
+                    }
+                }
+                
+                // 添加当前陷阱（如果还没有的话）
+                if (!solvedTraps.includes(trapId)) {
+                    solvedTraps.push(trapId);
+                }
+                
+                // 保存更新后的状态
+                await updateUserData('meta_solved_traps', JSON.stringify(solvedTraps));
+                console.log('已更新解决的陷阱状态:', solvedTraps);
+            } catch (error) {
+                console.error('更新已解决陷阱状态失败:', error);
             }
         }
 

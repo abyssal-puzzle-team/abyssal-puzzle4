@@ -781,13 +781,14 @@
                     cell.textContent = isUnlocked ? '✓' : '陷阱';
                     break;
                 case 'power':
-                    cell.className += ' cell-power';
                     // 检查电力装置是否已激活
                     const powerDeviceKey = `${x},${y}`;
                     if (gameState.activatedPowerDevices.has(powerDeviceKey)) {
-                        cell.textContent = '已激活';
-                        cell.style.background = '#004080'; // 更深的蓝色表示已激活
+                        // 已激活的电力装置显示为空格子样式
+                        cell.className += ' cell-empty';
+                        cell.textContent = '✓';
                     } else {
+                        cell.className += ' cell-power';
                         cell.textContent = isUnlocked ? '✓' : '电力';
                     }
                     break;
