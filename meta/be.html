@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>深渊迷宫 - 逃脱失败</title>
+    <title>坏结局</title>
     <style>
         * {
             margin: 0;
@@ -211,16 +211,12 @@
     <!-- 失败容器 -->
     <div class="failure-container">
         <div class="failure-title">⏰ 时间耗尽！ ⏰</div>
-        <div class="failure-subtitle">逃脱失败...</div>
+        <div class="failure-subtitle">失败...</div>
         
         <div class="failure-message">
             虽然您展现了出色的解谜能力，成功破解了所有的守门员谜题，<br>
             激活了电力装置，获得了门禁卡，甚至解开了4x4逻辑推理谜题，<br>
             但是时间还是不够用...深渊迷宫的时间陷阱最终困住了您。
-        </div>
-
-        <div class="time-warning">
-            时间管理是逃脱的关键！
         </div>
 
         <div class="failure-stats">
@@ -246,12 +242,7 @@
             </div>
         </div>
 
-        <div class="consolation-text">
-            💪 您已经非常接近成功了！再试一次吧！
-        </div>
-
         <div>
-            <button class="retry-btn" onclick="retryGame()">重新挑战</button>
             <button class="home-btn" onclick="returnToMain()">返回主页</button>
         </div>
     </div>
@@ -285,7 +276,7 @@
 
         // 返回主页
         function returnToMain() {
-            window.location.href = '../index.html';
+            window.location.href = '../main.html';
         }
 
         // 页面加载完成后创建烟雾效果
