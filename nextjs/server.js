@@ -431,22 +431,28 @@ app.post('/change_meta_xy', async (req, res) => {
  */
 app.post('/diminish_meta_time', (req, res) => {
     if (metaTimer.status !== 'running') {
+        console.log('[拒绝减少] 当前状态为:', metaTimer.status);
         return res.status(400).json({ success: false, message: 'Meta 倒计时未在运行中。' });
     }
     
     const reductionSeconds = parseInt(process.env.SIMPLE_PUZZLE_TIME_REDUCTION, 10);
     if (isNaN(reductionSeconds) || reductionSeconds <= 0) {
+        console.error('[配置错误] SIMPLE_PUZZLE_TIME_REDUCTION 无效:', process.env.SIMPLE_PUZZLE_TIME_REDUCTION);
         return res.status(500).json({ success: false, message: '.env 中未配置或配置了无效的 SIMPLE_PUZZLE_TIME_REDUCTION' });
     }
     
-    // 减少 endTime 的时间戳
+    const oldEndTime = metaTimer.endTime;
     metaTimer.endTime -= reductionSeconds * 1000;
-    
+
     // 确保 endTime 不会早于当前时间
     if (metaTimer.endTime < Date.now()) {
         metaTimer.endTime = Date.now();
     }
-    
+
+    console.log(`[减少成功] 原结束时间: ${new Date(oldEndTime).toISOString()}`);
+    console.log(`[减少成功] 新结束时间: ${new Date(metaTimer.endTime).toISOString()}`);
+    console.log(`[减少成功] 当前时间: ${new Date().toISOString()}`);
+
     res.json({ success: true, message: `Meta 总时间已减少 ${reductionSeconds} 秒。` });
 });
 

@@ -187,7 +187,7 @@
             <div class="question-text">
                 🤔 请找出规律并填入下一个数字：
             </div>
-            <input type="number" id="answerInput" class="answer-input" placeholder="请输入数字" min="0">
+            <input type="text" id="answerInput" class="answer-input" placeholder="请输入答案">
             <br>
             <button class="btn" onclick="submitAnswer()" id="submitBtn">提交答案</button>
         </div>
@@ -198,8 +198,7 @@
         </div>
 
         <div id="successMessage" class="success-message">
-            <h3>🎉 恭喜！答案正确！</h3>
-            <p>您成功破解了守门员B2的数学谜题！</p>
+            <h3>恭喜！答案正确！</h3>
             <p>正在返回迷宫...</p>
         </div>
 
@@ -366,12 +365,6 @@
                     })
                 });
                 
-                // 扣除时间
-                await fetch(`${API_BASE}/diminish_meta_time`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include'
-                });
             } catch (error) {
                 console.error('解锁陷阱格子失败:', error);
             }
@@ -445,4 +438,3 @@
     </script>
 </body>
 </html>
-

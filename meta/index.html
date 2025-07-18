@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>深渊迷宫 - Meta谜题</title>
     <style>
-        /* CSS 样式保持不变，它们与功能问题无关 */
+        /* CSS 样式 */
         * {
             margin: 0;
             padding: 0;
@@ -20,7 +20,6 @@
             min-height: 100vh;
         }
 
-        /* 时间血条 */
         .time-bar-container {
             position: fixed;
             top: 20px;
@@ -60,7 +59,6 @@
             font-size: 14px;
         }
 
-        /* 主容器 */
         .main-container {
             display: flex;
             flex-direction: column;
@@ -68,7 +66,6 @@
             padding-top: 70px;
         }
 
-        /* 迷宫区域 */
         .maze-container {
             flex: 1;
             display: flex;
@@ -107,7 +104,6 @@
             z-index: 10;
         }
 
-        /* 不同类型的格子样式 */
         .cell-wall { background: #444; color: #666; cursor: not-allowed; }
         .cell-empty { background: #222; color: #aaa; }
         .cell-start { background: #00ff00; color: #000; font-weight: bold; }
@@ -119,7 +115,7 @@
         .cell-elevator { background: #00ffff; color: #000; }
         .cell-player { background: #00ff00; border: 3px solid #fff; animation: pulse 1s infinite; }
         .cell-visible { opacity: 1; }
-        .cell-hidden { opacity: 0.3; background: #111; } /* 确保隐藏的格子也有背景和半透明 */
+        .cell-hidden { opacity: 0.3; background: #111; }
         .cell-unlocked { background: #666; }
 
         @keyframes pulse {
@@ -127,7 +123,6 @@
             50% { transform: scale(1.1); }
         }
 
-        /* 信息面板 */
         .info-panel {
             height: 300px;
             display: flex;
@@ -179,7 +174,6 @@
             font-size: 14px;
         }
 
-        /* 模态框样式 */
         .modal {
             display: none;
             position: fixed;
@@ -218,7 +212,6 @@
             color: #fff;
         }
 
-        /* 谜题输入框 */
         .puzzle-input {
             width: 100%;
             padding: 10px;
@@ -236,7 +229,6 @@
             box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
         }
 
-        /* 按钮样式 */
         .btn {
             background: linear-gradient(45deg, #00ffff, #0080ff);
             border: none;
@@ -261,18 +253,14 @@
             box-shadow: none;
         }
 
-        /* 4x4谜题输入区域 */
-        .puzzle-4x4 {
-            display: none;
-            margin-top: 20px;
-        }
-
+        /* --- MODIFICATION START --- */
         .puzzle-4x4-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: 1fr; /* 从4列改为1列，实现垂直排列 */
             gap: 10px;
             margin: 20px 0;
         }
+        /* --- MODIFICATION END --- */
 
         .puzzle-4x4-input {
             padding: 10px;
@@ -282,9 +270,15 @@
             border-radius: 5px;
             color: #fff;
             font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        .puzzle-4x4-input:focus {
+            outline: none;
+            border-color: #00ff00;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+            transform: scale(1.05);
         }
 
-        /* 逃生按钮 */
         .escape-btn {
             background: linear-gradient(45deg, #ff0000, #ff6600);
             color: #fff;
@@ -293,7 +287,6 @@
             margin-top: 20px;
         }
 
-        /* 冷却提示 */
         .cooldown-notice {
             background: rgba(255, 0, 0, 0.2);
             border: 1px solid #ff0000;
@@ -304,7 +297,6 @@
             color: #ff6666;
         }
 
-        /* 响应式设计 */
         @media (max-width: 768px) {
             .maze-grid {
                 grid-template-columns: repeat(16, 25px);
@@ -329,26 +321,17 @@
     </style>
 </head>
 <body>
-    <!-- 时间血条 -->
     <div class="time-bar-container">
         <div class="time-bar">
             <div class="time-bar-fill" id="timeBarFill"></div>
             <div class="time-text" id="timeText">剩余时间: --:--</div>
         </div>
     </div>
-
-    <!-- 主容器 -->
     <div class="main-container">
-        <!-- 迷宫区域 -->
         <div class="maze-container">
-            <div class="maze-grid" id="mazeGrid">
-                <!-- 迷宫格子将通过JavaScript动态生成 -->
-            </div>
+            <div class="maze-grid" id="mazeGrid"></div>
         </div>
-
-        <!-- 信息面板 -->
         <div class="info-panel">
-            <!-- 状态面板 -->
             <div class="status-panel" id="statusPanel">
                 <div class="panel-title">状态信息</div>
                 <div class="status-item">
@@ -372,8 +355,6 @@
                     <span class="status-value" id="timeRemaining">--:--</span>
                 </div>
             </div>
-
-            <!-- 线索面板 -->
             <div class="clues-panel" id="cluesPanel">
                 <div class="panel-title">已获得线索</div>
                 <div id="cluesList">
@@ -382,8 +363,6 @@
             </div>
         </div>
     </div>
-
-    <!-- 小谜题模态框 -->
     <div id="puzzleModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closePuzzleModal()">×</span>
@@ -399,8 +378,6 @@
             </div>
         </div>
     </div>
-
-    <!-- 守门员谜题模态框 -->
     <div id="goalkeeperModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeGoalkeeperModal()">×</span>
@@ -415,35 +392,15 @@
             </div>
         </div>
     </div>
-
-    <!-- 4x4谜题模态框 -->
     <div id="puzzle4x4Modal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="close4x4Modal()">×</span>
             <h2>逃生谜题 - 4x4逻辑推理</h2>
-            <div id="puzzle4x4Content">
-                <p>请根据线索填入正确的数字排列：</p>
-                <p style="color: #ffff00; margin: 10px 0;">格式：每行输入4个数字，用空格分隔</p>
-                
-                <div class="puzzle-4x4-grid">
-                    <input type="text" class="puzzle-4x4-input" id="row1" placeholder="1 2 3 4">
-                    <input type="text" class="puzzle-4x4-input" id="row2" placeholder="4 3 2 1">
-                    <input type="text" class="puzzle-4x4-input" id="row3" placeholder="2 5 1 4">
-                    <input type="text" class="puzzle-4x4-input" id="row4" placeholder="1 2 3 4">
-                </div>
-                
-                <div id="puzzle4x4Cooldown" class="cooldown-notice" style="display: none;">
-                    <p>答案错误！请等待 <span id="puzzle4x4CooldownTime">0</span> 秒后重试</p>
-                </div>
-                
-                <button class="btn" onclick="submit4x4Answer()">提交答案</button>
-                <button class="btn escape-btn" onclick="attemptEscape()" id="escapeBtn">逃生</button>
-            </div>
+            <div id="puzzle4x4Content"></div>
         </div>
     </div>
 
     <script>
-        // 游戏状态
         let gameState = {
             playerX: 0,
             playerY: 0,
@@ -458,105 +415,57 @@
             puzzle4x4Solved: false,
             elevatorCluesObtained: false
         };
-
-        // 迷宫地图定义
         const mazeMap = [
             ['start', 'empty', 'wall', 'wall', 'empty', 'empty', 'empty', 'empty', 'wall', 'card', 'wall', 'wall', 'key', 'wall', 'wall', 'power'],
             ['empty', 'empty', 'empty', 'empty', 'empty', 'wall', 'key', 'empty', 'empty', 'empty', 'wall', 'empty', 'empty', 'door', 'empty', 'trap'],
             ['empty', 'wall', 'empty', 'wall', 'empty', 'wall', 'wall', 'empty', 'wall', 'empty', 'door', 'empty', 'empty', 'wall', 'elevator', 'empty'],
             ['empty', 'empty', 'empty', 'wall', 'empty', 'empty', 'wall', 'empty', 'wall', 'empty', 'wall', 'empty', 'empty', 'empty', 'wall', 'empty'],
             ['wall', 'wall', 'empty', 'wall', 'empty', 'door', 'empty', 'empty', 'door', 'empty', 'wall', 'empty', 'wall', 'trap', 'empty', 'empty'],
-            ['wall', 'power', 'trap', 'wall', 'key', 'wall', 'empty', 'wall', 'door', 'empty', 'empty', 'empty', 'door', 'empty', 'power', 'wall']
+            ['wall', 'power', 'trap', 'wall', 'key', 'wall', 'empty', 'wall', 'empty', 'empty', 'empty', 'empty', 'door', 'empty', 'power', 'wall']
         ];
-
         const powerDeviceLocations = {
             '1,5': { clues: [0, 1] },
             '14,5': { clues: [2, 3] },
             '15,0': { clues: [4, 5] }
         };
         const trapLocations = { 'A1': [2, 5], 'B2': [13, 4], 'C3': [15, 1] };
-
         const allClues = [
             "1和16在对角端点", "2在3左侧且不相邻", "4,5,6是第4行从左至右连续的三个数字",
             "7在第1列，8在第1行，7与8不在角落", "9不在角落且正下方相邻是11", "10在11正上方",
             "12在13相邻正上方", "14与16同列，15在14相邻正下方"
         ];
-
         const API_BASE = 'http://111.170.11.168:15114/proxy/3000';
-
-        // =======================
-        //  修改区域开始
-        // =======================
-
-        // 处理门的函数 - 修改为弹出确认框
-        async function handleDoorCell(x, y) {
-            // 1. 检查是否有钥匙
-            if (gameState.keys > 0) {
-                // 2. 弹出确认框，询问用户
-                const confirmed = confirm("您确定要消耗一把钥匙打开这扇门吗？");
-
-                // 3. 如果用户点击了“确定”
-                if (confirmed) {
-                    gameState.keys--;       // 消耗钥匙
-                    await unlockCell(x, y); // 解锁格子
-                    movePlayer(x, y);       // 移动玩家
-                    updateDisplay();        // 更新界面上的钥匙数量
-                }
-                // 如果用户点击“取消”，则什么也不做
-            } else {
-                // 没有钥匙，直接提示
-                alert('需要钥匙才能打开这扇门！');
-            }
-        }
-        
-        // 处理空格子的函数 - 逻辑是正确的，问题在API
-        async function handleEmptyCell(x, y) {
-            const cooldownStatus = await checkSimpleCooldown();
-            if (cooldownStatus.cooldownRemaining > 0) {
-                showCooldownNotice('simple', cooldownStatus.cooldownRemaining);
-                return;
-            }
-            
-            console.log("正在尝试从API获取谜题...");
-            const puzzle = await getRandomPuzzle();
-            console.log("API返回的谜题数据:", puzzle);
-
-            if (puzzle && puzzle.success) {
-                console.log("获取谜题成功，显示模态框。");
-                showPuzzleModal(puzzle.puzzle, x, y);
-            } else {
-                console.error("获取谜题失败或返回的数据格式不正确。");
-                alert('无法获取谜题，请检查后端服务或稍后再试。');
-            }
-        }
-        
-        // =======================
-        //  修改区域结束
-        // =======================
-
-        // --- 以下为其他所有未变的函数，保持完整以供直接复制 ---
         
         async function initGame() {
+            gameState.username = getCookie('username');
+            gameState.password = getCookie('password');
+            if (!gameState.username || !gameState.password) {
+                alert('您尚未登录，即将跳转到登录页面。');
+                window.location.href = '../index.html';
+                return;
+            }
+    
             initMaze();
             await loadUserData();
             initMaze();
             const shouldContinueGame = await checkProgress();
-            if (!shouldContinueGame) return;
+            if (!shouldContinueGame) {
+                return;
+            }
             startTimeMonitoring();
             updateDisplay();
         }
-
+        
         async function loadUserData() {
             try {
-                gameState.username = getCookie('username');
-                gameState.password = getCookie('password');
-                if (!gameState.username || !gameState.password) {
-                    alert('请先登录或注册账号以保存游戏进度！');
-                    return;
-                }
-                const response = await fetch(`${API_BASE}/acc_check_password`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ username: gameState.username, password: gameState.password }) });
+                const response = await fetch(`${API_BASE}/acc_check_password`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ username: gameState.username, password: gameState.password })
+                });
                 const data = await response.json();
-
+    
                 if (data.success && data.user_data) {
                     const userData = data.user_data;
                     if (userData.meta_xy) {
@@ -564,10 +473,11 @@
                             const coords = JSON.parse(userData.meta_xy);
                             gameState.playerX = coords[0];
                             gameState.playerY = coords[1];
-                         } catch (e) { console.warn("解析玩家位置失败"); }
+                         } catch (e) {
+                            console.warn("解析玩家位置失败");
+                         }
                     }
-                    gameState.hasCard = userData.meta_card === true || userData.meta_card === 'true';
-
+                    
                     gameState.unlockedCells.clear();
                     gameState.unlockedCells.add('0,0');
                     if (userData.meta_progress) {
@@ -577,37 +487,53 @@
                                 try {
                                     const coords = JSON.parse(matchStr);
                                     gameState.unlockedCells.add(`${coords[0]},${coords[1]}`);
-                                } catch (e) { console.warn("解析 meta_progress 中的坐标失败"); }
+                                } catch (e) {
+                                    console.warn("解析 meta_progress 中的坐标失败");
+                                }
                             });
                         }
                     }
-
+    
                     gameState.powerDevices = 0;
-                    gameState.keys = 0;
                     gameState.clues = [];
-
+                    gameState.hasCard = false;
+                    let unlockedKeysCount = 0;
+                    let unlockedDoorsCount = 0;
+    
                     gameState.unlockedCells.forEach(cellKey => {
                         const [x, y] = cellKey.split(',').map(Number);
-                        if (powerDeviceLocations[cellKey]) {
-                            gameState.powerDevices++;
-                            powerDeviceLocations[cellKey].clues.forEach(clueIndex => {
-                                const clue = allClues[clueIndex];
-                                if (!gameState.clues.includes(clue)) gameState.clues.push(clue);
-                            });
-                        }
-                        if (mazeMap[y] && mazeMap[y][x] === 'key') {
-                            gameState.keys++;
+                        if (mazeMap[y] && mazeMap[y][x]) {
+                            const cellType = mazeMap[y][x];
+                            if (cellType === 'key') {
+                                unlockedKeysCount++;
+                            } else if (cellType === 'door') {
+                                unlockedDoorsCount++;
+                            } else if (powerDeviceLocations[cellKey]) {
+                                gameState.powerDevices++;
+                                powerDeviceLocations[cellKey].clues.forEach(clueIndex => {
+                                    const clue = allClues[clueIndex];
+                                    if (!gameState.clues.includes(clue)) {
+                                        gameState.clues.push(clue);
+                                    }
+                                });
+                            } else if (cellType === 'card') {
+                                gameState.hasCard = true;
+                            }
                         }
                     });
-
+                    
+                    gameState.keys = unlockedKeysCount - unlockedDoorsCount;
+    
                     gameState.elevatorCluesObtained = userData.meta_elevator_clues_obtained === true || userData.meta_elevator_clues_obtained === 'true';
-                    if (gameState.elevatorCluesObtained) {
+                    if (gameState.elevatorCluesObtained || gameState.unlockedCells.has('14,2')) {
                         if (!gameState.clues.includes(allClues[6])) gameState.clues.push(allClues[6]);
                         if (!gameState.clues.includes(allClues[7])) gameState.clues.push(allClues[7]);
+                        gameState.elevatorCluesObtained = true;
                     }
+    
                     gameState.puzzle4x4Solved = userData.meta_4x4_solved === true || userData.meta_4x4_solved === 'true';
                 } else {
-                    alert('登录失败：' + data.message);
+                    alert('登录验证失败：' + data.message);
                 }
             } catch (error) {
                 console.error('加载用户数据失败:', error);
@@ -617,10 +543,12 @@
         function getCookie(name) {
             const value = `; ${document.cookie}`;
             const parts = value.split(`; ${name}=`);
-            if (parts.length === 2) return parts.pop().split(';').shift();
+            if (parts.length === 2) {
+                return parts.pop().split(';').shift();
+            }
             return '';
         }
-
+    
         function initMaze() {
             const mazeGrid = document.getElementById('mazeGrid');
             mazeGrid.innerHTML = '';
@@ -633,6 +561,7 @@
                     const isVisible = isCellVisible(x, y);
                     const isUnlocked = gameState.unlockedCells.has(`${x},${y}`);
                     setCellAppearance(cell, cellType, x, y, isVisible, isUnlocked);
+                    
                     if (isVisible && cellType !== 'wall') {
                         cell.addEventListener('click', () => moveToCell(x, y));
                     }
@@ -640,17 +569,7 @@
                 }
             }
         }
-
-        function isCellVisible(x, y) {
-            if (x === gameState.playerX && y === gameState.playerY) return true;
-            if (gameState.unlockedCells.has(`${x},${y}`)) return true;
-            const dx = Math.abs(x - gameState.playerX);
-            const dy = Math.abs(y - gameState.playerY);
-            if ((dx === 1 && dy === 0) || (dx === 0 && dy === 1)) return true;
-            if (mazeMap[y][x] === 'wall') return true;
-            return false;
-        }
-
+        
         function setCellAppearance(cell, cellType, x, y, isVisible, isUnlocked) {
             cell.className = 'maze-cell';
             if (!isVisible) {
@@ -663,11 +582,19 @@
                 cell.textContent = '玩家';
                 return;
             }
-            if (gameState.unlockedCells.has(`${x},${y}`)) {
+            
+            if (cellType === 'elevator') {
+                cell.classList.add('cell-elevator');
+                cell.textContent = '电梯';
+                return; 
+            }
+    
+            if (isUnlocked) {
                 cell.classList.add('cell-empty');
                 cell.textContent = '✓';
                 return;
             }
+            
             switch (cellType) {
                 case 'wall': cell.classList.add('cell-wall'); cell.textContent = '墙'; break;
                 case 'empty': cell.classList.add('cell-empty'); cell.textContent = '空'; break;
@@ -677,26 +604,57 @@
                 case 'trap': cell.classList.add('cell-trap'); cell.textContent = '陷阱'; break;
                 case 'power': cell.classList.add('cell-power'); cell.textContent = '电力'; break;
                 case 'card': cell.classList.add('cell-card'); cell.textContent = '卡片'; break;
-                case 'elevator': cell.classList.add('cell-elevator'); cell.textContent = '电梯'; break;
             }
         }
-
-        function canMoveTo(x, y) {
-            if (x < 0 || x >= 16 || y < 0 || y >= 6) return false;
-            if (mazeMap[y][x] === 'wall') return false;
-            const dx = Math.abs(x - gameState.playerX);
-            const dy = Math.abs(y - gameState.playerY);
-            return (dx === 1 && dy === 0) || (dx === 0 && dy === 1);
-        }
-
-        async function moveToCell(x, y) {
-            if (!canMoveTo(x, y)) return;
+        
+        async function handleElevatorInteraction(x, y) {
             const cellKey = `${x},${y}`;
-            if (gameState.unlockedCells.has(cellKey)) {
-                movePlayer(x, y);
+            const isUnlocked = gameState.unlockedCells.has(cellKey);
+    
+            if (isUnlocked) {
+                show4x4Modal();
+            } else {
+                await unlockCell(x, y);
+                gameState.elevatorCluesObtained = true;
+                await updateUserData('meta_elevator_clues_obtained', 'true');
+    
+                let newlyAddedClues = [];
+                [allClues[6], allClues[7]].forEach(clue => {
+                    if (!gameState.clues.includes(clue)) {
+                        gameState.clues.push(clue);
+                        newlyAddedClues.push(clue);
+                    }
+                });
+    
+                if (newlyAddedClues.length > 0) {
+                     alert(`你走近电梯，发现它似乎可以被启动。你找到了关键线索！\n- ${newlyAddedClues.join('\n- ')}\n\n该格子已解锁，再次点击即可尝试解谜。`);
+                } else {
+                    alert('你已调查过电梯，该格子已解锁，再次点击即可尝试解谜。');
+                }
+                
+                updateDisplay();
+                updateSingleCell(x, y);
+            }
+        }
+        
+        async function moveToCell(x, y) {
+            if (!canMoveTo(x, y)) {
+                 return;
+            }
+    
+            const cellType = mazeMap[y][x];
+            if (cellType === 'elevator') {
+                await handleElevatorInteraction(x, y);
                 return;
             }
-            const cellType = mazeMap[y][x];
+    
+            const cellKey = `${x},${y}`;
+            if (gameState.unlockedCells.has(cellKey)) {
+                // *** FIX: Added await to ensure time is diminished before anything else.
+                await movePlayer(x, y);
+                return;
+            }
+            
             switch (cellType) {
                 case 'empty': await handleEmptyCell(x, y); break;
                 case 'door': await handleDoorCell(x, y); break;
@@ -704,12 +662,68 @@
                 case 'trap': handleTrapCell(x, y); break;
                 case 'power': await handlePowerCell(x, y); break;
                 case 'card': await handleCardCell(x, y); break;
-                case 'elevator': await handleElevatorCell(x, y); break;
-                case 'start': movePlayer(x, y); break;
-                default: movePlayer(x, y); break;
+                case 'start': await movePlayer(x, y); break;
+                default: await movePlayer(x, y); break;
             }
         }
-
+        
+        function show4x4Modal() {
+            const elevatorCoords = '14,2';
+            if (gameState.unlockedCells.has(elevatorCoords)) {
+                if (!gameState.clues.includes(allClues[6])) gameState.clues.push(allClues[6]);
+                if (!gameState.clues.includes(allClues[7])) gameState.clues.push(allClues[7]);
+            }
+        
+            let cluesHtml = '';
+            if (gameState.clues.length > 0) {
+                const sortedClues = [...gameState.clues].sort((a, b) => allClues.indexOf(a) - allClues.indexOf(b));
+                cluesHtml = sortedClues.map(clue => `<div class="clue-item">${clue}</div>`).join('');
+            } else {
+                cluesHtml = `<div style="margin: 15px 0; color: #ff6666;"><h4>提示：</h4><p>您还没有获得任何线索！请先激活电力装置和电梯来获取线索。</p></div>`;
+            }
+            
+            const modalContent = document.getElementById('puzzle4x4Content');
+            modalContent.innerHTML = `
+                <p>请根据所有线索填入正确的数字排列：</p>
+                <div style="margin: 15px 0; max-height: 200px; overflow-y: auto;">
+                    <h4>已获得的线索：</h4>
+                    ${cluesHtml}
+                </div>
+                <p style="color: #ffff00; margin: 10px 0;">格式：每行输入4个数字，用空格分隔</p>
+                <div class="puzzle-4x4-grid">
+                    <input type="text" class="puzzle-4x4-input" id="row1" placeholder="第一行">
+                    <input type="text" class="puzzle-4x4-input" id="row2" placeholder="第二行">
+                    <input type="text" class="puzzle-4x4-input" id="row3" placeholder="第三行">
+                    <input type="text" class="puzzle-4x4-input" id="row4" placeholder="第四行">
+                </div>
+                <div id="puzzle4x4Cooldown" class="cooldown-notice" style="display: none;">
+                    <p>答案错误！请等待 <span id="puzzle4x4CooldownTime">0</span> 秒后重试</p>
+                </div>
+                <button class="btn" onclick="submit4x4Answer()">提交答案</button>
+                <button class="btn escape-btn" onclick="attemptEscape()" id="escapeBtn">逃生</button>
+            `;
+            
+            document.getElementById('puzzle4x4Modal').style.display = 'block';
+        }
+        
+        function isCellVisible(x, y) {
+            if (x === gameState.playerX && y === gameState.playerY) return true;
+            if (gameState.unlockedCells.has(`${x},${y}`)) return true;
+            const dx = Math.abs(x - gameState.playerX);
+            const dy = Math.abs(y - gameState.playerY);
+            if ((dx === 1 && dy === 0) || (dx === 0 && dy === 1)) return true;
+            if (mazeMap[y][x] === 'wall') return true;
+            return false;
+        }
+    
+        function canMoveTo(x, y) {
+            if (x < 0 || x >= 16 || y < 0 || y >= 6) return false;
+            if (mazeMap[y][x] === 'wall') return false;
+            const dx = Math.abs(x - gameState.playerX);
+            const dy = Math.abs(y - gameState.playerY);
+            return (dx === 1 && dy === 0) || (dx === 0 && dy === 1);
+        }
+    
         async function movePlayer(x, y) {
             const oldX = gameState.playerX;
             const oldY = gameState.playerY;
@@ -720,7 +734,7 @@
             updateMazeDisplay(oldX, oldY, x, y);
             updateDisplay();
         }
-
+    
         function updateMazeDisplay(oldX, oldY, newX, newY) {
             for (let dy = -2; dy <= 2; dy++) {
                 for (let dx = -2; dx <= 2; dx++) {
@@ -739,7 +753,7 @@
             updateSingleCell(oldX, oldY);
             updateSingleCell(newX, newY);
         }
-
+    
         function updateSingleCell(x, y) {
             const cell = document.querySelector(`[data-x="${x}"][data-y="${y}"]`);
             if (cell) {
@@ -756,16 +770,47 @@
                 gameState.unlockedCells.add(cellKey);
                 await addMetaProgress(x, y);
             }
-            initMaze();
         }
-
+    
+        async function handleEmptyCell(x, y) {
+            const cooldownStatus = await checkSimpleCooldown();
+            if (cooldownStatus.cooldownRemaining > 0) {
+                showCooldownNotice('simple', cooldownStatus.cooldownRemaining);
+                return;
+            }
+            const puzzle = await getRandomPuzzle();
+            if (puzzle && puzzle.success) {
+                showPuzzleModal(puzzle.puzzle, x, y);
+            } else {
+                alert('无法获取谜题，请检查后端服务或稍后再试。');
+            }
+        }
+    
+        async function handleDoorCell(x, y) {
+            if (gameState.keys > 0) {
+                const confirmed = confirm("您确定要消耗一把钥匙打开这扇门吗？");
+                if (confirmed) {
+                    gameState.keys--;
+                    await unlockCell(x, y);
+                    // *** CHANGE: Do not move player. Update UI and notify user.
+                    alert('门已打开！现在可以移动到这个位置了。');
+                    updateSingleCell(x, y);
+                    updateDisplay();
+                }
+            } else {
+                alert('需要钥匙才能打开这扇门！');
+            }
+        }
+    
         async function handleKeyCell(x, y) {
             gameState.keys++;
             await unlockCell(x, y);
+            // *** CHANGE: Do not move player. Update UI and notify user.
+            alert('你获得了一把钥匙！这个位置已解锁。');
+            updateSingleCell(x, y);
             updateDisplay();
-            movePlayer(x, y);
         }
-
+    
         async function handleTrapCell(x, y) {
             let trapId = null;
             for (const id in trapLocations) {
@@ -782,7 +827,7 @@
             }
             window.open(`${trapId}.html?x=${x}&y=${y}`, '_blank');
         }
-
+    
         async function handlePowerCell(x, y) {
             gameState.powerDevices++;
             await unlockCell(x, y);
@@ -797,55 +842,38 @@
                     }
                 });
                 if (newlyAddedClues.length > 0) {
-                    alert(`激活电力装置成功！获得了新线索：\n- ${newlyAddedClues.join('\n- ')}`);
+                    alert(`激活电力装置成功！获得了新线索：\n- ${newlyAddedClues.join('\n- ')}\n\n这个位置已解锁。`);
                 } else {
-                    alert('激活电力装置成功！');
+                    alert('激活电力装置成功！这个位置已解锁。');
                 }
             }
+            // *** CHANGE: Do not move player. Update UI.
+            updateSingleCell(x, y);
             updateDisplay();
-            movePlayer(x, y);
         }
-
+    
         async function handleCardCell(x, y) {
             gameState.hasCard = true;
             await unlockCell(x, y);
-            movePlayer(x, y);
+            await updateUserData('meta_card', 'true');
+            // *** CHANGE: Do not move player. Update UI and notify user.
+            alert('你获得了门禁卡！这个位置已解锁。');
+            updateSingleCell(x, y);
+            updateDisplay();
         }
-
-        async function handleElevatorCell(x, y) {
-            movePlayer(x, y);
-            if (!gameState.elevatorCluesObtained) {
-                let newlyAddedClues = [];
-                [allClues[6], allClues[7]].forEach(clue => {
-                    if (!gameState.clues.includes(clue)) {
-                        gameState.clues.push(clue);
-                        newlyAddedClues.push(clue);
-                    }
-                });
-                if (newlyAddedClues.length > 0) {
-                    gameState.elevatorCluesObtained = true;
-                    await updateUserData('meta_elevator_clues_obtained', 'true');
-                    alert(`你进入了电梯！获得了新线索：\n- ${newlyAddedClues.join('\n- ')}`);
-                    updateDisplay();
-                }
-            }
-            show4x4Modal();
-        }
-
+    
         window.addEventListener('message', async function(event) {
             if (event.data && event.data.type === 'trapSolved') {
                 const { trapCoords } = event.data;
                 const x = trapCoords[0];
                 const y = trapCoords[1];
                 await unlockCell(x, y);
-                if (canMoveTo(x, y)) {
-                    movePlayer(x, y);
-                } else {
-                    initMaze();
-                }
+                updateSingleCell(x, y); 
+                updateDisplay();
+                alert(`坐标 [${x},${y}] 的陷阱已被解除！`);
             }
         });
-
+    
         async function submitPuzzleAnswer() {
             const answer = document.getElementById('puzzleAnswer').value.trim();
             const target = window.currentPuzzleTarget;
@@ -853,50 +881,46 @@
             if (answer === target.answer) {
                 closePuzzleModal();
                 await unlockCell(target.x, target.y);
-                movePlayer(target.x, target.y);
+                // *** CHANGE: Do not move player. Update UI and notify user.
+                alert('谜题已解决！该格子已解锁，现在可以移动过去了。');
+                updateSingleCell(target.x, target.y);
+                updateDisplay();
             } else {
                 await startSimpleCooldown();
                 const cooldownStatus = await checkSimpleCooldown();
                 showCooldownNotice('simple', cooldownStatus.cooldownRemaining);
             }
         }
-
+    
         function showPuzzleModal(puzzleData, targetX, targetY) {
             document.getElementById('puzzleQuestion').textContent = puzzleData.puzzle;
             document.getElementById('puzzleAnswer').value = '';
             document.getElementById('puzzleModal').style.display = 'block';
             window.currentPuzzleTarget = { x: targetX, y: targetY, answer: puzzleData.key };
         }
-
+    
         function closePuzzleModal() {
             document.getElementById('puzzleModal').style.display = 'none';
             window.currentPuzzleTarget = null;
         }
-
+    
         async function skipPuzzle() {
             if (!confirm('跳过谜题将扣除额外时间，确定要跳过吗？')) return;
+            const target = window.currentPuzzleTarget;
             closePuzzleModal();
             await diminishMetaTime();
             await diminishMetaTime();
-            alert('已跳过谜题，扣除了额外时间。');
+            await unlockCell(target.x, target.y);
+            // *** CHANGE: Do not move player. Update UI and notify user.
+            alert('已跳过谜题，扣除了额外时间。该格子已解锁。');
+            updateSingleCell(target.x, target.y);
+            updateDisplay();
         }
-
-        function show4x4Modal() {
-            let cluesHtml = '';
-            if (gameState.clues.length > 0) {
-                const sortedClues = [...gameState.clues].sort((a, b) => allClues.indexOf(a) - allClues.indexOf(b));
-                cluesHtml = sortedClues.map(clue => `<div class="clue-item">${clue}</div>`).join('');
-            } else {
-                cluesHtml = `<div style="margin: 15px 0; color: #ff6666;"><h4>提示：</h4><p>您还没有获得任何线索！请先激活电力装置和电梯来获取线索。</p></div>`;
-            }
-            document.getElementById('puzzle4x4Content').innerHTML = `<p>请根据所有线索填入正确的数字排列：</p><div style="margin: 15px 0;"><h4>已获得的线索：</h4>${cluesHtml}</div><p style="color: #ffff00; margin: 10px 0;">格式：每行输入4个数字，用空格分隔</p><div class="puzzle-4x4-grid"><input type="text" class="puzzle-4x4-input" id="row1" placeholder="1 2 3 4"><input type="text" class="puzzle-4x4-input" id="row2" placeholder="4 3 2 1"><input type="text" class="puzzle-4x4-input" id="row3" placeholder="2 5 1 4"><input type="text" class="puzzle-4x4-input" id="row4" placeholder="1 2 3 4"></div><div id="puzzle4x4Cooldown" class="cooldown-notice" style="display: none;"><p>答案错误！请等待 <span id="puzzle4x4CooldownTime">0</span> 秒后重试</p></div><button class="btn" onclick="submit4x4Answer()">提交答案</button><button class="btn escape-btn" onclick="attemptEscape()" id="escapeBtn">逃生</button>`;
-            document.getElementById('puzzle4x4Modal').style.display = 'block';
-        }
-
+    
         function close4x4Modal() {
             document.getElementById('puzzle4x4Modal').style.display = 'none';
         }
-
+    
         async function submit4x4Answer() {
             const cooldownStatus = await check4x4Cooldown();
             if (cooldownStatus.cooldownRemaining > 0) {
@@ -936,7 +960,7 @@
                 return true;
             }
         }
-
+    
         async function attemptEscape() {
             if (gameState.powerDevices < 3) { alert('逃生失败：还有电力装置未激活！'); return; }
             if (!gameState.hasCard) { alert('逃生失败：需要门禁卡！'); return; }
@@ -949,7 +973,7 @@
                 window.location.href = 'be.html';
             }
         }
-
+    
         function showCooldownNotice(type, seconds) {
             if (type !== 'simple') return;
             const notice = document.getElementById('cooldownNotice');
@@ -965,7 +989,7 @@
                 }
             }, 1000);
         }
-
+    
         function show4x4CooldownNotice(seconds) {
             const notice = document.getElementById('puzzle4x4Cooldown');
             const timeSpan = document.getElementById('puzzle4x4CooldownTime');
@@ -980,7 +1004,7 @@
                 }
             }, 1000);
         }
-
+    
         function updateDisplay() {
             document.getElementById('playerPosition').textContent = `[${gameState.playerX},${gameState.playerY}]`;
             document.getElementById('keyCount').textContent = gameState.keys;
@@ -994,14 +1018,14 @@
                 cluesList.innerHTML = '<div style="color: #666; font-style: italic;">暂无线索</div>';
             }
         }
-
+    
         function startTimeMonitoring() {
             setInterval(async () => {
                 const metaStatus = await getMetaStatus();
                 updateTimeDisplay(metaStatus.remainingSeconds);
             }, 1000);
         }
-
+    
         function updateTimeDisplay(seconds) {
             const minutes = Math.floor(seconds / 60);
             const secs = seconds % 60;
@@ -1022,7 +1046,7 @@
                 return { success: false, puzzle: null };
             }
         }
-
+    
         async function checkSimpleCooldown() {
             try {
                 const response = await fetch(`${API_BASE}/simple_cooldown_status`, {
@@ -1037,7 +1061,7 @@
                 return { cooldownRemaining: 0 };
             }
         }
-
+    
         async function startSimpleCooldown() {
             try {
                 await fetch(`${API_BASE}/start_simple_cooldown`, {
@@ -1050,7 +1074,7 @@
                 console.error('开始简单冷却失败:', error);
             }
         }
-
+    
         async function checkGoalkeeperCooldown() {
             try {
                 const response = await fetch(`${API_BASE}/goalkeeper_cooldown_status`, {
@@ -1065,7 +1089,7 @@
                 return { cooldownRemaining: 0 };
             }
         }
-
+    
         async function check4x4Cooldown() {
             try {
                 const response = await fetch(`${API_BASE}/4x4_cooldown_status`, {
@@ -1080,7 +1104,7 @@
                 return { cooldownRemaining: 0 };
             }
         }
-
+    
         async function updateUserData(option, value) {
             try {
                 await fetch(`${API_BASE}/set_user_data`, {
@@ -1093,7 +1117,7 @@
                 console.error('更新用户数据失败:', error);
             }
         }
-
+    
         async function updatePlayerPosition(x, y) {
             try {
                 await fetch(`${API_BASE}/change_meta_xy`, {
@@ -1106,7 +1130,7 @@
                 console.error('更新玩家位置失败:', error);
             }
         }
-
+    
         async function addMetaProgress(x, y) {
             try {
                 await fetch(`${API_BASE}/add_meta`, {
@@ -1119,19 +1143,27 @@
                 console.error('添加Meta进度失败:', error);
             }
         }
-
+    
         async function diminishMetaTime() {
             try {
-                await fetch(`${API_BASE}/diminish_meta_time`, {
+                const response = await fetch(`${API_BASE}/diminish_meta_time`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include'
                 });
+    
+                const data = await response.json();
+    
+                if (!response.ok) {
+                    console.error('调用失败:', data.message);
+                } else {
+                    console.log('调用成功:', data.message);
+                }
             } catch (error) {
-                console.error('减少Meta时间失败:', error);
+                console.error('减少Meta时间请求错误:', error);
             }
         }
-
+    
         async function getMetaStatus() {
             try {
                 const response = await fetch(`${API_BASE}/meta-status`);
@@ -1141,7 +1173,7 @@
                 return { remainingSeconds: 0 };
             }
         }
-
+        
         document.addEventListener('DOMContentLoaded', initGame);
     </script>
 </body>
