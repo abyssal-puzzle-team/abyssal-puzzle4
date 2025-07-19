@@ -1,16 +1,372 @@
 {
   "puzzles": [
     {
-      "puzzle": "什么东西早上四条腿，中午两条腿，晚上三条腿？",
-      "key": "人"
+      "puzzle": "Designant的定数是什么？",
+      "key": "11.9"
     },
     {
-      "puzzle": "什么东西越洗越脏？",
-      "key": "水"
+      "puzzle": "[X]的BPM范围是什么？",
+      "key": "162-180"
     },
     {
-      "puzzle": "小明在没有灯的屋子里点了一根蜡烛，他首先看到了什么？",
-      "key": "火柴"
+      "puzzle": "Ether Strike的BPM是什么？",
+      "key": "156"
+    },
+    {
+      "puzzle": "Heartache的BPM是什么？",
+      "key": "239"
+    },
+    {
+      "puzzle": "Heavensdoor的定数是什么？",
+      "key": "10.8"
+    },
+    {
+      "puzzle": "Inverted World的BPM是什么？",
+      "key": "180"
+    },
+    {
+      "puzzle": "MEGALOVANIA的BPM是什么？",
+      "key": "240"
+    },
+    {
+      "puzzle": "Distorted Fate的BPM是什么？",
+      "key": "150"
+    },
+    {
+      "puzzle": "SIGMA的定数是什么？",
+      "key": "15.8"
+    },
+    {
+      "puzzle": "micro.mav的定数是什么？",
+      "key": "14.7"
+    },
+    {
+      "puzzle": "Break Over的定数是什么？",
+      "key": "14.9"
+    },
+    {
+      "puzzle": "Secret illumination的BPM是什么？",
+      "key": "160"
+    },
+    {
+      "puzzle": "竹的BPM范围是什么？",
+      "key": "5-315"
+    },
+    {
+      "puzzle": "Manic jeer的定数是什么？",
+      "key": "10.6"
+    },
+    {
+      "puzzle": "Quon（Wacca）的BPM是什么？",
+      "key": "170"
+    },
+    {
+      "puzzle": "GENOCIDER的BPM范围是什么？",
+      "key": "250-390"
+    },
+    {
+      "puzzle": "Blythe的BPM是什么？",
+      "key": "180"
+    },
+    {
+      "puzzle": "Antikythera的定数是什么？",
+      "key": "14.1"
+    },
+    {
+      "puzzle": "MVURBD的定数是什么？",
+      "key": "14.2"
+    },
+    {
+      "puzzle": "十拳剑的BPM范围是什么？",
+      "key": "191.919-232.323"
+    },
+    {
+      "puzzle": "Frey's Philosophy的BPM是什么？",
+      "key": "200"
+    },
+    {
+      "puzzle": "BiBic Heart的BPM是什么？",
+      "key": "128"
+    },
+    {
+      "puzzle": "Triad of Dryad的定数是什么？",
+      "key": "14.1"
+    },
+    {
+      "puzzle": "双重间谍的定数是什么？",
+      "key": "11.5"
+    },
+    {
+      "puzzle": "十六进制月光的定数是什么？",
+      "key": "11.6"
+    },
+    {
+      "puzzle": "黑羊效应的定数是什么？",
+      "key": "12.85"
+    },
+    {
+      "puzzle": "iL的定数是什么？",
+      "key": "16.2"
+    },
+    {
+      "puzzle": "SUPERNOVA的定数是什么？",
+      "key": "17.1"
+    },
+    {
+      "puzzle": "valor/starcross的定数是什么？",
+      "key": "16.6"
+    },
+    {
+      "puzzle": "We're All Gonna Die的BPM是什么？",
+      "key": "190"
+    },
+    {
+      "puzzle": "BRAVE：ROAD的BPM是什么？",
+      "key": "240"
+    },
+    {
+      "puzzle": "Cuvism³的BPM是什么？",
+      "key": "194"
+    },
+    {
+      "puzzle": "明鏡烈火的BPM是什么？",
+      "key": "200"
+    },
+    {
+      "puzzle": "Der Richter的定数是什么？",
+      "key": "15.6"
+    },
+    {
+      "puzzle": "Cyanine的BPM是什么？",
+      "key": "182"
+    },
+    {
+      "puzzle": "Stasis的BPM是什么？",
+      "key": "180"
+    },
+    {
+      "puzzle": "aterlbus的BPM是什么？",
+      "key": "202"
+    },
+    {
+      "puzzle": "怒槌的定数是什么？",
+      "key": "15.4"
+    },
+    {
+      "puzzle": "蜘蛛の系的定数是什么？",
+      "key": "15.2"
+    },
+    {
+      "puzzle": "玩具狂奏曲–終焉–的定数是什么？",
+      "key": "15.2"
+    },
+    {
+      "puzzle": "Theatore Creatore的定数是什么？",
+      "key": "15.3"
+    },
+    {
+      "puzzle": "Magnolia的BPM是什么？",
+      "key": "160"
+    },
+    {
+      "puzzle": "Marigold的BPM是什么？",
+      "key": "160"
+    },
+    {
+      "puzzle": "驟雨の狭間的BPM是什么？",
+      "key": "170"
+    },
+    {
+      "puzzle": "大月墜落狂想的BPM是什么？",
+      "key": "196"
+    },
+    {
+      "puzzle": "XODUS的BPM是什么？",
+      "key": "202"
+    },
+    {
+      "puzzle": "Eve Avenir的BPM是什么？",
+      "key": "150"
+    },
+    {
+      "puzzle": "零號车辆的定数是什么？",
+      "key": "16.9"
+    },
+    {
+      "puzzle": "Abyssgazer的BPM是什么？",
+      "key": "191"
+    },
+    {
+      "puzzle": "Observatory的BPM是什么？",
+      "key": "195"
+    },
+    {
+      "puzzle": "Contrasty Angeles的BPM是什么？",
+      "key": "178"
+    },
+    {
+      "puzzle": "Regnaissance的定数是什么？",
+      "key": "12.1"
+    },
+    {
+      "puzzle": "HYPER MEMORYS的定数是什么？",
+      "key": "11.7"
+    },
+    {
+      "puzzle": "Algebra的定数是什么？",
+      "key": "11.4"
+    },
+    {
+      "puzzle": "Stormy Rage的定数是什么？",
+      "key": "16.8"
+    },
+    {
+      "puzzle": "Cybernetic Vampire的BPM是什么？",
+      "key": "110"
+    },
+    {
+      "puzzle": "Swan Song的定数是什么？",
+      "key": "9.9"
+    },
+    {
+      "puzzle": "Sphalerite的BPM是什么？",
+      "key": "230"
+    },
+    {
+      "puzzle": "Traxxendenza的BPM是什么？",
+      "key": "198"
+    },
+    {
+      "puzzle": "幽世桔梗的BPM是什么？",
+      "key": "182"
+    },
+    {
+      "puzzle": "ViRTUS的定数是什么？",
+      "key": "14.7"
+    },
+    {
+      "puzzle": "QZKago Requiem的定数是什么？",
+      "key": "14.9"
+    },
+    {
+      "puzzle": "The EmpErroR的定数是什么？",
+      "key": "14.9"
+    },
+    {
+      "puzzle": "DRE4M1N9的BPM是什么？",
+      "key": "170"
+    },
+    {
+      "puzzle": "Back to Basics的BPM是什么？",
+      "key": "420"
+    },
+    {
+      "puzzle": "Overdead的BPM是什么？",
+      "key": "500"
+    },
+    {
+      "puzzle": "KNEEL的BPM是什么？",
+      "key": "170"
+    },
+    {
+      "puzzle": "Drama Queen的BPM是什么？",
+      "key": "200"
+    },
+    {
+      "puzzle": "corps–sans–organes的定数是什么？",
+      "key": "10.6"
+    },
+    {
+      "puzzle": "Felis的定数是什么？",
+      "key": "10.4"
+    },
+    {
+      "puzzle": "AttraqtiA的定数是什么？",
+      "key": "10.6"
+    },
+    {
+      "puzzle": "Retribution的BPM是什么？",
+      "key": "190"
+    },
+    {
+      "puzzle": "Diamone Dust的BPM是什么？",
+      "key": "200"
+    },
+    {
+      "puzzle": "Forzen Heart的BPM是什么？",
+      "key": "185"
+    },
+    {
+      "puzzle": "ultradiaxon-N3的定数是什么？",
+      "key": "10.3"
+    },
+    {
+      "puzzle": "U.A.D的BPM是什么？",
+      "key": "129"
+    },
+    {
+      "puzzle": "Don't Fight The Music的定数是什么？",
+      "key": "14.9"
+    },
+    {
+      "puzzle": "And Revive The Melody的BPM是什么？",
+      "key": "220"
+    },
+    {
+      "puzzle": "Quadruplicity的定数是什么？",
+      "key": "14.4"
+    },
+    {
+      "puzzle": "Flashback Flicker的定数是什么？",
+      "key": "14.2"
+    },
+    {
+      "puzzle": "Lunàtxxx Gear的BPM是什么？",
+      "key": "196"
+    },
+    {
+      "puzzle": "Now is the Time,Do it的BPM是什么？",
+      "key": "153"
+    },
+    {
+      "puzzle": "FIRST BREATH的定数是什么？",
+      "key": "17.6"
+    },
+    {
+      "puzzle": "lmmaculate的BPM是什么？",
+      "key": "124"
+    },
+    {
+      "puzzle": "II的BPM范围是什么？",
+      "key": "130-150"
+    },
+    {
+      "puzzle": "诸神黄昏的定数是什么？",
+      "key": "15.5"
+    },
+    {
+      "puzzle": "Rrhar'il的定数是什么？",
+      "key": "17.6"
+    },
+    {
+      "puzzle": "翠杜的定数是什么？",
+      "key": "14.5"
+    },
+    {
+      "puzzle": "系きて的定数是什么？",
+      "key": "15.0"
+    },
+    {
+      "puzzle": "Testify的定数是什么？",
+      "key": "12.0"
+    },
+    {
+      "puzzle": "Last | Moment的定数是什么？",
+      "key": "9.6"
+    },
+    {
+      "puzzle": "Last Goodbye的BPM是什么？",
+      "key": "180"
     }
   ]
 }

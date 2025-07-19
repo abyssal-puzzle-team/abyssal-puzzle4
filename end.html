@@ -1,11 +1,348 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Abyssal Puzzle 4 - END</title>
+
+    <!-- 引入字体 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Noto+Serif+SC:wght@400;500&family=Orbitron:wght@500&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #0c142b;
+            --text-color: #e0e6f0;
+            --title-color: #ffffff;
+            --highlight-color: #a7c5eb;
+            --primary-glow: #7DF9FF;
+            --card-bg: rgba(20, 30, 60, 0.5);
+            --card-border: rgba(125, 249, 255, 0.2);
+            --font-title: 'Cinzel Decorative', cursive;
+            --font-heading: 'Orbitron', sans-serif;
+            --font-body: 'Noto Serif SC', serif;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-body);
+            overflow-x: hidden;
+            margin: 0;
+        }
+        
+        #particles-js {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 10vh 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        
+        .fade-in-up {
+            opacity: 0;
+            transform: translateY(40px);
+            animation: fadeInUp 1.5s ease-out forwards;
+        }
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        header {
+            width: 100%;
+        }
+        header h1 {
+            font-family: var(--font-title);
+            font-size: 2.8rem;
+            color: var(--title-color);
+            text-shadow: 0 0 20px var(--primary-glow);
+            margin-bottom: 1.5rem;
+        }
+        header p {
+            font-size: 1.1rem;
+            max-width: 650px;
+            line-height: 2;
+            margin: 0 auto 2rem auto;
+            animation-delay: 0.3s;
+        }
+        .notice {
+            font-style: italic;
+            border: 1px solid var(--card-border);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            background: rgba(125, 249, 255, 0.05);
+            backdrop-filter: blur(5px);
+            margin: 2.5rem auto 0 auto;
+            animation-delay: 0.6s;
+        }
+        
+        .separator {
+            width: 80%;
+            border: 0;
+            height: 1px;
+            background-image: linear-gradient(to right, transparent, var(--highlight-color), transparent);
+            margin: 5rem 0;
+            animation-delay: 0.8s;
+        }
+
+        .credits-section, .opensource-section {
+            width: 100%;
+            margin-bottom: 5rem;
+            animation-delay: 1s;
+        }
+        .credits-section h2, .opensource-section h2 {
+            font-family: var(--font-heading);
+            font-size: 2.2rem;
+            color: var(--title-color);
+            margin-bottom: 2.5rem;
+            letter-spacing: 2px;
+        }
+        
+        .credit-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            perspective: 1000px;
+        }
+        
+        #developer-grid {
+            display: flex;
+            justify-content: center;
+        }
+        
+        .credit-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            padding: 25px;
+            border-radius: 10px;
+            backdrop-filter: blur(8px);
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+            max-width: 350px;
+        }
+        .credit-card::before {
+            content: '';
+            position: absolute;
+            top: 0; right: 0; bottom: 0; left: 0;
+            background: radial-gradient(circle at center, rgba(125, 249, 255, 0.15), transparent);
+            transform: scale(0);
+            transition: transform 0.5s ease;
+        }
+        .credit-card:hover {
+            transform: translateY(-8px) rotateX(5deg) scale(1.03);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5), 0 0 25px var(--primary-glow);
+        }
+        .credit-card:hover::before {
+            transform: scale(2);
+        }
+        .credit-card h3 {
+            font-size: 1.1rem;
+            color: var(--highlight-color);
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+        .credit-card .name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--title-color);
+            text-shadow: 0 0 8px var(--primary-glow);
+        }
+        
+        .developer-special {
+            box-shadow: 0 0 15px var(--primary-glow);
+            border-color: var(--primary-glow);
+            transform: translateY(0);
+        }
+        .developer-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: var(--primary-glow);
+            color: var(--bg-color);
+            padding: 3px 8px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            border-radius: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            animation: pulse-badge 2s infinite;
+        }
+        @keyframes pulse-badge {
+            0%, 100% { box-shadow: 0 0 10px var(--primary-glow); }
+            50% { box-shadow: 0 0 20px var(--primary-glow); }
+        }
+
+        .opensource-section {
+            max-width: 700px;
+            animation-delay: 1.2s;
+            /* --- 核心修复：添加此行以居中内部所有元素 --- */
+            text-align: center;
+        }
+        .opensource-section p {
+            font-size: 1.1rem;
+            line-height: 2.2;
+        }
+        
+        .github-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 1.5rem;
+            padding: 12px 25px;
+            background: var(--primary-glow);
+            color: var(--bg-color);
+            font-family: var(--font-heading);
+            font-size: 1.1rem;
+            font-weight: 700;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        .github-link:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px var(--primary-glow);
+        }
+        .github-link svg {
+            width: 24px;
+            height: 24px;
+            fill: var(--bg-color);
+        }
+        .opensource-note {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            margin-top: 1rem;
+        }
+
+        footer {
+            margin-top: 5rem;
+            animation-delay: 1.5s;
+        }
+        footer p {
+            font-size: 1.2rem;
+            font-weight: 500;
+            line-height: 2;
+        }
+        
+        @media (max-width: 768px) {
+            header h1 { font-size: 2.2rem; }
+            .credits-section h2, .opensource-section h2 { font-size: 1.8rem; }
+        }
+    </style>
 </head>
 <body>
-    
+
+    <div id="particles-js"></div>
+
+    <div class="container">
+        
+        <header class="fade-in-up">
+            <h1>星尘的颂歌</h1>
+            <p>
+                欢迎，最后的探索者。您已穿越重重谜题的星云，抵达了 Abyssal Puzzle 4的终点。感谢您一路以来的陪伴，是您的智慧与坚持，点亮了这片宇宙，赋予了它独一无二的生命与回响。
+            </p>
+            <p class="notice fade-in-up">
+                正如宇宙间最宏伟的星系亦有边际，这段旅程也将迎来落幕。为响应现实宇宙的法则，我们的服务器星火预计将于一个月后燃尽，这片世界将化为永恒的数字星尘，封存于我们的共同记忆之中。
+            </p>
+        </header>
+
+        <hr class="separator fade-in-up">
+
+        <main id="credits-roll">
+            <section class="credits-section fade-in-up">
+                <h2>星图的绘制者 - Puzzle Architects</h2>
+                <div class="credit-grid">
+                    <div class="credit-card"><h3>谜题1：雨</h3><span class="name">岚雪夜花 & Alex</span></div>
+                    <div class="credit-card"><h3>谜题2：风</h3><span class="name">Sunw2nxyC</span></div>
+                    <div class="credit-card"><h3>谜题3：雪</h3><span class="name">Thursday</span></div>
+                    <div class="credit-card"><h3>谜题4：星</h3><span class="name">芙莉莲（苍宿影） & Calamity</span></div>
+                    <div class="credit-card"><h3>谜题5：地</h3><span class="name">Alex</span></div>
+                    <div class="credit-card"><h3>前置Meta</h3><span class="name">Thursday & Alex</span></div>
+                    <div class="credit-card"><h3>伪Meta (银河战区)</h3><span class="name">Alex (& Calamity)</span></div>
+                    <div class="credit-card"><h3>真·Meta (宇宙自然)</h3><span class="name">Alex & 岚雪夜花 & Sunw2nxyc</span></div>
+                </div>
+            </section>
+            
+            <section class="credits-section fade-in-up">
+                <h2>时空的剪影师 - Visual Chronomancers</h2>
+                <div class="credit-grid">
+                    <div class="credit-card"><h3>视频制作</h3><span class="name">HaiHome</span></div>
+                    <div class="credit-card"><h3>视频制作</h3><span class="name">Thursday</span></div>
+                </div>
+            </section>
+            
+            <section class="credits-section fade-in-up">
+                <h2>数字炼金术士 - Digital Alchemist</h2>
+                <div class="credit-grid" id="developer-grid">
+                    <div class="credit-card developer-special">
+                        <span class="developer-badge">核心开发</span>
+                        <h3>网页开发</h3>
+                        <span class="name">芙莉莲（苍宿影）</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="opensource-section fade-in-up">
+                <h2>代码的星火，永不熄灭</h2>
+                <p>
+                    虽然服务器的星光终将黯淡，但我们选择将构建这个世界的蓝图赠予星海。为履行我们对分享与创造精神的承诺，Abyssal Puzzle 4 的完整前端代码将在本页面发布5日后，于GitHub正式公开。
+                </p>
+                <a href="https://github.com/Edward334/abyssal-puzzle4" target="_blank" class="github-link">
+                    <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><title>GitHub</title><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+                    <span>关注我们的 GitHub</span>
+                </a>
+                <p class="opensource-note">(预计于发布5日后公开源代码)</p>
+            </section>
+        </main>
+        
+        <footer class="fade-in-up">
+            <p>旅程在此抵达终点，但记忆与回响永存。<br>再次感谢您的陪伴。</p>
+        </footer>
+
+    </div>
+
+    <!-- 引入 tsparticles 库 -->
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.9.3/tsparticles.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            tsParticles.load("particles-js", {
+                fpsLimit: 120,
+                particles: {
+                    number: { value: 120, density: { enable: true, value_area: 800 } },
+                    color: { value: "#ffffff" },
+                    shape: { type: "circle" },
+                    opacity: { value: { min: 0.1, max: 0.5 }, animation: { enable: true, speed: 1.5, sync: false } },
+                    size: { value: { min: 1, max: 3 } },
+                    move: { enable: true, speed: 0.6, direction: "none", random: true, straight: false, out_modes: "out" }
+                },
+                interactivity: {
+                    events: { onhover: { enable: true, mode: "bubble" }, resize: true },
+                    modes: { bubble: { distance: 200, size: 4, duration: 2, opacity: 1 } }
+                },
+                detectRetina: true
+            });
+        });
+    </script>
 </body>
 </html>
