@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>谜题节点 4 - 星体仪</title>
+    <title>谜题4 - 适应性接口</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
@@ -58,14 +58,19 @@
         #stars3 { animation: animStar 150s linear infinite; }
         @keyframes animStar { from { transform: translateY(0px); } to { transform: translateY(-2000px); } }
 
-        /* --- 星体仪 (Orrery) --- */
-        .orrery-container {
-            position: relative; width: 60vmin; height: 60vmin;
-            min-width: 380px; min-height: 380px; max-width: 600px; max-height: 600px;
+        /* --- 星体仪背景 --- */
+        .orrery-background {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90vmin; height: 90vmin;
+            min-width: 400px; min-height: 400px; max-width: 700px; max-height: 700px;
             display: flex; justify-content: center; align-items: center;
-            opacity: 0; transition: opacity 1.5s ease-out;
+            opacity: 0; transition: opacity 1.5s ease-out 0.5s; /* Added delay */
+            z-index: 1;
         }
-        .orrery-container.visible { opacity: 1; }
+        .orrery-background.visible { opacity: 0.7; }
         .ring {
             position: absolute; border-radius: 50%; border: 2px solid transparent;
             box-sizing: border-box; transition: animation-duration 0.5s ease-in-out;
@@ -74,18 +79,53 @@
         .ring-2 { width: 85%; height: 85%; border: 1px solid rgba(122, 0, 255, 0.4); border-left-color: var(--secondary-glow-color); border-right-color: var(--secondary-glow-color); animation: spin 45s linear infinite reverse; }
         .ring-3 { width: 70%; height: 70%; border-top: 2px solid var(--glow-color); border-bottom: 2px solid var(--glow-color); animation: spin 20s linear infinite; }
         
-        .orrery-core {
-            width: 60%; height: 60%; background: var(--dark-core-bg);
-            border-radius: 50%; border: 1px solid rgba(0, 255, 255, 0.2);
+        /* --- 谜题主面板 --- */
+        .puzzle-panel {
+            position: relative;
+            width: clamp(360px, 80vw, 850px);
+            max-height: 85vh;
+            background: var(--dark-core-bg);
+            border: 1px solid rgba(0, 255, 255, 0.2);
             box-shadow: inset 0 0 40px rgba(0, 255, 255, 0.1), 0 0 30px rgba(0, 255, 255, 0.2);
-            backdrop-filter: blur(5px); display: flex; flex-direction: column;
-            justify-content: center; align-items: center; padding: 20px;
-            box-sizing: border-box; text-align: center; z-index: 10;
+            backdrop-filter: blur(8px);
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: clamp(20px, 4vw, 40px);
+            box-sizing: border-box;
+            text-align: center;
+            z-index: 10;
+            opacity: 0;
+            transform: scale(0.95);
+            transition: opacity 1.2s ease-out, transform 1.2s ease-out;
+            overflow-y: auto;
         }
 
-        h1 { font-size: clamp(1.8rem, 5vmin, 2.5rem); color: var(--glow-color); margin: 0 0 5px; text-shadow: 0 0 10px var(--glow-color); }
-        .flavor-text { font-size: clamp(0.8rem, 2vmin, 1rem); color: #c0c8e0; margin-bottom: 15px; line-height: 1.6; max-width: 80%; }
-        #key-form { width: 90%; display: flex; flex-direction: column; align-items: center; }
+        .puzzle-panel.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* --- 面板内容样式 --- */
+        h1 { font-size: clamp(1.8rem, 5vmin, 2.5rem); color: var(--glow-color); margin: 0 0 15px; text-shadow: 0 0 10px var(--glow-color); }
+        .flavor-text { 
+            font-size: clamp(0.85rem, 2vmin, 1.0rem); 
+            color: #c0c8e0; 
+            margin-bottom: 25px; 
+            line-height: 1.8;
+            width: 100%;
+            text-align: left; /* Aligned left for readability */
+            white-space: pre-wrap; /* Preserves formatting like line breaks */
+        }
+        #key-form { 
+            width: 90%; 
+            max-width: 400px;
+            display: flex; 
+            flex-direction: column; 
+            align-items: center;
+            margin-top: 20px;
+        }
         #key-input {
             width: 100%; background: transparent; border: none; border-bottom: 2px solid rgba(0, 255, 255, 0.4);
             color: #fff; font-size: clamp(1rem, 2.5vmin, 1.2rem); font-family: 'Orbitron', sans-serif;
@@ -100,7 +140,7 @@
 
         #submit-button {
             background: transparent; border: 2px solid var(--glow-color); color: var(--glow-color);
-            border-radius: 50%; width: 70px; height: 70px; margin-top: 20px;
+            border-radius: 50%; width: 70px; height: 70px; margin-top: 25px;
             font-family: 'Orbitron', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer;
             transition: all 0.3s ease; position: relative; box-shadow: 0 0 10px var(--glow-color);
         }
@@ -108,9 +148,8 @@
         #submit-button:disabled { border-color: #555; color: #888; cursor: wait; box-shadow: none; }
 
         #message-area {
-            margin-top: 15px; min-height: 20px; font-size: clamp(0.8rem, 2vmin, 1rem);
+            margin-top: 20px; min-height: 20px; font-size: clamp(0.8rem, 2vmin, 1rem);
             font-weight: bold; opacity: 0; transition: opacity 0.3s ease;
-            position: absolute; bottom: 5%;
         }
         #message-area.visible { opacity: 1; }
         #message-area.success { color: var(--success-color); text-shadow: 0 0 8px var(--success-color); }
@@ -119,7 +158,7 @@
 </head>
 <body>
     <div id="loader-wrapper">
-        <div class="loader-text">校准星体坐标...</div>
+        <div class="loader-text">loading...</div>
         <div class="loader"></div>
         <p id="loader-status-text"></p>
     </div>
@@ -128,21 +167,73 @@
     <div id="stars2"></div>
     <div id="stars3"></div>
 
-    <div class="orrery-container" id="orrery-container">
+    <div class="orrery-background" id="orrery-container">
         <div class="ring ring-1"></div>
         <div class="ring ring-2"></div>
         <div class="ring ring-3"></div>
-        <div class="orrery-core">
-            <h1>节点 IV</h1>
-            <p class="flavor-text">对准星核，输入正确的共鸣序列。</p>
-            <form id="key-form" onsubmit="return false;">
-                <input type="text" id="key-input" name="key" placeholder="在此输入序列" autocomplete="off" required>
-                <button type="submit" id="submit-button">激活</button>
-            </form>
-        </div>
     </div>
     
-    <div id="message-area"></div>
+    <div class="puzzle-panel" id="puzzle-panel">
+        <h1>解谜4</h1>
+        <p class="flavor-text">
+SCP-███销毁记录
+
+D级人员-████被指挥拿取SCP-███
+
+进入site后，凉意袭来，设施内并未通电，在暗淡的月光照射下的site中，D级人员看清了SCP-███ 的全貌。
+
+似乎时隐时现的闪烁着TOO LATE TO DIE YOUNG（早死早超生）
+
+██████博士在背后记录这次的实验。
+
+突然紧急警报被启动。
+
+MTF介入。
+
+中断。
+
+U1AwOG90aW1uQmVjQy03Q25hbmV0cmFo
+
+关于D级人员-████及██████博士的处决
+
+因D级人员-████和██████博士在SCP-███中暴露多时，目前已认为二人处于D-19384中记载的“最后”阶段，故执行处决程序。
+
+多数票决议论打开了另一个世界的大门（backrooms）。并派遣一支MTF确保处决任务的顺利执行。
+
+c21ubWVhZXVicg==
+
+来到level-██，透过舷窗看到外面的风景。
+
+有一扇舷窗格外异常，想必这就是要去的地方了。
+
+处决结果
+
+在将两位人员通过异常的舷窗送入后。顺利完成目标。
+
+而舷窗外的世界，即是终点。
+
+处决顺利完成。
+
+处决系数(可应用于全程):
+收容对象:百合咲
+对象移动速度:160 m/s
+编号:Number of "T"
+
+输入密钥：____
+
+（如果你并不能通过以上解出谜题的话，这下面还有一个特谜，直通终点doge）
+
+ⅿ𝟚،𝗀≺❳𝑿．ℤ𝗀＝𝑒𝖯𝟩𝟠
+
+（提示：回归初始）
+        </p>
+        <form id="key-form" onsubmit="return false;">
+            <input type="text" id="key-input" name="key" placeholder="在此输入" autocomplete="off" required>
+            <button type="submit" id="submit-button">提交</button>
+        </form>
+        <div id="message-area"></div>
+    </div>
+    
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -153,6 +244,7 @@
                 loaderWrapper: document.getElementById('loader-wrapper'),
                 loaderStatusText: document.getElementById('loader-status-text'),
                 orreryContainer: document.getElementById('orrery-container'),
+                puzzlePanel: document.getElementById('puzzle-panel'), // New reference
                 form: document.getElementById('key-form'),
                 keyInput: document.getElementById('key-input'),
                 submitButton: document.getElementById('submit-button'),
@@ -182,8 +274,11 @@
             };
             
             const setRingsState = (state) => {
-                const duration = state === 'validating' ? '5s' : '30s';
-                elements.orreryRings.forEach(ring => { ring.style.animationDuration = duration; });
+                // Adjust animation speed of background rings
+                elements.orreryRings.forEach(ring => {
+                    const baseDuration = parseInt(ring.style.animation.split(' ')[1] || '30');
+                    ring.style.animationDuration = state === 'validating' ? '5s' : `${baseDuration}s`;
+                });
             };
 
             const generateStarLayer = (id, count) => {
@@ -234,6 +329,7 @@
                         setTimeout(() => {
                             elements.loaderWrapper.classList.add('loaded');
                             elements.orreryContainer.classList.add('visible');
+                            elements.puzzlePanel.classList.add('visible'); // Show the new panel
                         }, 1000);
                     } else if (progress === "5") {
                         setLoaderStatus("进度已完成，正在跳转...");
@@ -260,7 +356,7 @@
                 elements.submitButton.disabled = true;
                 elements.submitButton.textContent = '...';
                 elements.keyInput.disabled = true;
-                elements.messageArea.classList.remove('visible');
+                elements.messageArea.className = ''; // Hide previous message
                 setRingsState('validating');
 
                 try {
@@ -273,11 +369,9 @@
                     const keyData = await checkKeyResponse.json();
 
                     if (checkKeyResponse.ok && keyData.success) {
-                        // Correct key for a normal node
                         if (!keyData.metaStarted && keyData.remainingSeconds === undefined) {
                             showMessage("序列正确！正在保存进度...", 'success');
                             
-                            // --- NEW STEP: Update progress ---
                             const username = getCookie('username');
                             try {
                                 const setProgressResponse = await fetch(`${API_BASE_URL}/set_user_data`, {
@@ -288,7 +382,6 @@
                                 if (!setProgressResponse.ok) throw new Error('进度保存失败');
                                 
                                 console.log('Progress updated successfully.');
-                                // Proceed to redirect after progress is saved
                                 setTimeout(() => {
                                     window.location.href = '../storyline/insight/node4.html';
                                 }, 1500);
@@ -301,12 +394,10 @@
                                 }, 2500);
                             }
                         } else {
-                            // Handle other successful responses (like Meta)
                             showMessage(keyData.message, 'success');
                             resetForm();
                         }
                     } else {
-                        // Handle incorrect key or other errors
                         let errorMessage = keyData.message || "未知错误";
                         if (keyData.cooldown) errorMessage += ` 冷却: ${keyData.cooldown}s`;
                         showMessage(errorMessage, 'error');
@@ -322,13 +413,12 @@
             function resetForm() {
                 setTimeout(() => {
                     elements.submitButton.disabled = false;
-                    elements.submitButton.textContent = '激活';
+                    elements.submitButton.textContent = '提交';
                     elements.keyInput.disabled = false;
                     setRingsState('idle');
                 }, 1000);
             }
 
-            // Start the initialization process
             initializePage();
         });
     </script>

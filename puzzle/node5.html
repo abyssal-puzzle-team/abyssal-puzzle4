@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>谜题节点 5 :: 地球 [HUD INTERFACE]</title>
+    <title>谜题5</title>
     <!-- 引入字体 -->
     <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=Roboto:wght@300&display=swap" rel="stylesheet">
 
@@ -32,7 +32,7 @@
             overflow: hidden;
             display: flex;
             justify-content: center;
-            align-items: center;
+            /* align-items: center;  MODIFIED: Removed for long content */
             height: 100vh;
         }
 
@@ -79,8 +79,31 @@
         #globe-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
 
         /* --- 主内容 (HUD) --- */
-        #main-content { position: relative; z-index: 10; width: 100%; height: 100%; display: flex; align-items: center; padding-left: 5vw; visibility: hidden; }
-        .puzzle-container { width: 90%; max-width: 420px; background: linear-gradient(rgba(10, 25, 40, 0.1), rgba(10, 25, 40, 0.1)), repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0, 221, 255, 0.05) 1px, rgba(0, 221, 255, 0.05) 2px); padding: 30px 40px; border: 1px solid rgba(0, 221, 255, 0.2); position: relative; opacity: 0; transform: translateX(-30px); }
+        #main-content {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            /* MODIFIED: Align to top for long content */
+            align-items: flex-start;
+            padding-top: 10vh;
+            padding-bottom: 5vh;
+            padding-left: 5vw;
+            visibility: hidden;
+            overflow-y: auto; /* ADDED: Allow main content to scroll if needed on small heights */
+        }
+        .puzzle-container {
+            width: 90%;
+            /* MODIFIED: Increased max-width for better readability */
+            max-width: 550px;
+            background: linear-gradient(rgba(10, 25, 40, 0.1), rgba(10, 25, 40, 0.1)), repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0, 221, 255, 0.05) 1px, rgba(0, 221, 255, 0.05) 2px);
+            padding: 30px 40px;
+            border: 1px solid rgba(0, 221, 255, 0.2);
+            position: relative;
+            opacity: 0;
+            transform: translateX(-30px);
+        }
         #main-content.visible .puzzle-container { animation: fadeInSlide 0.7s 0.2s ease-out forwards; }
         .puzzle-container::before, .puzzle-container::after { content: ''; position: absolute; width: 30px; height: 30px; border-color: var(--primary-color); border-style: solid; animation: draw-corners 0.7s ease-out forwards; }
         .puzzle-container::before { top: -6px; left: -6px; border-width: 2px 0 0 2px; }
@@ -97,10 +120,38 @@
         @keyframes glitch-anim-1 { 0% { clip: rect(42px, 9999px, 44px, 0); } 100% { clip: rect(2px, 9999px, 92px, 0); } }
         @keyframes glitch-anim-2 { 0% { clip: rect(15px, 9999px, 99px, 0); } 100% { clip: rect(85px, 9999px, 50px, 0); } }
 
-        .subtitle { font-size: 1rem; color: var(--secondary-color); opacity: 0.8; height: 1.2em; }
+        .subtitle {
+            font-size: 1rem;
+            color: var(--secondary-color);
+            opacity: 0.8;
+            height: auto; /* MODIFIED: Allow flexible height */
+            /* ADDED: Styles for long, scrollable puzzle text */
+            max-height: 45vh; /* Control max height before scrolling */
+            overflow-y: auto; /* Enable vertical scrollbar when needed */
+            padding-right: 15px; /* Space for the scrollbar */
+            white-space: pre-wrap; /* Preserve line breaks from the string */
+            line-height: 1.6;
+        }
         .subtitle::after { content: '▋'; animation: blink-caret 0.75s step-end infinite; color: var(--primary-color); margin-left: 0.2em; }
         @keyframes blink-caret { from, to { opacity: 0 } 50% { opacity: 1 } }
         
+        /* ADDED: Custom scrollbar styling */
+        .subtitle::-webkit-scrollbar {
+            width: 8px;
+        }
+        .subtitle::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+        }
+        .subtitle::-webkit-scrollbar-thumb {
+            background-color: rgba(0, 221, 255, 0.3);
+            border-radius: 4px;
+            border: 1px solid rgba(0, 221, 255, 0.5);
+        }
+        .subtitle::-webkit-scrollbar-thumb:hover {
+            background-color: var(--primary-color);
+        }
+
         #key-form { opacity: 0; }
         #main-content.visible #key-form { animation: fadeInSlide 0.7s 0.6s ease-out forwards; }
         .input-group { position: relative; margin-bottom: 25px; }
@@ -122,7 +173,21 @@
         #message-container.error { color: var(--error-color); text-shadow: 0 0 5px var(--error-color); }
         #message-container.success { color: var(--success-color); text-shadow: 0 0 5px var(--success-color); }
 
-        @media (max-width: 768px) { #main-content { justify-content: center; padding-left: 0; } .puzzle-container { padding: 25px; } header h1 { font-size: 1.8rem; } }
+        @media (max-width: 768px) {
+            #main-content {
+                justify-content: flex-start; /* MODIFIED: Match desktop alignment */
+                padding-left: 0;
+                padding-right: 0;
+                align-items: center; /* Center horizontally */
+                flex-direction: column;
+            }
+            .puzzle-container {
+                padding: 25px;
+            }
+            header h1 {
+                font-size: 1.8rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -138,15 +203,15 @@
     <main id="main-content">
         <div class="puzzle-container">
             <header>
-                <h1 data-text="NODE_05: TERRA">NODE_05: TERRA</h1>
+                <h1 data-text="NODE_05: TERRA">谜题5</h1>
                 <p class="subtitle" id="subtitle-text"></p>
             </header>
             <form id="key-form" novalidate>
                 <div class="input-group">
-                    <input type="text" id="key-input" name="key" placeholder="Awaiting Encryption Key..." autocomplete="off" required>
+                    <input type="text" id="key-input" name="key" placeholder="在此输入" autocomplete="off" required>
                 </div>
                 <button type="submit" id="submit-btn">
-                    <span class="btn-text">Initiate Verification</span>
+                    <span class="btn-text">提交</span>
                     <div class="spinner hidden"></div>
                 </button>
             </form>
@@ -243,8 +308,42 @@
                     mainContent.style.visibility = 'visible';
                     mainContent.classList.add('visible');
                     
-                    const subtitleText = "万物之源，文明摇篮";
-                    setTimeout(() => typewriter(subtitleEl, subtitleText), 800);
+                    const subtitleText = `
+1. 阿波罗号距离预订应答时间还剩24s
+懒得看了
+-最后时刻！！dafa自为期十三日勘探计划开始已进入倒数第二天！！
+老是给我推史 不看了
+什么神经 睡了
+欸好像可以提个a方出来 算了没用扔了吧
+？怎么有个消息？怎么就发个字母？拉黑了。
+
+2. A:"已知关于i的函数为f(ni)，你知道当n=2时，这式子怎么算吗"
+B:"这个......你可以先把n换成2，不过还是有点难算，或许我可以把这个数字唱出来"
+C:"我知道！先按B同学的方法，然后要直接脱括号，不过我习惯把B同学唱出来的东西移到最后"
+D:"我看未必，可以把i写最前，后面加个常数c，比如自然常数e，再写后面，这样才好构造函数"
+E:"感觉将BC同学的方法结合在一起，可以与D同学的方法一同在我脑海盘旋很久......这道题我觉得可以用DANCE模型和键盘理论做，做起来相当有节奏感"
+A:"我听懂了！那么，就让这6位的简洁答案逆转吧！(1)(5)便是属于这道题最终有序的收尾！"
+
+3. 听好了：
+青い与一人"团队"的合作
+月相与青梅双子的相遇
+造就未曾预料的色彩
+至此，一锤定音
+尘埃，已然落定
+其它更新：
+已推出两个世界的曲包价格:109(原144)打折购买项目
+
+：都几把啥
+又来谜语人更新了
+不过还是看看吧
+怎么还有日语？算了，直接用罗马音读吧
+
+更新后
+：哥们咋两边都写得这么难
+：我不到啊
+[侵入数据]:请输入曲师名义的第二个字符`;
+                    // MODIFIED: Increased typewriter speed by setting the last argument to 1
+                    setTimeout(() => typewriter(subtitleEl, subtitleText, 1), 800);
                     loaderWrapper.addEventListener('transitionend', () => loaderWrapper.remove());
                 }
             }
@@ -254,7 +353,23 @@
             
             // --- Three.js 3D 地球 (代码已折叠，未改动) ---
             const scene = new THREE.Scene(); const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000); const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true }); const container = document.getElementById('globe-container'); renderer.setSize(window.innerWidth, window.innerHeight); renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); container.appendChild(renderer.domElement); const starGeometry = new THREE.BufferGeometry(); const starMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.7, transparent: true, opacity: 0.5 }); const starVertices = Array.from({ length: 15000 }, () => (Math.random() - 0.5) * 2000); starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3)); const stars = new THREE.Points(starGeometry, starMaterial); scene.add(stars); const textureLoader = new THREE.TextureLoader(); const earthGeometry = new THREE.SphereGeometry(15, 64, 64); const earthMaterial = new THREE.MeshStandardMaterial({ map: textureLoader.load('https://raw.githubusercontent.com/joshuabradley/dat-globe/master/src/images/world.jpg'), metalness: 0.2, roughness: 0.8 }); const earth = new THREE.Mesh(earthGeometry, earthMaterial); scene.add(earth); const atmosphereGeometry = new THREE.SphereGeometry(15.5, 64, 64); const atmosphereMaterial = new THREE.MeshBasicMaterial({ color: new THREE.Color(0x00ddff), transparent: true, opacity: 0.1, side: THREE.BackSide }); const atmosphere = new THREE.Mesh(atmosphereGeometry, atmosphereMaterial); scene.add(atmosphere); const cloudGeometry = new THREE.SphereGeometry(15.15, 64, 64); const cloudMaterial = new THREE.MeshStandardMaterial({ map: textureLoader.load('https://raw.githubusercontent.com/joshuabradley/dat-globe/master/src/images/clouds.png'), transparent: true, opacity: 0.25 }); const clouds = new THREE.Mesh(cloudGeometry, cloudMaterial); scene.add(clouds); const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); scene.add(ambientLight); const directionalLight = new THREE.DirectionalLight(0xffffff, 1.5); directionalLight.position.set(40, 5, 20); scene.add(directionalLight); camera.position.set(5, 5, 35); camera.lookAt(scene.position); function animate() { requestAnimationFrame(animate); earth.rotation.y += 0.0005; clouds.rotation.y += 0.0006; stars.rotation.y += 0.0001; renderer.render(scene, camera); } animate(); window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); });
-            function typewriter(element, text, speed = 75) { let i = 0; element.innerHTML = ""; function type() { if (i < text.length) { element.innerHTML += text.charAt(i); i++; setTimeout(type, speed); } } type(); }
+            
+            // MODIFIED: Typewriter function parameter for speed
+            function typewriter(element, text, speed = 5) {
+                let i = 0;
+                element.innerHTML = "";
+                const initialText = text.trimStart(); // Trim leading whitespace from the puzzle
+                function type() {
+                    if (i < initialText.length) {
+                        element.innerHTML += initialText.charAt(i);
+                        i++;
+                        // Scroll to the bottom as text is added
+                        element.scrollTop = element.scrollHeight;
+                        setTimeout(type, speed);
+                    }
+                }
+                type();
+            }
 
             // --- 表单提交逻辑 ---
             form.addEventListener('submit', async (e) => {
