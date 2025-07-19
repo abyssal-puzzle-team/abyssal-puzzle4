@@ -7,7 +7,7 @@
     <!-- 引入符合主题的字体 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital@0;1&family=Uncial+Antiqua&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Uncial+Antiqua&display=swap" rel="stylesheet">
 
     <style>
         /* --- 全局与主题设定 --- */
@@ -34,9 +34,12 @@
             color: var(--ink-color);
             display: flex;
             justify-content: center;
-            align-items: center;
+            /* MODIFIED: Align to top for long content */
+            align-items: flex-start; 
             min-height: 100vh;
-            overflow: hidden;
+            /* MODIFIED: Allow scrolling and add padding */
+            overflow-y: auto;
+            padding: 5vh 20px;
         }
 
         /* --- 加载动画 --- */
@@ -92,14 +95,17 @@
         /* --- 谜题主容器 --- */
         #puzzle-container {
             width: 90%;
-            max-width: 700px;
-            padding: 50px 60px;
+            max-width: 800px; /* MODIFIED: Slightly wider for long text */
+            padding: 40px 50px;
             background-color: var(--parchment-bg);
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
             border: 1px solid #d4c3a2;
             border-radius: 2px;
             position: relative;
             animation: fadeInScroll 1s ease-out;
+            /* MODIFIED: Use flexbox for better internal layout */
+            display: flex;
+            flex-direction: column;
         }
         
         @keyframes fadeInScroll {
@@ -126,27 +132,48 @@
             font-size: 3rem;
             text-align: center;
             color: var(--highlight-color);
-            margin-bottom: 30px;
+            margin-bottom: 25px;
         }
 
-        .prompt-text {
-            margin-bottom: 15px;
-            line-height: 1.8;
-            font-size: 1.1rem;
-            text-align: center;
+        /* ADDED: Scrollable container for the new puzzle text */
+        .puzzle-content {
+            width: 100%;
+            max-height: 45vh;
+            overflow-y: auto;
+            background: rgba(0,0,0,0.02);
+            border-top: 1px solid rgba(74, 44, 42, 0.2);
+            border-bottom: 1px solid rgba(74, 44, 42, 0.2);
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: left;
+            white-space: pre-wrap;
+            line-height: 1.7;
+            font-size: 1.05rem;
         }
         
-        .prompt-text.hint {
-            font-style: italic;
-            color: #7a5c4a;
-            font-size: 1rem;
+        /* ADDED: Custom scrollbar for puzzle content */
+        .puzzle-content::-webkit-scrollbar {
+            width: 10px;
+        }
+        .puzzle-content::-webkit-scrollbar-track {
+            background: rgba(74, 44, 42, 0.05);
+            border-radius: 5px;
+        }
+        .puzzle-content::-webkit-scrollbar-thumb {
+            background-color: rgba(164, 123, 54, 0.4);
+            border-radius: 5px;
+            border: 2px solid transparent;
+            background-clip: content-box;
+        }
+        .puzzle-content::-webkit-scrollbar-thumb:hover {
+            background-color: var(--highlight-color);
         }
 
         .input-group {
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin-top: 40px;
+            margin-top: 20px; /* MODIFIED: Adjusted margin */
         }
 
         #key-input {
@@ -189,7 +216,6 @@
             text-shadow: 0 0 8px rgba(164, 123, 54, 0); 
         }
         
-        /* 仅在按钮未被禁用时应用 hover 和 focus 效果 */
         #submit-key:not(:disabled):hover, 
         #submit-key:not(:disabled):focus {
             color: var(--ink-color);
@@ -197,7 +223,6 @@
             text-shadow: 0 0 8px rgba(164, 123, 54, 0.5);
         }
         
-        /* :disabled 状态只在API冷却时使用 */
         #submit-key:disabled {
             color: #9e8a70;
             cursor: not-allowed;
@@ -230,16 +255,45 @@
     <!-- 谜题主内容 (默认隐藏) -->
     <main id="puzzle-container" style="display: none;">
         <h1 class="title">False Meta</h1>
-        <p class="prompt-text">卷轴上的文字在此处中断，一道古老的封印阻挡了去路。</p>
-        <p class="prompt-text hint">你必须在时空的特定缝隙咏唱，否则密语将归于虚无。</p>
         
+        <!-- MODIFIED: Puzzle text is now in a scrollable container -->
+        <div class="puzzle-content">今日新闻速览:
+•第X(被黑笔涂抹)届电子音乐马拉松今日正式开赛!比赛地点为"World of Memories"
+•三天后小镇扫墓踏青活动将举办
+•各镇镇长共同出席马拉松并致词——"音游健儿展风采,甲辰之年启新篇"
+———马拉松决赛专栏———
+来自世界各地的选手经过角逐剩余五位选手进行决赛,名单如下:
+第X(被黑笔涂抹)届音乐电子马拉松决赛参赛名单
+序号 留言 加成🔼 ACC▶️
+•? 片側だけの正義,橫切る影に立ち,不自由選び続けてた.
+-1.83% 78.18%
+•? Under pressure I've been going off the deep end. -3.47% 62.22%
+•? Hey yo one for the blood two for the life. 64.2% 149.49%
+•? 她并没有留言,同时全曲结束. -9.19% 75.02%
+•? 全て壊して. 56.13% 106.35%
+———观众留言———
+"第X(被黑笔涂抹)届连结成的主题元素是什么呢?"
+"听说这次决赛隐藏大奖将会是???新品首秀,到底会是什么呢?好期待啊..."
+———现场活动A———
+神秘评委即将登场!主题元素搜寻寻找评委身份活动现在开始!
+评委当时所在时空区域:①??.1+1-1+1-1…:/②55.6/③2.4
+比赛检查点全经过时的计算公式:
+...(模糊不清)
+cout<<"请输入各个检查点数量";
+cin>>①>>②>>③;
+…(模糊不清)
+int P = 4 * floor(sqrt(①)) + 4 * floor(sqrt(②)) + 2 * floor(sqrt(③)) ;
+P--;
+...(模糊不清)
+———现场活动B———
+决赛隐藏大奖"P"谱面创作者藏匿在观众中,第一个找到其"笔名"的观众将会获得神秘礼品!</div>
+
         <div class="input-group">
             <input type="text" id="key-input" name="key" placeholder="在此输入" autocomplete="off">
             <button id="submit-key">提交</button>
         </div>
         
         <div id="message-area" class="message">
-            <!-- 初始可以留空，或放一个通用提示 -->
             — 封印静默着，等待着正确的密语与时机。 —
         </div>
     </main>
@@ -268,10 +322,6 @@
             const submitKeyBtn = document.getElementById('submit-key');
             const messageArea = document.getElementById('message-area');
             
-            // --- 修改开始 ---
-            // 不再需要全局计时器和状态标志
-            // --- 修改结束 ---
-
             function getApiUrl(pathKey) {
                 return `${API_BASE_URL}${API_PATHS[pathKey]}`;
             }
@@ -326,7 +376,7 @@
                 } catch (error) {
                     console.error('验证API请求失败:', error);
                     loaderStatus.textContent = '错误：与上古服务器的连接中断。';
-                    alert('网络异常，无法验证你的身份。请检查浏览器控制台(F12)的错误信息，这很可能是CORS跨域问题。');
+                    alert('网络异常，无法验证你的身份。请检查浏览器控制台(F12)的错误信息。');
                     setTimeout(() => window.location.href = '../index.html', 3000);
                 }
             }
@@ -335,29 +385,23 @@
                 loaderWrapper.style.opacity = '0';
                 setTimeout(() => {
                     loaderWrapper.style.display = 'none';
-                    puzzleContainer.style.display = 'block';
-                    // --- 修改开始 ---
-                    // 不再需要启动任何计时器
-                    // --- 修改结束 ---
+                    puzzleContainer.style.display = 'flex'; // Use flex to match CSS
                 }, 1000);
             }
             
             async function handleKeySubmission() {
-                // --- 修改开始 ---
-                // 第一步：检查时间
                 const now = new Date();
                 const currentSecond = now.getSeconds();
                 if (currentSecond !== 8 && currentSecond !== 29) {
-                    showMessage('时机错误，你的咏唱消散在风中。', 'error');
-                    return; // 时间不对，直接返回，不执行后续操作
+                    showMessage('未在数据稳定时输入', 'error');
+                    return;
                 }
-                // --- 修改结束 ---
 
                 const key = keyInput.value.trim();
                 const username = getCookie('username');
                 
                 if (!key) {
-                    showMessage('密语不可为空。', 'error');
+                    showMessage('不可为空。', 'error');
                     return;
                 }
                 
@@ -367,9 +411,8 @@
                     return;
                 }
                 
-                // 时间正确，开始处理提交
-                showMessage('密语在时空的缝隙中回响...', '');
-                submitKeyBtn.disabled = true; // 临时禁用按钮，防止重复提交
+                showMessage('验证中', '');
+                submitKeyBtn.disabled = true;
 
                 try {
                     const response = await fetch(getApiUrl('checkKey'), {
@@ -381,7 +424,6 @@
                     const data = await response.json();
                     
                     if (response.ok && data.success) {
-                        // 成功后按钮保持禁用，因为即将跳转页面
                         showMessage('封印解开！正在记录你的功绩...', 'success');
                         await updateUserProgressAndRedirect(username);
                     } else {
@@ -390,9 +432,8 @@
                             .replace("请求过于频繁，请稍后再试。", "咏唱过于频繁，你需要休息片刻。");
                         
                         if (data.cooldown) {
-                            startCooldownTimer(data.cooldown, userFriendlyMessage); // 触发API冷却
+                            startCooldownTimer(data.cooldown, userFriendlyMessage);
                         } else {
-                            // 如果没有冷却，直接显示错误信息并重新启用按钮
                             showMessage(userFriendlyMessage, 'error');
                             submitKeyBtn.disabled = false;
                         }
@@ -401,7 +442,7 @@
                 } catch(error) {
                     console.error('密钥检查API请求失败:', error);
                     showMessage('错误：虚空干扰了你的咏唱。', 'error');
-                    submitKeyBtn.disabled = false; // 出错时重新启用按钮
+                    submitKeyBtn.disabled = false;
                 }
             }
 
@@ -437,32 +478,26 @@
                 messageArea.className = `message ${type}`;
             }
 
-            // --- 修改开始 ---
-            // 移除了 initializeTimeLock 函数
-            // 修改了 startCooldownTimer 函数
             function startCooldownTimer(seconds, initialMessage) {
                 let remaining = seconds;
                 keyInput.disabled = true;
-                submitKeyBtn.disabled = true; // API冷却期间必须禁用
+                submitKeyBtn.disabled = true;
 
                 const interval = setInterval(() => {
                     if (remaining > 0) {
-                        // 在冷却期间，显示自定义的错误信息和倒计时
                         showMessage(`${initialMessage} (${remaining}s)`, 'error');
                         remaining--;
                     } else {
                         clearInterval(interval);
-                        showMessage('你可以再次尝试咏唱了。', '');
-                        submitKeyBtn.disabled = false; // 冷却结束，启用按钮
+                        showMessage('你可以再次尝试了。', '');
+                        submitKeyBtn.disabled = false;
                         keyInput.disabled = false;
                     }
                 }, 1000);
             }
-            // --- 修改结束 ---
             
             submitKeyBtn.addEventListener('click', handleKeySubmission);
             keyInput.addEventListener('keypress', (e) => {
-                // 如果按钮被禁用（例如在API冷却期间），回车键也不应触发提交
                 if (e.key === 'Enter' && !submitKeyBtn.disabled) {
                     handleKeySubmission();
                 }

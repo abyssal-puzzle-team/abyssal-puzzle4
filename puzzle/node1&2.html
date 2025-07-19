@@ -34,9 +34,12 @@
             color: var(--text-color);
             display: flex;
             justify-content: center;
-            align-items: center;
+            /* MODIFIED: Align to top for long content */
+            align-items: flex-start;
+            padding: 5vh 0;
             min-height: 100vh;
-            overflow: hidden;
+            /* MODIFIED: Allow body to scroll if content overflows */
+            overflow: auto; 
         }
 
         body.modal-open {
@@ -409,8 +412,8 @@
             padding: 30px;
             border-radius: 8px;
             width: 90%;
-            max-width: 600px;
-            max-height: 80vh;
+            max-width: 700px; /* MODIFIED: Increased width slightly */
+            max-height: 85vh; /* MODIFIED: Increased height slightly */
             overflow-y: auto;
             position: relative;
             border: 1px solid var(--border-color);
@@ -422,8 +425,26 @@
         .modal-overlay.visible .modal-content {
             transform: translateY(0) scale(1);
         }
-
-        #modal-title {
+        
+        /* ADDED: Custom scrollbar for modal */
+        .modal-content::-webkit-scrollbar {
+            width: 8px;
+        }
+        .modal-content::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+        }
+        .modal-content::-webkit-scrollbar-thumb {
+            background-color: rgba(0, 191, 255, 0.4);
+            border-radius: 4px;
+            border: 1px solid rgba(0, 191, 255, 0.6);
+        }
+        .modal-content::-webkit-scrollbar-thumb:hover {
+            background-color: var(--primary-color);
+        }
+        
+        /* MODIFIED: Styles for dynamically generated content */
+        .modal-content h2 {
             color: var(--primary-color);
             margin-bottom: 20px;
             border-bottom: 1px solid var(--border-color);
@@ -431,11 +452,22 @@
             min-height: 1.5em;
         }
         
-        #modal-text {
+        .modal-content p {
             font-size: 1rem;
             line-height: 1.8;
             white-space: pre-wrap;
             min-height: 5em;
+        }
+
+        /* ADDED: Styles for the inserted puzzle image */
+        .puzzle-image {
+            display: block;
+            max-width: 90%;
+            height: auto;
+            margin: 25px auto;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
         }
 
         #modal-close-btn {
@@ -448,6 +480,7 @@
             font-size: 1.8rem;
             cursor: pointer;
             line-height: 1;
+            z-index: 10;
         }
         
         #modal-close-btn:hover {
@@ -514,13 +547,12 @@
     <div id="modal-overlay" class="modal-overlay">
         <div id="modal-content" class="modal-content">
             <button id="modal-close-btn">×</button>
-            <h2 id="modal-title"></h2>
-            <p id="modal-text"></p>
+            <!-- Content is now fully dynamic -->
         </div>
     </div>
 
     <script>
-        // --- 数字雨背景脚本 ---
+        // --- 数字雨背景脚本 (未修改) ---
         const rainCanvas = document.getElementById('rain-canvas');
         const ctx = rainCanvas.getContext('2d');
         let width = rainCanvas.width = window.innerWidth;
@@ -619,7 +651,11 @@
 ㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤ刻。
 8.生物学前沿研究:发现名字为T-Virus的病毒,T碱基从之前的第一位改为排列在第四位,暂无特效药,一段时间前传染入记忆世界,群众应注意防范…
 9..
-(一开始前六个序号为425316,所有字打完后变回123456)`
+(一开始前六个序号为425316,所有字打完后变回123456)`,
+                    // ADDED: Image URL for node 1
+                    // IMPORTANT: You requested './img/node1.html', which is not a valid image.
+                    // I am using a placeholder './img/node1.png'. Please change this to your actual image file.
+                    imageUrl: './img/node1.jpeg'
                 },
                 'node2': {
                     hubTitle: '解谜 2',
@@ -679,11 +715,9 @@ B：“今天，有人在P??g???踏上了它，而且方式很特别。
             const submitButton = document.getElementById('submit-key');
             const statusMessage = document.getElementById('status-message');
             const modalOverlay = document.getElementById('modal-overlay');
-            const modalTitle = document.getElementById('modal-title');
-            const modalText = document.getElementById('modal-text');
+            const modalContent = document.getElementById('modal-content');
 
-            // --- 新增功能函数 ---
-
+            // --- 功能函数 ---
             const getCookie = (name) => {
                 const value = `; ${document.cookie}`;
                 const parts = value.split(`; ${name}=`);
@@ -717,7 +751,6 @@ B：“今天，有人在P??g???踏上了它，而且方式很特别。
                 }
             };
 
-            // 核心逻辑函数
             const performKeyCheck = async (key) => {
                 try {
                     const response = await fetch(`${API_BASE_URL}/check-key`, {
@@ -741,7 +774,7 @@ B：“今天，有人在P??g???踏上了它，而且方式很特别。
                                 solvedNode.classList.remove('solved');
                                 solvedNode.classList.add('unlocked');
                             }, 2000);
-                            await checkWinCondition(); // 每次成功都检查胜利条件
+                            await checkWinCondition();
                         }
                     } else {
                         showTemporaryMessage(data.message, 'error');
@@ -754,23 +787,14 @@ B：“今天，有人在P??g???踏上了它，而且方式很特别。
             };
             
             const checkWinCondition = async () => {
-                // 检查是否所有节点都已解决
                 if (Object.values(solvedStatus).every(status => status === true)) {
-                    
-                    // 禁用所有节点交互
                     document.querySelectorAll('.node').forEach(n => n.style.pointerEvents = 'none');
-                    
-                    // 首先，更新用户进度
                     await updateProgress(currentUser, '3');
-                    
-                    // 然后，播放最终动画
                     await animateFinalConnection();
-                    
-                    // 最后，显示消息并准备跳转
                     showTemporaryMessage('所有节点已解密！正在跳转至下一阶段...', 'success', null);
                     setTimeout(() => { 
-                        window.location.href = '../storyline/insight/node1.html'; // <<< 已修改跳转链接
-                    }, 2000); // 增加一点延时以确保用户能看到消息
+                        window.location.href = '../storyline/insight/node1.html';
+                    }, 2000);
                 }
             };
             
@@ -815,7 +839,6 @@ B：“今天，有人在P??g???踏上了它，而且方式很特别。
                 }
             };
 
-            // UI 和辅助函数
             const handleNodeClick = (nodeId, event) => {
                 const nodeElement = event.currentTarget;
                 if (nodeElement.classList.contains('unlocked') || isSubmitting) return;
@@ -829,7 +852,8 @@ B：“今天，有人在P??g???踏上了它，而且方式很特别。
                 drawConnectionLine(nodeId);
                 const nodeInfo = nodeTexts[nodeId];
                 if (nodeInfo) {
-                    openTextModal(nodeInfo.modalTitle, nodeInfo.content);
+                    // MODIFIED: Pass the entire nodeInfo object
+                    openTextModal(nodeInfo);
                 }
             };
 
@@ -851,13 +875,36 @@ B：“今天，有人在P??g???踏上了它，而且方式很特别。
                 }
             };
 
-            const openTextModal = (title, content) => {
+            // MODIFIED: This function now builds the modal content dynamically
+            const openTextModal = (nodeInfo) => {
+                // Clear previous content, keeping the close button
+                while (modalContent.children.length > 1) {
+                    modalContent.removeChild(modalContent.lastChild);
+                }
+
                 modalOverlay.classList.add('visible');
                 document.body.classList.add('modal-open');
-                modalTitle.innerHTML = '';
-                modalText.innerHTML = '';
-                typewriterEffect(modalTitle, title, 30, () => {
-                    typewriterEffect(modalText, content, 5);
+
+                // Create and append title
+                const titleEl = document.createElement('h2');
+                modalContent.appendChild(titleEl);
+                
+                // Create and append text
+                const textEl = document.createElement('p');
+                modalContent.appendChild(textEl);
+                
+                // Type out title, then text
+                typewriterEffect(titleEl, nodeInfo.modalTitle, 30, () => {
+                    typewriterEffect(textEl, nodeInfo.content, 5, () => {
+                        // After text is typed, check for and append image
+                        if (nodeInfo.imageUrl) {
+                            const imgEl = document.createElement('img');
+                            imgEl.src = nodeInfo.imageUrl;
+                            imgEl.alt = '谜题相关图片';
+                            imgEl.className = 'puzzle-image';
+                            modalContent.appendChild(imgEl);
+                        }
+                    });
                 });
             };
 
@@ -932,8 +979,8 @@ B：“今天，有人在P??g???踏上了它，而且方式很特别。
                     }, duration);
                 }
             };
-
-            // 动画函数
+            
+            // --- 动画与验证逻辑 (未修改核心部分) ---
             const drawConnectionLine = (nodeId) => {
                 const nodeEl = document.getElementById(nodeId);
                 const containerRect = document.getElementById('main-container').getBoundingClientRect();
@@ -942,12 +989,10 @@ B：“今天，有人在P??g???踏上了它，而且方式很特别。
                 const endX = containerRect.width / 2;
                 const endY = containerRect.height / 2;
                 const connectionLine = document.getElementById('connection-line');
-                
                 connectionLine.setAttribute('x1', startX);
                 connectionLine.setAttribute('y1', startY);
                 connectionLine.setAttribute('x2', startX);
                 connectionLine.setAttribute('y2', startY);
-
                 setTimeout(() => {
                     connectionLine.setAttribute('x2', endX);
                     connectionLine.setAttribute('y2', endY);
@@ -957,13 +1002,11 @@ B：“今天，有人在P??g???踏上了它，而且方式很特别。
                     requestAnimationFrame(() => { connectionLine.style.strokeDashoffset = 0; });
                 }, 10);
             };
-
             const hideConnectionLine = () => {
                 const connectionLine = document.getElementById('connection-line');
                 const length = connectionLine.style.strokeDasharray;
                 connectionLine.style.strokeDashoffset = length;
             };
-
             const animateFinalConnection = () => {
                 return new Promise(resolve => {
                     const node1El = document.getElementById('node1');
@@ -973,7 +1016,6 @@ B：“今天，有人在P??g???踏上了它，而且方式很特别。
                     const startY = node1El.offsetTop + node1El.offsetHeight / 2;
                     const endX = node2El.offsetLeft + node2El.offsetWidth / 2;
                     const endY = node2El.offsetTop + node2El.offsetHeight / 2;
-
                     path.setAttribute('d', `M ${startX} ${startY} L ${endX} ${endY}`);
                     const length = path.getTotalLength();
                     path.style.strokeDasharray = length;
@@ -982,64 +1024,45 @@ B：“今天，有人在P??g???踏上了它，而且方式很特别。
                     setTimeout(resolve, 1500);
                 });
             };
-
             const verifyAccountAndProgress = async () => {
                 const loaderStatus = document.getElementById('loader-status');
-                if (loaderStatus) {
-                    loaderStatus.textContent = '正在判断账户进度...';
-                }
-
+                if (loaderStatus) { loaderStatus.textContent = '正在判断账户进度...'; }
                 const username = getCookie('username');
                 const password = getCookie('password');
-
                 if (!username || !password) {
                     window.location.href = '../index.html';
                     return Promise.reject('未找到凭据'); 
                 }
-
                 currentUser = username; 
-
                 try {
                     const response = await fetch(`${API_BASE_URL}/acc_check_password`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ username, password })
                     });
-
                     if (!response.ok) {
                         window.location.href = '../index.html';
                         return Promise.reject('凭据无效'); 
                     }
-
                     const data = await response.json();
-
                     if (data.success) {
-                        const userProgress = String(data.user_data.progress); // 统一转换为字符串，更安全
-
-                        // --- 这是修改的核心逻辑 ---
+                        const userProgress = String(data.user_data.progress);
                         if (userProgress === '1') {
-                            // 进度是'1'，说明用户应该留在这个页面解谜。
                             return Promise.resolve(); 
                         } else if (userProgress === '3') {
-                            // 进度是'3'，说明用户已经解完此谜题，应该直接跳转到下一个剧情页。
                             window.location.href = '../storyline/insight/node1.html';
                             return Promise.reject('进度已完成，跳转至下一阶段');
                         } else {
-                            // 对于其他所有进度，都跳转到主页。
                             window.location.href = '../main.html';
                             return Promise.reject('进度不符，跳转至主页');
                         }
-                        // --- 修改结束 ---
-
                     } else {
                         window.location.href = '../index.html';
                         return Promise.reject('API报告失败');
                     }
                 } catch (error) {
                     console.error('账户验证期间发生错误:', error);
-                    if (loaderStatus) {
-                        loaderStatus.textContent = '验证失败，请检查网络并刷新。';
-                    }
+                    if (loaderStatus) { loaderStatus.textContent = '验证失败，请检查网络并刷新。'; }
                     return Promise.reject('网络或其它错误');
                 }
             };
@@ -1064,23 +1087,15 @@ B：“今天，有人在P??g???踏上了它，而且方式很特别。
             window.addEventListener('load', async () => {
                 try {
                     await verifyAccountAndProgress();
-
-                    // 验证成功，继续加载页面
                     const loader = document.getElementById('loader');
                     const mainContainer = document.getElementById('main-container');
-                    
                     loader.style.opacity = '0';
                     loader.addEventListener('transitionend', () => {
-                        if(loader) {
-                           loader.style.display = 'none';
-                        }
+                        if(loader) { loader.style.display = 'none'; }
                     });
                     mainContainer.classList.add('loaded');
-                    
                     checkCooldownStatus().then(cooldown => {
-                        if (cooldown > 0) {
-                            startCooldownTimer(cooldown);
-                        }
+                        if (cooldown > 0) { startCooldownTimer(cooldown); }
                     });
                 } catch (error) {
                     console.log('页面加载因验证失败而中止:', error);

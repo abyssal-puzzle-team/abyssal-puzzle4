@@ -93,9 +93,12 @@
             z-index: 1;
             display: flex;
             justify-content: center;
-            align-items: center;
+            /* MODIFIED: Align to top for long content */
+            align-items: flex-start; 
             height: 100vh;
-            padding: 20px;
+            /* MODIFIED: Add padding and allow scrolling for the whole container on small screens */
+            padding: 10vh 20px 5vh 20px;
+            overflow-y: auto;
             opacity: 0;
             animation: fadeInContent 2s 0.5s forwards;
         }
@@ -108,6 +111,7 @@
             border-radius: 15px;
             text-align: center;
             max-width: 600px;
+            width: 100%;
             box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
@@ -121,13 +125,51 @@
             text-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
         }
         .prompt-text {
-            font-size: 1.2rem;
+            font-size: 1.1rem; /* Slightly smaller for better density */
             font-weight: 300;
-            line-height: 1.8;
-            margin-bottom: 40px;
+            line-height: 1.7;
+            margin-bottom: 30px; /* Adjusted margin */
             color: #cdd6f4;
             letter-spacing: 1px;
+            text-align: left; /* Better for reading paragraphs */
+            /* ADDED: Styles for long, scrollable puzzle text */
+            max-height: 35vh;
+            overflow-y: auto;
+            padding-right: 15px;
+            white-space: pre-wrap; /* Preserve line breaks */
         }
+
+        /* ADDED: Custom Scrollbar for puzzle text */
+        .prompt-text::-webkit-scrollbar {
+            width: 8px;
+        }
+        .prompt-text::-webkit-scrollbar-track {
+            background: rgba(12, 20, 43, 0.5);
+            border-radius: 4px;
+        }
+        .prompt-text::-webkit-scrollbar-thumb {
+            background-color: rgba(137, 180, 250, 0.5);
+            border-radius: 4px;
+            border: 1px solid rgba(137, 180, 250, 0.8);
+        }
+        .prompt-text::-webkit-scrollbar-thumb:hover {
+            background-color: #89b4fa;
+        }
+
+        /* ADDED: Container and style for the puzzle image */
+        .puzzle-image-container {
+            margin: 0 auto 40px auto;
+            max-width: 90%;
+        }
+        .puzzle-image {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
         .input-group {
             display: flex;
             justify-content: center;
@@ -173,8 +215,11 @@
         }
 
         @media (max-width: 600px) {
+            .puzzle-container {
+                padding: 5vh 15px;
+            }
             h1 { font-size: 2.2rem; }
-            .prompt-text { font-size: 1.1rem; }
+            .prompt-text { font-size: 1rem; }
             .puzzle-box { padding: 30px 25px; }
             .input-group { flex-direction: column; align-items: center; }
             #key-input { width: 100%; max-width: 280px; }
@@ -192,8 +237,56 @@
 
     <div class="puzzle-container">
         <div class="puzzle-box">
-            <h1>节点 三</h1>
-            <p class="prompt-text">万物归于沉寂，等待着正确的唤醒...</p>
+            <h1>解谜3</h1>
+            <p class="prompt-text">
+黎明到来之际
+万物皆披上曙光
+再次启程
+至那再度的永恒
+
+Sankai：你给我干哪来了这还是现实吗
+abyss:新的旅行伙伴
+Sankai:666wmc发力了
+abyss:密码彼得
+cryst:先别说这些了,先看看怎么开门吧
+Sankai注意到了旁边有东西
+Sankai:封条？
+Cryst:感觉会和某种东西有点关联，先记下来
+Sankai:还有串字符
+-16 8 9 7 18 15 19-
+Cryst:也先记下来好了
+Sankai:好像还有卷轴
+Cryst:我看看
+"IF3GCNO3DBNZNORWQNOZI="
+“将那吐露的词语删除”
+Sankai:先看看吧
+(过了段时间后)
+cryst:应该是要把这个结果输进去吧
+abyss:门开了
+sankai:结束
+cryst:也是时候要分别了
+Abyss：时间过得好快
+Sankai:那祝你们顺利
+Cryst：借你吉言，我们会成功的
+Sankai：那么，再见
+abyss&cryst:再见
+（通讯中断）
+Insight:时空裂隙吗，事情变得越来越有趣了
+”我倒要看看，你们能掀起怎样的风浪“
+（注释：本篇剧情与主线无关）
+
+            </p>
+            
+            <!-- ADDED: Image Container -->
+            <div class="puzzle-image-container">
+                <!-- 
+                    IMPORTANT: The image source below is a placeholder based on your request.
+                    Please change "./end/node3.png" to your actual image file path,
+                    for example "./images/puzzle3.jpg" or similar.
+                -->
+                <img src="./img/node3.jpeg" alt="谜题相关图片" class="puzzle-image">
+            </div>
+
             <div class="input-group">
                 <input type="text" id="key-input" placeholder="在此输入密钥" autocomplete="off">
                 <button type="button" id="submit-btn">验证</button>
