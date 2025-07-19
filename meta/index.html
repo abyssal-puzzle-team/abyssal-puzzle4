@@ -434,7 +434,7 @@
             "7在第1列，8在第1行，7与8不在角落", "9不在角落且正下方相邻是11", "10在11正上方",
             "12在13相邻正上方", "14与16同列，15在14相邻正下方"
         ];
-        const API_BASE = 'http://111.170.11.168:15114/proxy/3000';
+        const API_BASE = 'http://abyssal4.asterveil.top/api';
         
         async function initGame() {
             gameState.username = getCookie('username');
@@ -1028,7 +1028,7 @@
             document.getElementById('timeRemaining').textContent = timeStr;
             
             // *** FIX #2: Correct maxTime to 8 hours (28800 seconds). ***
-            const maxTime = 28800;
+            const maxTime = 86400;
             const percentage = Math.max(0, (seconds / maxTime) * 100);
             document.getElementById('timeBarFill').style.width = `${percentage}%`;
         }
