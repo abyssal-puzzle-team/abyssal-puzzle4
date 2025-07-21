@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAlSE_META</title>
+    <style>
+        /* --- 通用 / 亮色模式默认样式 --- */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f2f5; /* 浅灰色背景 */
+            color: #333; /* 深灰色文字 */
+            transition: background-color 0.3s ease, color 0.3s ease; /* 平滑过渡 */
+        }
+
+        h1 {
+            color: #00a1d6; /* Bilibili 标志性蓝色 */
+            margin-top: 30px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 2em;
+        }
+
+        .video-container {
+            position: relative;
+            width: 90%;
+            max-width: 800px;
+            padding-bottom: 56.25%; /* 16:9 宽高比 */
+            height: 0;
+            overflow: hidden;
+            background-color: #000; /* 视频未加载时的背景色，深色模式也适用 */
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* 亮色模式下的阴影 */
+            margin-bottom: 40px;
+            transition: box-shadow 0.3s ease; /* 平滑过渡 */
+        }
+
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .instructions {
+            background-color: #fff; /* 亮色模式背景 */
+            border-left: 5px solid #00a1d6;
+            padding: 15px 20px;
+            margin: 20px 0;
+            max-width: 800px;
+            width: 90%;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* 亮色模式下的阴影 */
+            border-radius: 4px;
+            line-height: 1.6;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease; /* 平滑过渡 */
+        }
+
+        .instructions h2 {
+            color: #00a1d6; /* 标题颜色保持一致 */
+            margin-top: 0;
+        }
+
+        .instructions p {
+            margin: 5px 0;
+        }
+
+        .instructions ul {
+            padding-left: 20px;
+        }
+
+        .instructions code {
+            background-color: #eee; /* 亮色模式代码背景 */
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: 'Courier New', Courier, monospace;
+            color: #c7254e; /* 代码文字颜色 */
+            transition: background-color 0.3s ease, color 0.3s ease; /* 平滑过渡 */
+        }
+
+        /* 新增的按钮样式 */
+        .continue-button {
+            display: inline-block;
+            padding: 12px 25px;
+            margin-top: 20px; /* 顶部留白 */
+            margin-bottom: 30px; /* 底部留白，与页脚隔开 */
+            background-color: #00a1d6; /* Bilibili 标志性蓝色 */
+            color: white;
+            text-decoration: none; /* 移除下划线 */
+            border-radius: 25px; /* 圆角胶囊按钮 */
+            font-size: 1.1em;
+            font-weight: bold;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 10px rgba(0, 161, 214, 0.4); /* 按钮阴影 */
+            transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+            cursor: pointer;
+            border: none; /* 移除按钮边框 */
+        }
+
+        .continue-button:hover {
+            background-color: #008cc0; /* 鼠标悬停时颜色变深 */
+            box-shadow: 0 6px 15px rgba(0, 161, 214, 0.6); /* 阴影更明显 */
+            transform: translateY(-2px); /* 向上轻微浮动 */
+        }
+
+        .continue-button:active {
+            transform: translateY(0); /* 点击时恢复原位 */
+            box-shadow: 0 2px 5px rgba(0, 161, 214, 0.4); /* 阴影变小，模拟按下效果 */
+        }
+
+
+        footer {
+            margin-top: auto;
+            padding: 20px;
+            color: #777; /* 亮色模式页脚文字颜色 */
+            font-size: 0.9em;
+            text-align: center;
+            transition: color 0.3s ease; /* 平滑过渡 */
+        }
+
+        /* --- 深色模式适配 --- */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #1a1a1a; /* 更深的背景色 */
+                color: #e0e0e0; /* 浅色文字 */
+            }
+
+            .video-container {
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6); /* 深色模式下更深的阴影 */
+            }
+
+            .instructions {
+                background-color: #2c2c2c; /* 深色模式卡片背景 */
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4); /* 深色模式下更深的阴影 */
+            }
+
+            .instructions h2 {
+                color: #4dc2f0; /* 深色模式下，B站蓝稍微提亮一点 */
+            }
+
+            .instructions code {
+                background-color: #444; /* 深色模式代码背景 */
+                color: #abf2f8; /* 深色模式下，代码文字颜色 */
+            }
+            
+            /* 深色模式按钮样式调整 */
+            .continue-button {
+                background-color: #4dc2f0; /* 深色模式下按钮颜色稍亮 */
+                box-shadow: 0 4px 10px rgba(77, 194, 240, 0.4);
+            }
+
+            .continue-button:hover {
+                background-color: #3aaedc; /* 鼠标悬停时颜色变深 */
+                box-shadow: 0 6px 15px rgba(77, 194, 240, 0.6);
+            }
+
+            .continue-button:active {
+                box-shadow: 0 2px 5px rgba(77, 194, 240, 0.4);
+            }
+
+
+            footer {
+                color: #a0a0a0; /* 深色模式页脚文字颜色 */
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>FAlSE_META</h1>
+
+    <div class="video-container">
+        <!-- Bilibili 视频嵌入代码 -->
+        <iframe src="https://player.bilibili.com/player.html?bvid=BV12ouszXEHB&danmaku=0&high_quality=1&autoplay=0" 
+                scrolling="no" 
+                border="0" 
+                frameborder="no" 
+                framespacing="0" 
+                allowfullscreen="true">
+        </iframe>
+    </div>
+
+    <!-- 新增的继续按钮 -->
+    <a href="../puzzle/false_meta.html" class="continue-button">看完后继续</a>
+
+</body>
+</html>
