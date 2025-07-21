@@ -49,6 +49,18 @@
             border-radius: 5px;
             font-size: 1.1em;
             line-height: 1.6;
+            /* 确保图片在其内部居中 */
+            text-align: center; 
+        }
+
+        /* 新增：图片适配样式 */
+        .puzzle-description img {
+            max-width: 100%; /* 图片最大宽度为其父容器的100% */
+            height: auto;     /* 高度自动调整，保持图片宽高比 */
+            display: block;   /* 使图片成为块级元素，可以设置margin: auto居中 */
+            margin: 0 auto;   /* 居中图片 */
+            border-radius: 5px; /* 添加一点圆角，与容器风格匹配 */
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.2); /* 略微发光效果 */
         }
 
         .sequence-display {
@@ -175,18 +187,12 @@
         <div class="puzzle-title">守门员B2</div>
 
         <div class="puzzle-description">
-            <strong>数字序列的奥秘</strong><br><br>
-            在深渊迷宫的数字殿堂中，隐藏着一个神秘的数字序列。这个序列遵循着特定的数学规律，只有找到其中的规律，才能预测下一个数字...
-        </div>
-
-        <div class="sequence-display">
-            2, 6, 12, 20, 30, ?
+            <!-- 谜题图片和文字内容 -->
+            <img src="./img/B2.png" alt="图片不见了awa">
+            闭上眼睛，用心去倾听，你将得到答案
         </div>
 
         <div class="question-section">
-            <div class="question-text">
-                🤔 请找出规律并填入下一个数字：
-            </div>
             <input type="text" id="answerInput" class="answer-input" placeholder="请输入答案">
             <br>
             <button class="btn" onclick="submitAnswer()" id="submitBtn">提交答案</button>
@@ -208,7 +214,7 @@
     </div>
 
     <script>
-        const API_BASE = 'http://abyssal4.asterveil.top/api';
+        const API_BASE = 'http://111.170.11.168:15114/proxy/3000/api';
         let username = '';
 
         // 获取Cookie

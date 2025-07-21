@@ -15,10 +15,6 @@
             font-family: 'Arial', sans-serif;
             background: linear-gradient(135deg, #0a0a0a, #1a1a2e, #16213e);
             color: #ffffff;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             padding: 20px;
         }
 
@@ -30,6 +26,7 @@
             border-radius: 15px;
             padding: 30px;
             box-shadow: 0 0 30px rgba(255, 0, 255, 0.3);
+            margin: 40px auto; /* Added top/bottom margin and auto for horizontal centering, suitable for long content */
         }
 
         .puzzle-title {
@@ -49,6 +46,9 @@
             border-radius: 5px;
             font-size: 1.1em;
             line-height: 1.6;
+            /* === 新增样式 === */
+            white-space: pre-wrap; /* 保留空格和换行符，并在必要时自动换行 */
+            /* ================= */
         }
 
         .riddle-display {
@@ -156,7 +156,7 @@
         @media (max-width: 768px) {
             .puzzle-container {
                 padding: 20px;
-                margin: 10px;
+                margin: 10px auto;
             }
             
             .puzzle-title {
@@ -175,18 +175,28 @@
         <div class="puzzle-title">📝 守门员C3</div>
 
         <div class="puzzle-description">
-            <strong>古老谜语的智慧</strong><br><br>
-            在深渊迷宫的智慧殿堂中，流传着一个古老的谜语。这个谜语考验的不是计算能力，而是对语言和逻辑的理解。只有真正理解其含义的人，才能给出正确的答案...
-        </div>
-
-        <div class="riddle-display">
-            "什么东西越洗越脏？"
+•COsm/Crad/O45²空间站正在向宇宙中各大星球发送探测信号...
+①在#%*}^星球拍摄的画面中发现了一把雨伞,正在统计画面中的蝴蝶数量…[System Err0r:a]
+②在类地行星球拍摄的画面中发现了一个海星发卡,正在提取其信件话语的数位排序…[Complete:bcd][8170]
+———————
+•Abyss查看空间站的数据的同时,Cryst看到了另一份文件里也存着部分数据:
+🔼🔼🔼🔼 +
+ [P R A W]
+🔽🔽🔽🔽 -
+找到最近的捷径之数.
+____(∈R)
+Cryst:?这场景我好像在哪里见过...想起来了!这样看来是要把变化方式与abcd对应联系起来了…就类似于...加工?这样最后得出来的就是新的abcd了…
+———————
+地上还有三张纸条:
+•h*****🔶*****h by ?? from 7****
+•***g***❤️******* from 8th
+•Savant by e**.*** from ***mic
+———————
+密码:abcgeadh(∈A~Z)
+Abyss:有点麻烦字母既可以代表数字也可以代表字母,答案却只能输进去八个大写字母,该怎么办呢…
         </div>
 
         <div class="question-section">
-            <div class="question-text">
-                🤔 请仔细思考并给出答案：
-            </div>
             <input type="text" id="answerInput" class="answer-input" placeholder="请输入答案" maxlength="20">
             <br>
             <button class="btn" onclick="submitAnswer()" id="submitBtn">提交答案</button>
@@ -209,7 +219,7 @@
     </div>
 
     <script>
-        const API_BASE = 'http://abyssal4.asterveil.top/api';
+        const API_BASE = 'http://111.170.11.168:15114/proxy/3000/api';
         let username = '';
 
         // 获取Cookie
@@ -225,6 +235,8 @@
             username = getCookie('username');
             if (!username) {
                 alert('请先登录或注册账号以保存游戏进度！');
+                // Optionally redirect to login page
+                // window.location.href = 'login.html';
                 return;
             }
             
@@ -250,10 +262,10 @@
                 
                 return data;
             } catch (error) {
-                console.error('检查冷却状态失败:', error);
-                return { cooldownRemaining: 0 };
+                    console.error('检查冷却状态失败:', error);
+                    return { cooldownRemaining: 0 };
+                }
             }
-        }
 
         // 提交答案
         async function submitAnswer() {

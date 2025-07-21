@@ -196,7 +196,6 @@
         .opensource-section {
             max-width: 700px;
             animation-delay: 1.2s;
-            /* --- 核心修复：添加此行以居中内部所有元素 --- */
             text-align: center;
         }
         .opensource-section p {
@@ -249,6 +248,38 @@
             header h1 { font-size: 2.2rem; }
             .credits-section h2, .opensource-section h2 { font-size: 1.8rem; }
         }
+
+        /* --- 修改和新增的样式 --- */
+
+        /* 1. 移除跳转链接的蓝色线条和默认样式 */
+        .card-link {
+            text-decoration: none; /* 移除下划线 */
+            color: inherit;      /* 继承父级文字颜色 */
+            display: block;      /* 让链接作为块级元素，完整包裹卡片 */
+            cursor: pointer;     /* 提示可点击 */
+        }
+        .card-link .credit-card h3,
+        .card-link .credit-card .name {
+            text-decoration: none; /* 确保卡片内部文本也无下划线 */
+        }
+
+        /* 2. 新增 '可跳转' 元素的样式 */
+        .top-left-indicator {
+            position: absolute;
+            top: 15px; /* 距离顶部 */
+            left: 15px; /* 距离左侧 */
+            background: rgba(125, 249, 255, 0.1); /* 柔和的背景色 */
+            color: var(--highlight-color); /* 突出显示色 */
+            padding: 3px 8px;
+            font-size: 0.75rem; /* 小字号 */
+            border-radius: 4px;
+            z-index: 2; /* 确保在卡片内容之上 */
+            font-family: var(--font-body); /* 使用正文字体 */
+            opacity: 0.8; /* 略微透明 */
+            text-transform: none; /* 防止被 .developer-badge 的 text-transform: uppercase 影响 */
+            letter-spacing: normal; /* 防止被 .developer-badge 的 letter-spacing 影响 */
+            font-weight: normal; /* 防止被 .developer-badge 的 font-weight 影响 */
+        }
     </style>
 </head>
 <body>
@@ -294,13 +325,16 @@
             
             <section class="credits-section fade-in-up">
                 <h2>数字炼金术士 - Digital Alchemist</h2>
-                <div class="credit-grid" id="developer-grid">
-                    <div class="credit-card developer-special">
-                        <span class="developer-badge">核心开发</span>
-                        <h3>网页开发</h3>
-                        <span class="name">芙莉莲（苍宿影）</span>
+                <a href="https://asterveil.top" class="card-link"> 
+                    <div class="credit-grid" id="developer-grid">
+                        <div class="credit-card developer-special">
+                            <span class="top-left-indicator">可跳转</span> <!-- 新增的 HTML 元素 -->
+                            <span class="developer-badge">核心开发</span>
+                            <h3>网页开发</h3>
+                            <span class="name">芙莉莲（苍宿影）</span>
+                        </div>
                     </div>
-                </div>
+                </a>
             </section>
 
             <section class="opensource-section fade-in-up">
